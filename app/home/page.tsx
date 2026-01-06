@@ -37,8 +37,8 @@ export default function HomePage() {
       const { data, error } = await supabase
         .from('games')
         .select('*')
-        .order('date', { ascending: true })
-        .order('time', { ascending: true })
+        .order('game_date', { ascending: true })
+        .order('start_time', { ascending: true })
 
       if (error) throw error
       setGames(data || [])
@@ -56,10 +56,10 @@ export default function HomePage() {
     let filtered = games
 
     if (filter === 'today') {
-      filtered = games.filter(game => game.date === today)
+      filtered = games.filter(game => game.game_date === today)
     } else if (filter === 'upcoming') {
       filtered = games.filter(game => {
-        const gameDate = new Date(game.date)
+        const gameDate = new Date(game.game_date)
         return gameDate >= now
       })
     }

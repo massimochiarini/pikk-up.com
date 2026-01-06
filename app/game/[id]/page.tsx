@@ -131,10 +131,20 @@ export default function GameDetailPage() {
     )
   }
 
-  const gameDate = parseISO(game.date)
+  const gameDate = parseISO(game.game_date)
   const formattedDate = format(gameDate, 'EEEE, MMMM d, yyyy')
+  
+  // Format time (HH:mm:ss to h:mm AM/PM)
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(':')
+    const hour = parseInt(hours)
+    const period = hour >= 12 ? 'PM' : 'AM'
+    const displayHour = hour % 12 || 12
+    return `${displayHour}:${minutes} ${period}`
+  }
+  
   const currentPlayers = attendees.length
-  const spotsLeft = game.players_needed - currentPlayers
+  const spotsLeft = game.max_players - currentPlayers
   const isUserGoing = userRsvp !== null
 
   return (
@@ -155,9 +165,9 @@ export default function GameDetailPage() {
             <div className="flex items-center space-x-3">
               <div className="text-5xl">🎾</div>
               <div>
-                <h1 className="text-3xl font-bold text-navy">{game.sport}</h1>
+                <h1 className="text-3xl font-bold text-navy capitalize">{game.sport}</h1>
                 {game.skill_level && (
-                  <span className="text-gray-600">{game.skill_level}</span>
+                  <span className="text-gray-600 capitalize">{game.skill_level}</span>
                 )}
               </div>
             </div>
@@ -179,14 +189,15 @@ export default function GameDetailPage() {
               <span className="text-2xl">📅</span>
               <div>
                 <div className="font-semibold text-gray-900">{formattedDate}</div>
-                <div className="text-gray-600">at {game.time}</div>
+                <div className="text-gray-600">at {formatTime(game.start_time)}</div>
               </div>
             </div>
 
             <div className="flex items-start space-x-3">
               <span className="text-2xl">📍</span>
               <div>
-                <div className="font-semibold text-gray-900">{game.location}</div>
+                <div className="font-semibold text-gray-900">{game.venue_name}</div>
+                {game.address && <div className="text-gray-600">{game.address}</div>}
               </div>
             </div>
 
@@ -194,7 +205,7 @@ export default function GameDetailPage() {
               <span className="text-2xl">👥</span>
               <div>
                 <div className="font-semibold text-gray-900">
-                  {currentPlayers} / {game.players_needed} players
+                  {currentPlayers} / {game.max_players} players
                 </div>
                 <div className="text-gray-600">Players going</div>
               </div>

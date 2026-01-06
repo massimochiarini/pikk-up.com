@@ -23,14 +23,16 @@ export type Game = {
   id: string
   created_by: string
   sport: string
-  date: string
-  time: string
-  location: string
-  location_lat?: number
-  location_lng?: number
+  venue_name: string
+  address: string
+  game_date: string
+  start_time: string
+  max_players: number
+  cost_cents: number
   description?: string
+  image_url?: string
+  is_private: boolean
   skill_level?: string
-  players_needed: number
   created_at: string
 }
 
