@@ -49,12 +49,11 @@ export default function GameDetailPage() {
 
       setCreator(creatorData)
 
-      // Fetch RSVPs and attendees
+      // Fetch RSVPs and attendees (no status filter - all RSVPs count)
       const { data: rsvpsData } = await supabase
         .from('rsvps')
         .select('*, profiles(*)')
         .eq('game_id', gameId)
-        .eq('status', 'going')
 
       if (rsvpsData) {
         const profilesData = rsvpsData
@@ -81,32 +80,36 @@ export default function GameDetailPage() {
     }
   }
 
-  const handleRsvp = async (status: 'going' | 'maybe' | 'not_going') => {
+  const handleRsvp = async () => {
     if (!user || !game) return
 
     setRsvpLoading(true)
     try {
-      // Update or insert RSVP
-      const { error } = await supabase
+      // Check if already RSVPed
+      const { data: existingRsvp } = await supabase
         .from('rsvps')
-        .upsert({
-          game_id: gameId,
-          user_id: user.id,
-          status,
-          created_at: new Date().toISOString(),
-        })
+        .select('*')
+        .eq('game_id', gameId)
+        .eq('user_id', user.id)
+        .single()
 
-      if (error) throw error
-
-      // Update game's current_players count
-      const newCount = status === 'going'
-        ? (userRsvp?.status === 'going' ? game.current_players : game.current_players + 1)
-        : (userRsvp?.status === 'going' ? game.current_players - 1 : game.current_players)
-
-      await supabase
-        .from('games')
-        .update({ current_players: newCount })
-        .eq('id', gameId)
+      if (existingRsvp) {
+        // Already RSVPed - remove RSVP
+        await supabase
+          .from('rsvps')
+          .delete()
+          .eq('game_id', gameId)
+          .eq('user_id', user.id)
+      } else {
+        // Not RSVPed yet - add RSVP
+        await supabase
+          .from('rsvps')
+          .insert({
+            game_id: gameId,
+            user_id: user.id,
+            created_at: new Date().toISOString(),
+          })
+      }
 
       // Refresh data
       await fetchGameDetails()
@@ -130,7 +133,9 @@ export default function GameDetailPage() {
 
   const gameDate = parseISO(game.date)
   const formattedDate = format(gameDate, 'EEEE, MMMM d, yyyy')
-  const spotsLeft = game.players_needed - game.current_players
+  const currentPlayers = attendees.length
+  const spotsLeft = game.players_needed - currentPlayers
+  const isUserGoing = userRsvp !== null
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -189,7 +194,7 @@ export default function GameDetailPage() {
               <span className="text-2xl">👥</span>
               <div>
                 <div className="font-semibold text-gray-900">
-                  {game.current_players} / {game.players_needed} players
+                  {currentPlayers} / {game.players_needed} players
                 </div>
                 <div className="text-gray-600">Players going</div>
               </div>
@@ -204,45 +209,21 @@ export default function GameDetailPage() {
             </div>
           )}
 
-          {/* RSVP Buttons */}
+          {/* RSVP Button */}
           {user && user.id !== game.created_by && (
             <div className="border-t border-gray-200 pt-6 mb-8">
-              <h3 className="font-semibold text-gray-900 mb-3">Are you going?</h3>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => handleRsvp('going')}
-                  disabled={rsvpLoading || spotsLeft === 0}
-                  className={`flex-1 py-3 rounded-lg font-semibold transition-colors ${
-                    userRsvp?.status === 'going'
-                      ? 'bg-neon-green text-navy'
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  ✓ Going
-                </button>
-                <button
-                  onClick={() => handleRsvp('maybe')}
-                  disabled={rsvpLoading}
-                  className={`flex-1 py-3 rounded-lg font-semibold transition-colors ${
-                    userRsvp?.status === 'maybe'
-                      ? 'bg-neon-green text-navy'
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  ? Maybe
-                </button>
-                <button
-                  onClick={() => handleRsvp('not_going')}
-                  disabled={rsvpLoading}
-                  className={`flex-1 py-3 rounded-lg font-semibold transition-colors ${
-                    userRsvp?.status === 'not_going'
-                      ? 'bg-neon-green text-navy'
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  ✗ Can't Go
-                </button>
-              </div>
+              <h3 className="font-semibold text-gray-900 mb-3">Join this game?</h3>
+              <button
+                onClick={handleRsvp}
+                disabled={rsvpLoading || (spotsLeft === 0 && !isUserGoing)}
+                className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                  isUserGoing
+                    ? 'bg-red-100 hover:bg-red-200 text-red-700'
+                    : 'bg-neon-green hover:bg-neon-green-dark text-navy'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {rsvpLoading ? 'Loading...' : isUserGoing ? '✓ Going - Click to Cancel' : '+ Join Game'}
+              </button>
             </div>
           )}
 

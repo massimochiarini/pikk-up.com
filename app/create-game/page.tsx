@@ -10,10 +10,11 @@ export default function CreateGamePage() {
   const { user } = useAuth()
   const router = useRouter()
 
-  const [sport, setSport] = useState('Pickleball')
+  const sport = 'Pickleball' // Fixed to Pickleball only
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
-  const [location, setLocation] = useState('')
+  const [venue, setVenue] = useState('')
+  const [address, setAddress] = useState('')
   const [locationLat, setLocationLat] = useState<number | null>(null)
   const [locationLng, setLocationLng] = useState<number | null>(null)
   const [description, setDescription] = useState('')
@@ -44,20 +45,22 @@ export default function CreateGamePage() {
     setError('')
 
     try {
+      // Combine venue and address for location field
+      const fullLocation = `${venue}${address ? `, ${address}` : ''}`
+      
       const { data, error } = await supabase
         .from('games')
         .insert({
           created_by: user.id,
-          sport,
+          sport: 'Pickleball',
           date,
           time,
-          location,
+          location: fullLocation,
           location_lat: locationLat,
           location_lng: locationLng,
           description: description || null,
           skill_level: skillLevel,
           players_needed: playersNeeded,
-          current_players: 1,
           created_at: new Date().toISOString(),
         })
         .select()
@@ -65,13 +68,12 @@ export default function CreateGamePage() {
 
       if (error) throw error
 
-      // Auto-RSVP the creator as "going"
+      // Auto-RSVP the creator
       await supabase
         .from('rsvps')
         .insert({
           game_id: data.id,
           user_id: user.id,
-          status: 'going',
           created_at: new Date().toISOString(),
         })
 
@@ -105,23 +107,47 @@ export default function CreateGamePage() {
               </div>
             )}
 
-            {/* Sport */}
+            {/* Venue Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sport
+                Venue Name *
               </label>
-              <select
-                value={sport}
-                onChange={(e) => setSport(e.target.value)}
+              <input
+                type="text"
+                value={venue}
+                onChange={(e) => setVenue(e.target.value)}
                 className="input-field"
+                placeholder="e.g., Dinko Pickleball Courts"
                 required
-              >
-                <option>Pickleball</option>
-                <option>Tennis</option>
-                <option>Basketball</option>
-                <option>Soccer</option>
-                <option>Volleyball</option>
-              </select>
+              />
+            </div>
+
+            {/* Address (Auto-populate with geocoding) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Address
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="input-field flex-1"
+                  placeholder="Enter address or use location"
+                />
+                <button
+                  type="button"
+                  onClick={handleGetLocation}
+                  className="btn-outline px-4 whitespace-nowrap"
+                >
+                  📍 Use My Location
+                </button>
+              </div>
+              {locationLat && locationLng && (
+                <p className="text-xs text-green-600 mt-1">
+                  ✓ Location coordinates captured
+                </p>
+              )}
             </div>
 
             {/* Date & Time */}
@@ -154,34 +180,6 @@ export default function CreateGamePage() {
               </div>
             </div>
 
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Location
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="input-field flex-1"
-                  placeholder="Enter address or venue name"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={handleGetLocation}
-                  className="btn-outline px-4 whitespace-nowrap"
-                >
-                  📍 Use My Location
-                </button>
-              </div>
-              {locationLat && locationLng && (
-                <p className="text-xs text-green-600 mt-1">
-                  ✓ Location coordinates captured
-                </p>
-              )}
-            </div>
 
             {/* Skill Level */}
             <div>

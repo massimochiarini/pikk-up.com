@@ -3,15 +3,32 @@
 import Link from 'next/link'
 import { type Game } from '@/lib/supabase'
 import { format, parseISO } from 'date-fns'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
 
 interface GameCardProps {
   game: Game
 }
 
 export function GameCard({ game }: GameCardProps) {
+  const [currentPlayers, setCurrentPlayers] = useState(0)
   const gameDate = parseISO(game.date)
   const formattedDate = format(gameDate, 'MMM d, yyyy')
-  const spotsLeft = game.players_needed - game.current_players
+
+  useEffect(() => {
+    fetchRsvpCount()
+  }, [game.id])
+
+  const fetchRsvpCount = async () => {
+    const { count } = await supabase
+      .from('rsvps')
+      .select('*', { count: 'exact', head: true })
+      .eq('game_id', game.id)
+
+    setCurrentPlayers(count || 0)
+  }
+
+  const spotsLeft = game.players_needed - currentPlayers
 
   return (
     <Link href={`/game/${game.id}`}>
@@ -67,7 +84,7 @@ export function GameCard({ game }: GameCardProps) {
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="flex items-center space-x-2">
             <span className="text-gray-500 text-sm">
-              {game.current_players} / {game.players_needed} players
+              {currentPlayers} / {game.players_needed} players
             </span>
           </div>
           <div className="text-sky-blue font-semibold text-sm">

@@ -31,7 +31,6 @@ export type Game = {
   description?: string
   skill_level?: string
   players_needed: number
-  current_players: number
   created_at: string
 }
 
@@ -47,7 +46,6 @@ export type RSVP = {
   id: string
   game_id: string
   user_id: string
-  status: 'going' | 'maybe' | 'not_going'
   created_at: string
 }
 
