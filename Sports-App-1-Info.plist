@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>Pickup</string>
+	<key>CFBundleName</key>
+	<string>Pickup</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We use your location to help you find nearby pickleball games and courts in your area.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>You can optionally import your contacts to easily invite friends to play pickleball. Your contacts are never uploaded to our servers and this feature is completely optional.</string>
+</dict>
+</plist>
