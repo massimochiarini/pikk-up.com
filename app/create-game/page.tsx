@@ -27,6 +27,7 @@ export default function CreateGamePage() {
     setError('')
 
     try {
+      // Step 1: Create the game
       const { data, error } = await supabase
         .from('games')
         .insert({
@@ -48,7 +49,7 @@ export default function CreateGamePage() {
 
       if (error) throw error
 
-      // Auto-RSVP the creator
+      // Step 2: Auto-RSVP the creator
       await supabase
         .from('rsvps')
         .insert({
@@ -56,6 +57,31 @@ export default function CreateGamePage() {
           user_id: user.id,
           created_at: new Date().toISOString(),
         })
+
+      // Step 3: Create group chat for the game
+      const { data: groupChatData, error: groupChatError } = await supabase
+        .from('group_chats')
+        .insert({
+          game_id: data.id,
+          name: venue,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+
+      if (groupChatError) {
+        console.error('Error creating group chat:', groupChatError)
+        // Don't fail the entire operation if group chat creation fails
+      } else if (groupChatData) {
+        // Step 4: Add creator as first member of group chat
+        await supabase
+          .from('group_chat_members')
+          .insert({
+            group_chat_id: groupChatData.id,
+            user_id: user.id,
+            joined_at: new Date().toISOString(),
+          })
+      }
 
       router.push(`/game/${data.id}`)
     } catch (error: any) {

@@ -51,3 +51,27 @@ export type RSVP = {
   created_at: string
 }
 
+export type GroupChat = {
+  id: string
+  game_id: string
+  name: string
+  last_message_at?: string
+  last_message_preview?: string
+  created_at: string
+}
+
+export type GroupMessage = {
+  id: string
+  group_chat_id: string
+  sender_id: string
+  content: string
+  created_at: string
+}
+
+export type GroupChatMember = {
+  id: string
+  group_chat_id: string
+  user_id: string
+  joined_at: string
+}
+

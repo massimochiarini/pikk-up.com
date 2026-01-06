@@ -19,6 +19,8 @@ export default function GameDetailPage() {
   const [userRsvp, setUserRsvp] = useState<RSVP | null>(null)
   const [loading, setLoading] = useState(true)
   const [rsvpLoading, setRsvpLoading] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     if (gameId) {
@@ -100,6 +102,21 @@ export default function GameDetailPage() {
           .delete()
           .eq('game_id', gameId)
           .eq('user_id', user.id)
+        
+        // Also remove from group chat
+        const { data: groupChat } = await supabase
+          .from('group_chats')
+          .select('id')
+          .eq('game_id', gameId)
+          .single()
+        
+        if (groupChat) {
+          await supabase
+            .from('group_chat_members')
+            .delete()
+            .eq('group_chat_id', groupChat.id)
+            .eq('user_id', user.id)
+        }
       } else {
         // Not RSVPed yet - add RSVP
         await supabase
@@ -109,6 +126,23 @@ export default function GameDetailPage() {
             user_id: user.id,
             created_at: new Date().toISOString(),
           })
+        
+        // Also add to group chat
+        const { data: groupChat } = await supabase
+          .from('group_chats')
+          .select('id')
+          .eq('game_id', gameId)
+          .single()
+        
+        if (groupChat) {
+          await supabase
+            .from('group_chat_members')
+            .insert({
+              group_chat_id: groupChat.id,
+              user_id: user.id,
+              joined_at: new Date().toISOString(),
+            })
+        }
       }
 
       // Refresh data
@@ -117,6 +151,64 @@ export default function GameDetailPage() {
       console.error('Error updating RSVP:', error)
     } finally {
       setRsvpLoading(false)
+    }
+  }
+
+  const handleDeleteGame = async () => {
+    if (!user || !game || game.created_by !== user.id) return
+
+    setIsDeleting(true)
+    try {
+      // Delete group chat messages first
+      const { data: groupChat } = await supabase
+        .from('group_chats')
+        .select('id')
+        .eq('game_id', gameId)
+        .single()
+
+      if (groupChat) {
+        // Delete messages
+        await supabase
+          .from('group_messages')
+          .delete()
+          .eq('group_chat_id', groupChat.id)
+
+        // Delete members
+        await supabase
+          .from('group_chat_members')
+          .delete()
+          .eq('group_chat_id', groupChat.id)
+
+        // Delete group chat
+        await supabase
+          .from('group_chats')
+          .delete()
+          .eq('id', groupChat.id)
+      }
+
+      // Delete RSVPs
+      await supabase
+        .from('rsvps')
+        .delete()
+        .eq('game_id', gameId)
+
+      // Delete the game
+      const { error } = await supabase
+        .from('games')
+        .delete()
+        .eq('id', gameId)
+        .eq('created_by', user.id) // Extra safety check
+
+      if (error) throw error
+
+      // Redirect to my games
+      router.push('/my-games')
+    } catch (error) {
+      console.error('Error deleting game:', error)
+      alert('Failed to delete game. Please try again.')
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteConfirm(false)
     }
   }
 
@@ -220,6 +312,20 @@ export default function GameDetailPage() {
             </div>
           )}
 
+          {/* Host Actions */}
+          {user && user.id === game.created_by && (
+            <div className="border-t border-gray-200 pt-6 mb-8">
+              <h3 className="font-semibold text-gray-900 mb-3">Manage Game</h3>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isDeleting}
+                className="w-full py-3 rounded-lg font-semibold bg-red-50 hover:bg-red-100 text-red-700 transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Game'}
+              </button>
+            </div>
+          )}
+
           {/* RSVP Button */}
           {user && user.id !== game.created_by && (
             <div className="border-t border-gray-200 pt-6 mb-8">
@@ -279,6 +385,35 @@ export default function GameDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold text-navy mb-3">Delete Game?</h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete this game? This will also delete the group chat and 
+                remove all RSVPs. This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isDeleting}
+                  className="flex-1 btn-outline"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteGame}
+                  disabled={isDeleting}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
