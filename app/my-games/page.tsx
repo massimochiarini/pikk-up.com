@@ -30,16 +30,15 @@ export default function MyGamesPage() {
         .from('games')
         .select('*')
         .eq('created_by', user.id)
-        .order('date', { ascending: true })
+        .order('game_date', { ascending: true })
 
       if (hostedError) throw hostedError
 
-      // Fetch games I've RSVPed to
+      // Fetch games I've RSVPed to (no status filter needed)
       const { data: rsvpData, error: rsvpError } = await supabase
         .from('rsvps')
         .select('game_id')
         .eq('user_id', user.id)
-        .eq('status', 'going')
 
       if (rsvpError) throw rsvpError
 
@@ -51,7 +50,7 @@ export default function MyGamesPage() {
           .select('*')
           .in('id', gameIds)
           .neq('created_by', user.id)
-          .order('date', { ascending: true })
+          .order('game_date', { ascending: true })
 
         if (joinedError) throw joinedError
         setJoinedGames(joinedData || [])
