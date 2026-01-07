@@ -34,16 +34,6 @@ export function Navbar() {
               Home
             </Link>
             <Link
-              href="/my-games"
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                isActive('/my-games')
-                  ? 'bg-neon-green text-navy'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              My Games
-            </Link>
-            <Link
               href="/messages"
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 isActive('/messages')
@@ -116,15 +106,6 @@ export function Navbar() {
           >
             <span className="text-xl">🏠</span>
             <span className="text-xs">Home</span>
-          </Link>
-          <Link
-            href="/my-games"
-            className={`flex flex-col items-center px-3 py-1 rounded ${
-              isActive('/my-games') ? 'text-neon-green' : 'text-gray-600'
-            }`}
-          >
-            <span className="text-xl">🎾</span>
-            <span className="text-xs">My Games</span>
           </Link>
           <Link
             href="/messages"
