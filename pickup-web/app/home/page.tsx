@@ -11,9 +11,11 @@ export default function HomePage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [games, setGames] = useState<Game[]>([])
+  const [joinedGames, setJoinedGames] = useState<Game[]>([])
+  const [hostingGames, setHostingGames] = useState<Game[]>([])
   const [filteredGames, setFilteredGames] = useState<Game[]>([])
   const [gamesLoading, setGamesLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'today'>('all')
+  const [filter, setFilter] = useState<'upcoming' | 'joined' | 'hosting'>('upcoming')
 
   useEffect(() => {
     if (!loading && !user) {
@@ -32,16 +34,80 @@ export default function HomePage() {
   }, [games, filter])
 
   const fetchGames = async () => {
+    if (!user) return
+
     try {
       setGamesLoading(true)
+      const today = new Date().toISOString().split('T')[0]
+      const now = new Date()
+      
+      // Fetch all upcoming games
       const { data, error } = await supabase
         .from('games')
         .select('*')
-        .order('date', { ascending: true })
-        .order('time', { ascending: true })
+        .gte('game_date', today)
+        .order('game_date', { ascending: true })
+        .order('start_time', { ascending: true })
 
       if (error) throw error
-      setGames(data || [])
+      
+      // Filter out games that have already passed (including time)
+      const upcomingGames = (data || []).filter(game => {
+        const gameDateTime = new Date(`${game.game_date}T${game.start_time}`)
+        return gameDateTime > now
+      })
+      
+      setGames(upcomingGames)
+
+      // Fetch games I'm hosting (only future games)
+      const { data: hostedData, error: hostedError } = await supabase
+        .from('games')
+        .select('*')
+        .eq('created_by', user.id)
+        .gte('game_date', today)
+        .order('game_date', { ascending: true })
+
+      if (hostedError) throw hostedError
+
+      // Filter out games that have already passed (including time)
+      const upcomingHostedGames = (hostedData || []).filter(game => {
+        const gameDateTime = new Date(`${game.game_date}T${game.start_time}`)
+        return gameDateTime > now
+      })
+
+      setHostingGames(upcomingHostedGames)
+
+      // Fetch games I've RSVPed to
+      const { data: rsvpData, error: rsvpError } = await supabase
+        .from('rsvps')
+        .select('game_id')
+        .eq('user_id', user.id)
+
+      if (rsvpError) throw rsvpError
+
+      const gameIds = rsvpData.map(rsvp => rsvp.game_id)
+
+      if (gameIds.length > 0) {
+        const { data: joinedData, error: joinedError } = await supabase
+          .from('games')
+          .select('*')
+          .in('id', gameIds)
+          .neq('created_by', user.id)
+          .gte('game_date', today)
+          .order('game_date', { ascending: true })
+
+        if (joinedError) throw joinedError
+        
+        // Filter out games that have already passed (including time)
+        const upcomingJoinedGames = (joinedData || []).filter(game => {
+          const gameDateTime = new Date(`${game.game_date}T${game.start_time}`)
+          return gameDateTime > now
+        })
+        
+        setJoinedGames(upcomingJoinedGames)
+      } else {
+        setJoinedGames([])
+      }
     } catch (error) {
       console.error('Error fetching games:', error)
     } finally {
@@ -50,21 +116,13 @@ export default function HomePage() {
   }
 
   const filterGames = () => {
-    const now = new Date()
-    const today = now.toISOString().split('T')[0]
-
-    let filtered = games
-
-    if (filter === 'today') {
-      filtered = games.filter(game => game.date === today)
-    } else if (filter === 'upcoming') {
-      filtered = games.filter(game => {
-        const gameDate = new Date(game.date)
-        return gameDate >= now
-      })
+    if (filter === 'upcoming') {
+      setFilteredGames(games)
+    } else if (filter === 'joined') {
+      setFilteredGames(joinedGames)
+    } else if (filter === 'hosting') {
+      setFilteredGames(hostingGames)
     }
-
-    setFilteredGames(filtered)
   }
 
   if (loading || !user) {
@@ -83,25 +141,19 @@ export default function HomePage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-navy mb-2">
-            Discover Games
+            {filter === 'upcoming' && 'Discover Games'}
+            {filter === 'joined' && 'Joined Games'}
+            {filter === 'hosting' && 'Hosting Games'}
           </h1>
           <p className="text-gray-600">
-            Find and join pickleball games in your area
+            {filter === 'upcoming' && 'Find and join pickleball games in your area'}
+            {filter === 'joined' && 'View games you\'re attending'}
+            {filter === 'hosting' && 'Manage games you\'re hosting'}
           </p>
         </div>
 
         {/* Filters */}
         <div className="flex gap-2 mb-6 overflow-x-auto">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-              filter === 'all'
-                ? 'bg-neon-green text-navy'
-                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-            }`}
-          >
-            All Games
-          </button>
           <button
             onClick={() => setFilter('upcoming')}
             className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
@@ -113,14 +165,24 @@ export default function HomePage() {
             Upcoming
           </button>
           <button
-            onClick={() => setFilter('today')}
+            onClick={() => setFilter('joined')}
             className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-              filter === 'today'
+              filter === 'joined'
                 ? 'bg-neon-green text-navy'
                 : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
             }`}
           >
-            Today
+            Joined
+          </button>
+          <button
+            onClick={() => setFilter('hosting')}
+            className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
+              filter === 'hosting'
+                ? 'bg-neon-green text-navy'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+            }`}
+          >
+            Hosting
           </button>
         </div>
 
