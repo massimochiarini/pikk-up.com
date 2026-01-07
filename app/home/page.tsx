@@ -34,14 +34,25 @@ export default function HomePage() {
   const fetchGames = async () => {
     try {
       setGamesLoading(true)
+      const today = new Date().toISOString().split('T')[0]
+      
       const { data, error } = await supabase
         .from('games')
         .select('*')
+        .gte('game_date', today)
         .order('game_date', { ascending: true })
         .order('start_time', { ascending: true })
 
       if (error) throw error
-      setGames(data || [])
+      
+      // Filter out games that have already passed (including time)
+      const now = new Date()
+      const upcomingGames = (data || []).filter(game => {
+        const gameDateTime = new Date(`${game.game_date}T${game.start_time}`)
+        return gameDateTime > now
+      })
+      
+      setGames(upcomingGames)
     } catch (error) {
       console.error('Error fetching games:', error)
     } finally {
@@ -58,11 +69,13 @@ export default function HomePage() {
     if (filter === 'today') {
       filtered = games.filter(game => game.game_date === today)
     } else if (filter === 'upcoming') {
+      // Already filtered in fetchGames, but keep this for consistency
       filtered = games.filter(game => {
-        const gameDate = new Date(game.game_date)
-        return gameDate >= now
+        const gameDateTime = new Date(`${game.game_date}T${game.start_time}`)
+        return gameDateTime > now
       })
     }
+    // 'all' shows all games (which are already filtered to be in the future)
 
     setFilteredGames(filtered)
   }

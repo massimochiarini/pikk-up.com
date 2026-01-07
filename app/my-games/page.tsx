@@ -24,15 +24,24 @@ export default function MyGamesPage() {
 
     try {
       setLoading(true)
+      const today = new Date().toISOString().split('T')[0]
+      const now = new Date()
 
-      // Fetch games I'm hosting
+      // Fetch games I'm hosting (only future games)
       const { data: hostedData, error: hostedError } = await supabase
         .from('games')
         .select('*')
         .eq('created_by', user.id)
+        .gte('game_date', today)
         .order('game_date', { ascending: true })
 
       if (hostedError) throw hostedError
+
+      // Filter out games that have already passed (including time)
+      const upcomingHostedGames = (hostedData || []).filter(game => {
+        const gameDateTime = new Date(`${game.game_date}T${game.start_time}`)
+        return gameDateTime > now
+      })
 
       // Fetch games I've RSVPed to (no status filter needed)
       const { data: rsvpData, error: rsvpError } = await supabase
@@ -50,13 +59,21 @@ export default function MyGamesPage() {
           .select('*')
           .in('id', gameIds)
           .neq('created_by', user.id)
+          .gte('game_date', today)
           .order('game_date', { ascending: true })
 
         if (joinedError) throw joinedError
-        setJoinedGames(joinedData || [])
+        
+        // Filter out games that have already passed (including time)
+        const upcomingJoinedGames = (joinedData || []).filter(game => {
+          const gameDateTime = new Date(`${game.game_date}T${game.start_time}`)
+          return gameDateTime > now
+        })
+        
+        setJoinedGames(upcomingJoinedGames)
       }
 
-      setMyGames(hostedData || [])
+      setMyGames(upcomingHostedGames)
     } catch (error) {
       console.error('Error fetching games:', error)
     } finally {
