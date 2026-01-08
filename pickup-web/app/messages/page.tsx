@@ -330,60 +330,53 @@ export default function MessagesPage() {
   const sendMessage = async () => {
     if (!user || !selectedChat || !newMessage.trim()) return
 
+    const messageContent = newMessage.trim()
     setSendingMessage(true)
+    
+    // Clear input immediately for better UX
+    setNewMessage('')
+    
     try {
       if (selectedChat.type === 'group') {
-        console.log('Sending group message:', {
-          group_chat_id: selectedChat.groupChat.id,
-          sender_id: user.id,
-          content: newMessage.trim()
-        })
-        
         const { data, error } = await supabase.from('group_messages').insert({
           group_chat_id: selectedChat.groupChat.id,
           sender_id: user.id,
-          content: newMessage.trim(),
+          content: messageContent,
           created_at: new Date().toISOString(),
-        })
+        }).select().single()
 
         if (error) {
           console.error('Group message error:', error)
           throw error
         }
         
-        console.log('Group message sent successfully:', data)
+        // Add message to local state immediately
+        if (data) {
+          setMessages((prev) => [...prev, data as GroupMessage])
+        }
       } else {
-        console.log('Sending conversation message:', {
-          conversation_id: selectedChat.conversation.id,
-          sender_id: user.id,
-          content: newMessage.trim()
-        })
-        
         const { data, error } = await supabase.from('messages').insert({
           conversation_id: selectedChat.conversation.id,
           sender_id: user.id,
-          content: newMessage.trim(),
+          content: messageContent,
           created_at: new Date().toISOString(),
-        })
+        }).select().single()
 
         if (error) {
           console.error('Conversation message error:', error)
-          console.error('Error details:', {
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code
-          })
           throw error
         }
         
-        console.log('Conversation message sent successfully:', data)
+        // Add message to local state immediately
+        if (data) {
+          setMessages((prev) => [...prev, data as Message])
+        }
       }
-
-      setNewMessage('')
     } catch (error: any) {
       console.error('Error sending message:', error)
       alert(`Failed to send message: ${error.message || 'Unknown error'}`)
+      // Restore the message on error
+      setNewMessage(messageContent)
     } finally {
       setSendingMessage(false)
     }
@@ -571,7 +564,8 @@ export default function MessagesPage() {
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && !sendingMessage && sendMessage()}
                 placeholder="Type a message..."
-                className="input-field flex-1"
+                className="input-field flex-1 text-gray-900"
+                style={{ color: '#1f2937' }}
                 disabled={sendingMessage}
               />
               <button
