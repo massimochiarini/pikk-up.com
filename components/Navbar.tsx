@@ -53,16 +53,6 @@ export function Navbar() {
             >
               Messages
             </Link>
-            <Link
-              href="/profile"
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                isActive('/profile')
-                  ? 'bg-neon-green text-navy'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              Profile
-            </Link>
           </div>
 
           {/* Book Session Button & User Menu */}
@@ -134,15 +124,6 @@ export function Navbar() {
           >
             <span className="text-xl">💬</span>
             <span className="text-xs">Messages</span>
-          </Link>
-          <Link
-            href="/profile"
-            className={`flex flex-col items-center px-3 py-1 rounded ${
-              isActive('/profile') ? 'text-neon-green' : 'text-gray-600'
-            }`}
-          >
-            <span className="text-xl">👤</span>
-            <span className="text-xs">Profile</span>
           </Link>
         </div>
       </div>

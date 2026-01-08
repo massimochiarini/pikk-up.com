@@ -32,7 +32,7 @@ export default function CreateGamePage() {
           created_by: user.id,
           sport: 'pickleball',
           venue_name: 'Pick Up Studio',
-          address: '2500 Rear South Miami Avenue',
+          address: '2500 South Miami Avenue',
           game_date: date,
           start_time: time,
           max_players: 15,
@@ -111,14 +111,14 @@ export default function CreateGamePage() {
             </h2>
           </div>
           <a
-            href="https://www.google.com/maps/search/?api=1&query=2500+Rear+South+Miami+Avenue"
+            href="https://www.google.com/maps/search/?api=1&query=2500+South+Miami+Avenue"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-navy hover:text-white transition-colors group"
           >
             <span className="text-2xl">📍</span>
             <span className="text-lg font-semibold underline decoration-2 underline-offset-4 group-hover:decoration-white">
-              2500 Rear South Miami Ave
+              2500 South Miami Ave
             </span>
           </a>
         </div>

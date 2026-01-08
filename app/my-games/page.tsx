@@ -110,11 +110,11 @@ export default function MyClassesPage() {
         {!loading && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="text-sm text-gray-600 mb-1">Upcoming Sessions</div>
+              <div className="text-sm text-gray-600 mb-1">Income</div>
               <div className="text-3xl font-bold text-navy">{upcomingClasses.length}</div>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="text-sm text-gray-600 mb-1">Past Sessions</div>
+              <div className="text-sm text-gray-600 mb-1">Students Taught</div>
               <div className="text-3xl font-bold text-navy">{pastClasses.length}</div>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
