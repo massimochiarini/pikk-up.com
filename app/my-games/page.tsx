@@ -110,11 +110,11 @@ export default function MyClassesPage() {
         {!loading && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="text-sm text-gray-600 mb-1">Income</div>
+              <div className="text-sm text-gray-600 mb-1">Upcoming Sessions</div>
               <div className="text-3xl font-bold text-navy">{upcomingClasses.length}</div>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="text-sm text-gray-600 mb-1">Students Taught</div>
+              <div className="text-sm text-gray-600 mb-1">Past Sessions</div>
               <div className="text-3xl font-bold text-navy">{pastClasses.length}</div>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -134,7 +134,7 @@ export default function MyClassesPage() {
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            Income ({upcomingClasses.length})
+            Upcoming ({upcomingClasses.length})
           </button>
           <button
             onClick={() => setActiveTab('past')}
@@ -144,7 +144,7 @@ export default function MyClassesPage() {
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            Students Taught ({pastClasses.length})
+            Past Sessions ({pastClasses.length})
           </button>
         </div>
 
@@ -161,7 +161,7 @@ export default function MyClassesPage() {
                   <div className="text-center py-20">
                     <div className="text-6xl mb-4">📅</div>
                     <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                      No income
+                      No upcoming sessions
                     </h3>
                     <p className="text-gray-500 mb-6">
                       Browse available sessions to claim your next time slot
@@ -248,7 +248,7 @@ export default function MyClassesPage() {
                   <div className="text-center py-20">
                     <div className="text-6xl mb-4">📚</div>
                     <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                      No students taught yet
+                      No past sessions yet
                     </h3>
                     <p className="text-gray-500">
                       Your completed classes will appear here

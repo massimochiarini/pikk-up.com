@@ -103,6 +103,26 @@ export default function CreateGamePage() {
           </p>
         </div>
 
+        {/* Studio Info Card */}
+        <div className="bg-gradient-to-br from-neon-green to-sky-blue rounded-2xl p-8 mb-8 text-center shadow-lg">
+          <div className="mb-4">
+            <h2 className="text-4xl md:text-5xl font-black text-navy tracking-tight" style={{ fontFamily: 'Georgia, serif', textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}>
+              Pick<span className="italic">Up</span> Studio
+            </h2>
+          </div>
+          <a
+            href="https://www.google.com/maps/search/?api=1&query=2500+Rear+South+Miami+Avenue"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-navy hover:text-white transition-colors group"
+          >
+            <span className="text-2xl">📍</span>
+            <span className="text-lg font-semibold underline decoration-2 underline-offset-4 group-hover:decoration-white">
+              2500 Rear South Miami Ave
+            </span>
+          </a>
+        </div>
+
         <div className="card">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (

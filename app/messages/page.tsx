@@ -24,6 +24,7 @@ export default function MessagesPage() {
   const [members, setMembers] = useState<Profile[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [sendingMessage, setSendingMessage] = useState(false)
+  const [deletingChatId, setDeletingChatId] = useState<string | null>(null)
 
   useEffect(() => {
     if (user) {
@@ -188,6 +189,41 @@ export default function MessagesPage() {
     return member ? member.first_name : 'Unknown'
   }
 
+  const deleteChat = async (chatId: string, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent opening the chat
+    
+    if (!user) return
+    
+    if (!confirm('Are you sure you want to delete this chat? This will remove you from the conversation.')) {
+      return
+    }
+
+    setDeletingChatId(chatId)
+    try {
+      // Remove user from group chat
+      const { error } = await supabase
+        .from('group_chat_members')
+        .delete()
+        .eq('group_chat_id', chatId)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      // Refresh the chat list
+      await fetchGroupChats()
+      
+      // If this was the selected chat, clear selection
+      if (selectedChat?.groupChat.id === chatId) {
+        setSelectedChat(null)
+      }
+    } catch (error) {
+      console.error('Error deleting chat:', error)
+      alert('Failed to delete chat')
+    } finally {
+      setDeletingChatId(null)
+    }
+  }
+
   if (selectedChat) {
     // Chat view
     return (
@@ -330,7 +366,7 @@ export default function MessagesPage() {
                 <div
                   key={chat.groupChat.id}
                   onClick={() => setSelectedChat(chat)}
-                  className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="p-4 hover:bg-gray-50 transition-colors cursor-pointer relative group"
                 >
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sky-blue to-neon-green flex items-center justify-center text-white font-bold">
@@ -341,11 +377,25 @@ export default function MessagesPage() {
                         <h3 className="font-semibold text-gray-900 truncate">
                           {chat.groupChat.name}
                         </h3>
-                        {chat.groupChat.last_message_at && (
-                          <span className="text-xs text-gray-500">
-                            {format(parseISO(chat.groupChat.last_message_at), 'MMM d')}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {chat.groupChat.last_message_at && (
+                            <span className="text-xs text-gray-500">
+                              {format(parseISO(chat.groupChat.last_message_at), 'MMM d')}
+                            </span>
+                          )}
+                          <button
+                            onClick={(e) => deleteChat(chat.groupChat.id, e)}
+                            disabled={deletingChatId === chat.groupChat.id}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-50 rounded-lg disabled:opacity-50"
+                            title="Delete chat"
+                          >
+                            {deletingChatId === chat.groupChat.id ? (
+                              <span className="text-xs text-gray-500">...</span>
+                            ) : (
+                              <span className="text-red-600">🗑️</span>
+                            )}
+                          </button>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">{chat.memberCount} members</span>
