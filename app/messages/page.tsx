@@ -583,7 +583,7 @@ export default function MessagesPage() {
           </button>
         </div>
 
-        <div className="card">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-0">
           {loading ? (
             <div className="flex justify-center items-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon-green"></div>
