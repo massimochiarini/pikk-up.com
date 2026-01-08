@@ -10,31 +10,14 @@ export default function CreateGamePage() {
   const { user } = useAuth()
   const router = useRouter()
 
-  const [sport, setSport] = useState('Pickleball')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
-  const [location, setLocation] = useState('')
-  const [locationLat, setLocationLat] = useState<number | null>(null)
-  const [locationLng, setLocationLng] = useState<number | null>(null)
+  const [venue, setVenue] = useState('')
+  const [address, setAddress] = useState('')
   const [description, setDescription] = useState('')
-  const [skillLevel, setSkillLevel] = useState('All Levels')
-  const [playersNeeded, setPlayersNeeded] = useState(4)
+  const [skillLevel, setSkillLevel] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-
-  const handleGetLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocationLat(position.coords.latitude)
-          setLocationLng(position.coords.longitude)
-        },
-        (error) => {
-          console.error('Error getting location:', error)
-        }
-      )
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,20 +27,21 @@ export default function CreateGamePage() {
     setError('')
 
     try {
+      // Step 1: Create the game
       const { data, error } = await supabase
         .from('games')
         .insert({
           created_by: user.id,
-          sport,
-          date,
-          time,
-          location,
-          location_lat: locationLat,
-          location_lng: locationLng,
+          sport: 'pickleball',
+          venue_name: venue,
+          address: address || venue,
+          game_date: date,
+          start_time: time,
+          max_players: 4,
+          cost_cents: 0,
           description: description || null,
-          skill_level: skillLevel,
-          players_needed: playersNeeded,
-          current_players: 1,
+          skill_level: skillLevel || null,
+          is_private: false,
           created_at: new Date().toISOString(),
         })
         .select()
@@ -65,15 +49,39 @@ export default function CreateGamePage() {
 
       if (error) throw error
 
-      // Auto-RSVP the creator as "going"
+      // Step 2: Auto-RSVP the creator
       await supabase
         .from('rsvps')
         .insert({
           game_id: data.id,
           user_id: user.id,
-          status: 'going',
           created_at: new Date().toISOString(),
         })
+
+      // Step 3: Create group chat for the game
+      const { data: groupChatData, error: groupChatError } = await supabase
+        .from('group_chats')
+        .insert({
+          game_id: data.id,
+          name: venue,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+
+      if (groupChatError) {
+        console.error('Error creating group chat:', groupChatError)
+        // Don't fail the entire operation if group chat creation fails
+      } else if (groupChatData) {
+        // Step 4: Add creator as first member of group chat
+        await supabase
+          .from('group_chat_members')
+          .insert({
+            group_chat_id: groupChatData.id,
+            user_id: user.id,
+            joined_at: new Date().toISOString(),
+          })
+      }
 
       router.push(`/game/${data.id}`)
     } catch (error: any) {
@@ -90,10 +98,10 @@ export default function CreateGamePage() {
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-navy mb-2">
-            Create a Game
+            Book a Session
           </h1>
           <p className="text-gray-600">
-            Host a pickleball game and invite others to join
+            Schedule a class session and invite students to join
           </p>
         </div>
 
@@ -105,30 +113,41 @@ export default function CreateGamePage() {
               </div>
             )}
 
-            {/* Sport */}
+            {/* Venue Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sport
+                Studio/Venue Name *
               </label>
-              <select
-                value={sport}
-                onChange={(e) => setSport(e.target.value)}
+              <input
+                type="text"
+                value={venue}
+                onChange={(e) => setVenue(e.target.value)}
                 className="input-field"
+                placeholder="e.g., Sunrise Yoga Studio"
                 required
-              >
-                <option>Pickleball</option>
-                <option>Tennis</option>
-                <option>Basketball</option>
-                <option>Soccer</option>
-                <option>Volleyball</option>
-              </select>
+              />
+            </div>
+
+            {/* Address */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Address
+              </label>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="input-field"
+                placeholder="e.g., 6301 NE 4th Ave, Miami, FL 33138"
+              />
+              <p className="text-xs text-gray-500 mt-1">Optional - helps players find the venue</p>
             </div>
 
             {/* Date & Time */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date
+                  Date *
                 </label>
                 <input
                   type="date"
@@ -142,45 +161,26 @@ export default function CreateGamePage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Time
+                  Time *
                 </label>
-                <input
-                  type="time"
+                <select
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
                   className="input-field"
                   required
-                />
-              </div>
-            </div>
-
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Location
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="input-field flex-1"
-                  placeholder="Enter address or venue name"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={handleGetLocation}
-                  className="btn-outline px-4 whitespace-nowrap"
                 >
-                  📍 Use My Location
-                </button>
+                  <option value="">Select time</option>
+                  {Array.from({ length: 48 }, (_, i) => {
+                    const hour = Math.floor(i / 2)
+                    const minute = i % 2 === 0 ? '00' : '30'
+                    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
+                    const period = hour < 12 ? 'AM' : 'PM'
+                    const value = `${String(hour).padStart(2, '0')}:${minute}:00`
+                    const display = `${displayHour}:${minute} ${period}`
+                    return <option key={value} value={value}>{display}</option>
+                  })}
+                </select>
               </div>
-              {locationLat && locationLng && (
-                <p className="text-xs text-green-600 mt-1">
-                  ✓ Location coordinates captured
-                </p>
-              )}
             </div>
 
             {/* Skill Level */}
@@ -193,27 +193,22 @@ export default function CreateGamePage() {
                 onChange={(e) => setSkillLevel(e.target.value)}
                 className="input-field"
               >
-                <option>All Levels</option>
-                <option>Beginner</option>
-                <option>Intermediate</option>
-                <option>Advanced</option>
+                <option value="">All Levels</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
               </select>
             </div>
 
-            {/* Players Needed */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Total Players Needed (including you)
-              </label>
-              <input
-                type="number"
-                value={playersNeeded}
-                onChange={(e) => setPlayersNeeded(parseInt(e.target.value))}
-                className="input-field"
-                min={2}
-                max={20}
-                required
-              />
+            {/* Capacity Info */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2">
+                <span className="text-2xl">👥</span>
+                <div>
+                  <div className="font-semibold text-gray-900">4 Participants Max</div>
+                  <div className="text-sm text-gray-600">Small group session</div>
+                </div>
+              </div>
             </div>
 
             {/* Description */}
@@ -226,7 +221,7 @@ export default function CreateGamePage() {
                 onChange={(e) => setDescription(e.target.value)}
                 className="input-field"
                 rows={4}
-                placeholder="Add any additional details about the game..."
+                placeholder="Add any additional details about the session..."
               />
             </div>
 
@@ -244,7 +239,7 @@ export default function CreateGamePage() {
                 disabled={loading}
                 className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Creating...' : 'Create Game'}
+                {loading ? 'Booking...' : 'Book Session'}
               </button>
             </div>
           </form>
@@ -253,4 +248,3 @@ export default function CreateGamePage() {
     </div>
   )
 }
-

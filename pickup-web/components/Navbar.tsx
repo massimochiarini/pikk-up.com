@@ -34,6 +34,16 @@ export function Navbar() {
               Home
             </Link>
             <Link
+              href="/my-games"
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                isActive('/my-games')
+                  ? 'bg-neon-green text-navy'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              My Classes
+            </Link>
+            <Link
               href="/messages"
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 isActive('/messages')
@@ -55,13 +65,13 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* Create Game Button & User Menu */}
+          {/* Book Session Button & User Menu */}
           <div className="flex items-center space-x-4">
             <Link
               href="/create-game"
               className="btn-primary text-sm px-4 py-2"
             >
-              + Create Game
+              + Book Session
             </Link>
             
             <div className="relative group">
@@ -78,6 +88,12 @@ export function Navbar() {
                   className="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100"
                 >
                   View Profile
+                </Link>
+                <Link
+                  href="/analytics"
+                  className="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100"
+                >
+                  📊 Analytics
                 </Link>
                 <Link
                   href="/settings"
@@ -106,6 +122,24 @@ export function Navbar() {
           >
             <span className="text-xl">🏠</span>
             <span className="text-xs">Home</span>
+          </Link>
+          <Link
+            href="/my-games"
+            className={`flex flex-col items-center px-3 py-1 rounded ${
+              isActive('/my-games') ? 'text-neon-green' : 'text-gray-600'
+            }`}
+          >
+            <span className="text-xl">📚</span>
+            <span className="text-xs">Classes</span>
+          </Link>
+          <Link
+            href="/analytics"
+            className={`flex flex-col items-center px-3 py-1 rounded ${
+              isActive('/analytics') ? 'text-neon-green' : 'text-gray-600'
+            }`}
+          >
+            <span className="text-xl">📊</span>
+            <span className="text-xs">Analytics</span>
           </Link>
           <Link
             href="/messages"
