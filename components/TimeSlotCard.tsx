@@ -62,9 +62,9 @@ export function TimeSlotCard({
         </div>
       ) : session ? (
         <div className="text-center">
-          {session.description && (
+          {session.custom_title && (
             <div className="text-red-700 text-xs font-semibold mb-1 line-clamp-1">
-              {session.description.split('\n')[0]}
+              {session.custom_title}
             </div>
           )}
           {instructorName && (

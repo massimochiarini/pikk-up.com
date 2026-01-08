@@ -36,6 +36,9 @@ export type Game = {
   skill_level?: string
   instructor_id?: string | null
   status?: 'available' | 'booked'
+  custom_title?: string
+  latitude?: number
+  longitude?: number
   created_at: string
 }
 

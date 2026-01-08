@@ -117,13 +117,17 @@ export default function HomePage() {
     }
   }
 
-  const handleClaimSession = async (eventName: string, description: string, skillLevel: string) => {
+  const handleClaimSession = async (
+    eventName: string, 
+    description: string, 
+    skillLevel: string,
+    imageUrl: string | null,
+    latitude: number | null,
+    longitude: number | null
+  ) => {
     if (!user || !selectedSlot) return
 
     try {
-      // Combine event name and description
-      const fullDescription = eventName + (description ? `\n\n${description}` : '')
-      
       // Step 1: Create the game
       const { data: gameData, error: gameError } = await supabase
         .from('games')
@@ -133,11 +137,15 @@ export default function HomePage() {
           sport: 'yoga',
           venue_name: 'Pick Up Studio',
           address: '2500 South Miami Avenue',
+          custom_title: eventName,
           game_date: selectedSlot.date,
           start_time: selectedSlot.time,
           max_players: 15,
           cost_cents: 0,
-          description: fullDescription || null,
+          description: description || null,
+          image_url: imageUrl,
+          latitude: latitude,
+          longitude: longitude,
           skill_level: skillLevel || null,
           is_private: false,
           status: 'booked',
