@@ -36,6 +36,9 @@ export type Game = {
   skill_level?: string
   instructor_id?: string | null
   status?: 'available' | 'booked'
+  custom_title?: string
+  latitude?: number
+  longitude?: number
   created_at: string
 }
 
@@ -78,3 +81,13 @@ export type GroupChatMember = {
   joined_at: string
 }
 
+export type Conversation = {
+  id: string
+  participant_1: string
+  participant_2: string
+  context_type?: string
+  context_id?: string
+  last_message_at?: string
+  last_message_preview?: string
+  created_at: string
+}

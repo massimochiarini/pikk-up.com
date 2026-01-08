@@ -310,6 +310,21 @@ export default function GameDetailPage() {
   const isSessionBooked = game.status === 'booked' || !!game.instructor_id
   const isSessionAvailable = !isSessionBooked
 
+  // Parse event title and description
+  // Description format: "Event Name\n\nActual description"
+  const parseEventDetails = (description: string | null | undefined) => {
+    if (!description) return { title: game.sport, description: null }
+    
+    const parts = description.split('\n\n')
+    if (parts.length >= 2) {
+      return { title: parts[0], description: parts.slice(1).join('\n\n') }
+    }
+    // If no separator, use entire description as title
+    return { title: description, description: null }
+  }
+
+  const { title: eventTitle, description: eventDescription } = parseEventDetails(game.description)
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -328,7 +343,7 @@ export default function GameDetailPage() {
             <div className="flex items-center space-x-3">
               <div className="text-5xl">🎾</div>
               <div>
-                <h1 className="text-3xl font-bold text-navy capitalize">{game.sport}</h1>
+                <h1 className="text-3xl font-bold text-navy">{eventTitle}</h1>
                 {game.skill_level && (
                   <span className="text-gray-600 capitalize">{game.skill_level}</span>
                 )}
@@ -376,10 +391,10 @@ export default function GameDetailPage() {
           </div>
 
           {/* Description */}
-          {game.description && (
+          {eventDescription && (
             <div className="mb-8">
               <h3 className="font-semibold text-gray-900 mb-2">About this session</h3>
-              <p className="text-gray-700 whitespace-pre-wrap">{game.description}</p>
+              <p className="text-gray-700 whitespace-pre-wrap">{eventDescription}</p>
             </div>
           )}
 
@@ -425,66 +440,6 @@ export default function GameDetailPage() {
                   ? 'Claim this session to teach it. One instructor per session.'
                   : 'This session has been claimed by another instructor'}
               </p>
-            </div>
-          )}
-
-          {/* Class Analytics - Instructor View */}
-          {isUserInstructor && (
-            <div className="border-t border-gray-200 pt-6 mb-8">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="text-2xl">📊</span>
-                Class Analytics
-              </h3>
-              
-              <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-6 space-y-4">
-                {/* Number of Students */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">👥</span>
-                    <span className="text-gray-700 font-medium">Students Enrolled</span>
-                  </div>
-                  <div className="text-2xl font-bold text-navy">
-                    {currentPlayers}
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div className="border-t border-purple-200"></div>
-
-                {/* Total Revenue */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">💰</span>
-                    <span className="text-gray-700 font-medium">Total Revenue</span>
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">
-                    ${((game.cost_cents * currentPlayers) / 100).toFixed(2)}
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div className="border-t border-purple-200"></div>
-
-                {/* Instructor Cut */}
-                <div className="flex items-center justify-between bg-white/60 rounded-lg p-4 -mx-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">✨</span>
-                    <div>
-                      <div className="text-gray-700 font-semibold">Your Earnings</div>
-                      <div className="text-xs text-gray-500">50% instructor cut</div>
-                    </div>
-                  </div>
-                  <div className="text-3xl font-bold text-neon-green">
-                    ${((game.cost_cents * currentPlayers * 0.5) / 100).toFixed(2)}
-                  </div>
-                </div>
-
-                {/* Info Note */}
-                <div className="text-xs text-gray-600 bg-white/40 rounded p-3 mt-4">
-                  <p>💡 <strong>Revenue Breakdown:</strong> ${(game.cost_cents / 100).toFixed(2)} per student × {currentPlayers} student{currentPlayers !== 1 ? 's' : ''} = ${((game.cost_cents * currentPlayers) / 100).toFixed(2)} total</p>
-                  <p className="mt-1">As the instructor, you receive 50% of total revenue.</p>
-                </div>
-              </div>
             </div>
           )}
 

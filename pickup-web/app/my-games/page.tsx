@@ -38,8 +38,8 @@ export default function MyClassesPage() {
       if (error) throw error
 
       // Split into upcoming and past
-      const upcoming: Game[] = []
-      const past: Game[] = []
+      const upcoming = [] as Game[]
+      const past = [] as Game[]
 
       (allClasses || []).forEach(session => {
         const sessionDateTime = new Date(`${session.game_date}T${session.start_time}`)
@@ -110,11 +110,11 @@ export default function MyClassesPage() {
         {!loading && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="text-sm text-gray-600 mb-1">Upcoming Classes</div>
+              <div className="text-sm text-gray-600 mb-1">Income</div>
               <div className="text-3xl font-bold text-navy">{upcomingClasses.length}</div>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="text-sm text-gray-600 mb-1">Past Classes</div>
+              <div className="text-sm text-gray-600 mb-1">Students Taught</div>
               <div className="text-3xl font-bold text-navy">{pastClasses.length}</div>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -128,7 +128,7 @@ export default function MyClassesPage() {
         <div className="flex gap-2 mb-6 border-b border-gray-200">
           <button
             onClick={() => setActiveTab('upcoming')}
-            className={`px-6 py-3 font-semibold transition-colors ${
+            className={`px-6 py-3 font-semibold transition-all rounded-t-lg ${
               activeTab === 'upcoming'
                 ? 'text-neon-green border-b-2 border-neon-green'
                 : 'text-gray-500 hover:text-gray-700'
@@ -138,13 +138,13 @@ export default function MyClassesPage() {
           </button>
           <button
             onClick={() => setActiveTab('past')}
-            className={`px-6 py-3 font-semibold transition-colors ${
+            className={`px-6 py-3 font-semibold transition-all rounded-lg ${
               activeTab === 'past'
-                ? 'text-neon-green border-b-2 border-neon-green'
+                ? 'bg-neon-green text-black'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            Past Classes ({pastClasses.length})
+            Past Sessions ({pastClasses.length})
           </button>
         </div>
 
@@ -161,7 +161,7 @@ export default function MyClassesPage() {
                   <div className="text-center py-20">
                     <div className="text-6xl mb-4">📅</div>
                     <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                      No upcoming classes
+                      No upcoming sessions
                     </h3>
                     <p className="text-gray-500 mb-6">
                       Browse available sessions to claim your next time slot
@@ -227,12 +227,6 @@ export default function MyClassesPage() {
                             >
                               View Details
                             </Link>
-                            <Link 
-                              href={`/game/${session.id}/analytics`}
-                              className="btn-outline flex-1 text-center"
-                            >
-                              📊 Analytics
-                            </Link>
                           </div>
                         </div>
                       )
@@ -248,7 +242,7 @@ export default function MyClassesPage() {
                   <div className="text-center py-20">
                     <div className="text-6xl mb-4">📚</div>
                     <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                      No past classes yet
+                      No past sessions yet
                     </h3>
                     <p className="text-gray-500">
                       Your completed classes will appear here
@@ -301,15 +295,9 @@ export default function MyClassesPage() {
                           <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
                             <Link 
                               href={`/game/${session.id}`}
-                              className="btn-outline flex-1 text-center"
+                              className="btn-secondary flex-1 text-center"
                             >
                               View Details
-                            </Link>
-                            <Link 
-                              href={`/game/${session.id}/analytics`}
-                              className="btn-primary flex-1 text-center"
-                            >
-                              📊 View Analytics
                             </Link>
                           </div>
                         </div>
