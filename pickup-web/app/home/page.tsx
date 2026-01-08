@@ -230,22 +230,14 @@ export default function HomePage() {
     <div className="min-h-screen bg-black text-white">
       <Navbar />
 
-      {/* Hero Section */}
-      <div className="relative h-[70vh] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-10" />
-        <div 
-          className="absolute inset-0 bg-cover bg-center transform scale-105 animate-slow-zoom"
-          style={{ 
-            backgroundImage: 'url(https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2400)',
-            filter: 'brightness(0.7)'
-          }}
-        />
-        <div className="relative z-20 h-full flex flex-col items-center justify-center px-4">
-          <div className="text-center max-w-4xl mx-auto space-y-6">
-            <h1 className="text-7xl md:text-8xl font-light tracking-wide mb-4">
-              {profile?.sport_preference === 'yoga' ? 'Be Present' : 'Find Your Flow'}
+      {/* Compact Header */}
+      <div className="bg-gradient-to-b from-gray-900 to-black py-12 px-6 border-b border-gray-800">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center space-y-4">
+            <h1 className="text-5xl font-light tracking-wide">
+              {profile?.sport_preference === 'yoga' ? 'Be Present' : 'Studio Schedule'}
             </h1>
-            <p className="text-xl md:text-2xl text-gray-300 font-light tracking-wide max-w-2xl mx-auto">
+            <p className="text-xl text-gray-300 font-light">
               {format(new Date(), 'EEEE, MMMM d')}
             </p>
           </div>
@@ -253,7 +245,7 @@ export default function HomePage() {
       </div>
 
       {/* Filter Categories */}
-      <div className="sticky top-16 z-30 bg-black/95 backdrop-blur-sm border-b border-gray-800 py-6">
+      <div className="sticky top-16 z-30 bg-black/95 backdrop-blur-sm border-b border-gray-800 py-4">
         <div className="container mx-auto px-6">
           <div className="flex items-center justify-center gap-4">
             {CATEGORIES.map((category) => (
