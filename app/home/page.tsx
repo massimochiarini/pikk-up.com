@@ -164,7 +164,7 @@ export default function HomePage() {
         .from('group_chats')
         .insert({
           game_id: gameData.id,
-          name: 'Pick Up Studio',
+          name: eventName || 'Class Session',
           created_at: new Date().toISOString(),
         })
         .select()
