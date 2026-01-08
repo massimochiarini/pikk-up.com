@@ -2,20 +2,37 @@
 
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
-import { GameCard } from '@/components/GameCard'
+import { TimeSlotCard } from '@/components/TimeSlotCard'
+import { BookingModal } from '@/components/BookingModal'
 import { useEffect, useState } from 'react'
 import { supabase, type Game } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import { format, addDays, startOfWeek, endOfWeek, isSameDay, isPast, parseISO } from 'date-fns'
+
+const TIME_SLOTS = [
+  { time: '07:00:00', display: '7:00 AM', duration: '1.5h' },
+  { time: '09:00:00', display: '9:00 AM', duration: '1.5h' },
+  { time: '11:00:00', display: '11:00 AM', duration: '1.5h' },
+  { time: '13:00:00', display: '1:00 PM', duration: '1.5h' },
+  { time: '17:00:00', display: '5:00 PM', duration: '1.5h' },
+  { time: '19:00:00', display: '7:00 PM', duration: '1.5h' },
+]
 
 export default function HomePage() {
-  const { user, loading } = useAuth()
+  const { user, profile, loading } = useAuth()
   const router = useRouter()
-  const [games, setGames] = useState<Game[]>([])
-  const [joinedGames, setJoinedGames] = useState<Game[]>([])
-  const [filteredGames, setFilteredGames] = useState<Game[]>([])
+  
+  // Get Monday of current week as default
+  const getWeekStart = (date: Date) => {
+    return startOfWeek(date, { weekStartsOn: 1 }) // 1 = Monday
+  }
+  
+  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getWeekStart(new Date()))
+  const [sessions, setSessions] = useState<Game[]>([])
+  const [instructorProfiles, setInstructorProfiles] = useState<Map<string, string>>(new Map())
   const [gamesLoading, setGamesLoading] = useState(true)
-  const [filter, setFilter] = useState<'upcoming' | 'joined' | 'teaching'>('upcoming')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'available' | 'booked'>('all')
+  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -25,88 +42,157 @@ export default function HomePage() {
 
   useEffect(() => {
     if (user) {
-      fetchGames()
+      fetchWeekSessions()
     }
-  }, [user])
+  }, [user, currentWeekStart])
 
-  useEffect(() => {
-    filterGames()
-  }, [games, filter, statusFilter])
-
-  const fetchGames = async () => {
+  const fetchWeekSessions = async () => {
     if (!user) return
 
     try {
       setGamesLoading(true)
-      const today = new Date().toISOString().split('T')[0]
-      const now = new Date()
       
-      // Calculate date 30 days from now
-      const thirtyDaysFromNow = new Date()
-      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
-      const maxDate = thirtyDaysFromNow.toISOString().split('T')[0]
-      
-      // Fetch available studio sessions (unclaimed, yoga only, within 30 days)
+      // Calculate week range
+      const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 })
+      const startDate = format(currentWeekStart, 'yyyy-MM-dd')
+      const endDate = format(weekEnd, 'yyyy-MM-dd')
+
+      // Fetch all sessions for the week
       const { data, error } = await supabase
         .from('games')
         .select('*')
         .eq('sport', 'yoga')
-        .is('claimed_by', null)
-        .gte('game_date', today)
-        .lte('game_date', maxDate)
+        .gte('game_date', startDate)
+        .lte('game_date', endDate)
         .order('game_date', { ascending: true })
         .order('start_time', { ascending: true })
 
       if (error) throw error
-      
-      // Filter out sessions that have already passed (including time)
-      const upcomingSessions = (data || []).filter(game => {
-        const gameDateTime = new Date(`${game.game_date}T${game.start_time}`)
-        return gameDateTime > now
-      })
-      
-      setGames(upcomingSessions)
 
-      // Fetch sessions I've claimed as an instructor
-      const { data: claimedData, error: claimedError } = await supabase
-        .from('games')
-        .select('*')
-        .eq('claimed_by', user.id)
-        .gte('game_date', today)
-        .order('game_date', { ascending: true })
+      setSessions(data || [])
 
-      if (claimedError) throw claimedError
+      // Fetch instructor profiles for claimed sessions
+      const instructorIds = [...new Set((data || [])
+        .filter(s => s.instructor_id)
+        .map(s => s.instructor_id))]
 
-      // For now, instructors don't "join" sessions as attendees
-      // This feature is for mobile app users (students)
-      setJoinedGames([])
+      if (instructorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, first_name')
+          .in('id', instructorIds)
+
+        if (profiles) {
+          const profileMap = new Map(
+            profiles.map(p => [p.id, p.first_name])
+          )
+          setInstructorProfiles(profileMap)
+        }
+      }
     } catch (error) {
-      console.error('Error fetching games:', error)
+      console.error('Error fetching sessions:', error)
     } finally {
       setGamesLoading(false)
     }
   }
 
-  const filterGames = () => {
-    let filtered: Game[] = []
-    
-    if (filter === 'upcoming') {
-      filtered = games
-    } else if (filter === 'joined') {
-      filtered = joinedGames
-    } else if (filter === 'teaching') {
-      // Show sessions where user is the instructor
-      filtered = games.filter(game => game.instructor_id === user?.id)
-    }
+  const getSessionForSlot = (date: string, time: string): Game | null => {
+    return sessions.find(s => s.game_date === date && s.start_time === time) || null
+  }
 
-    // Apply status filter
-    if (statusFilter === 'available') {
-      filtered = filtered.filter(game => !game.instructor_id && game.status !== 'booked')
-    } else if (statusFilter === 'booked') {
-      filtered = filtered.filter(game => game.instructor_id || game.status === 'booked')
-    }
+  const isSlotAvailable = (date: string, time: string): boolean => {
+    const session = getSessionForSlot(date, time)
+    return !session || (!session.instructor_id && session.status !== 'booked')
+  }
 
-    setFilteredGames(filtered)
+  const isSlotPast = (date: string, time: string): boolean => {
+    const slotDateTime = new Date(`${date}T${time}`)
+    return isPast(slotDateTime)
+  }
+
+  const handleSlotClick = (date: string, time: string) => {
+    if (isSlotAvailable(date, time) && !isSlotPast(date, time)) {
+      setSelectedSlot({ date, time })
+      setIsModalOpen(true)
+    }
+  }
+
+  const handleClaimSession = async (description: string, skillLevel: string) => {
+    if (!user || !selectedSlot) return
+
+    try {
+      // Step 1: Create the game
+      const { data: gameData, error: gameError } = await supabase
+        .from('games')
+        .insert({
+          created_by: user.id,
+          instructor_id: user.id,
+          sport: 'yoga',
+          venue_name: 'Pick Up Studio',
+          address: '2500 South Miami Avenue',
+          game_date: selectedSlot.date,
+          start_time: selectedSlot.time,
+          max_players: 15,
+          cost_cents: 0,
+          description: description || null,
+          skill_level: skillLevel || null,
+          is_private: false,
+          status: 'booked',
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+
+      if (gameError) throw gameError
+
+      // Step 2: Create group chat
+      const { data: groupChatData, error: groupChatError } = await supabase
+        .from('group_chats')
+        .insert({
+          game_id: gameData.id,
+          name: 'Pick Up Studio',
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+
+      if (groupChatError) throw groupChatError
+
+      // Step 3: Add creator as group chat member
+      const { error: memberError } = await supabase
+        .from('group_chat_members')
+        .insert({
+          group_chat_id: groupChatData.id,
+          user_id: user.id,
+          joined_at: new Date().toISOString(),
+        })
+
+      if (memberError) throw memberError
+
+      // Refresh sessions and close modal
+      await fetchWeekSessions()
+      setIsModalOpen(false)
+      setSelectedSlot(null)
+    } catch (error) {
+      console.error('Error claiming session:', error)
+      alert('Failed to claim session. Please try again.')
+    }
+  }
+
+  const goToPreviousWeek = () => {
+    setCurrentWeekStart(prev => addDays(prev, -7))
+  }
+
+  const goToNextWeek = () => {
+    setCurrentWeekStart(prev => addDays(prev, 7))
+  }
+
+  const getWeekDays = () => {
+    const days = []
+    for (let i = 0; i < 7; i++) {
+      days.push(addDays(currentWeekStart, i))
+    }
+    return days
   }
 
   if (loading || !user) {
@@ -117,6 +203,10 @@ export default function HomePage() {
     )
   }
 
+  const weekDays = getWeekDays()
+  const weekEnd = weekDays[6]
+  const weekRangeText = `${format(currentWeekStart, 'MMM d')} - ${format(weekEnd, 'MMM d, yyyy')}`
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -125,115 +215,138 @@ export default function HomePage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-navy mb-2">
-            {filter === 'upcoming' && 'All Sessions'}
-            {filter === 'joined' && 'Joined Sessions'}
-            {filter === 'teaching' && 'Teaching Sessions'}
+            Studio Schedule
           </h1>
           <p className="text-gray-600">
-            {filter === 'upcoming' && 'Browse and claim available sessions'}
-            {filter === 'joined' && 'Sessions you\'re attending as a student'}
-            {filter === 'teaching' && 'Sessions you\'re teaching as an instructor'}
+            Click on available time slots to claim your teaching session
           </p>
         </div>
 
-        {/* Filters */}
-        <div className="mb-6 space-y-4">
-          {/* Main Filters */}
-          <div className="flex gap-2 overflow-x-auto">
-            <button
-              onClick={() => setFilter('upcoming')}
-              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                filter === 'upcoming'
-                  ? 'bg-neon-green text-navy'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-              }`}
-            >
-              All Sessions
-            </button>
-            <button
-              onClick={() => setFilter('teaching')}
-              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                filter === 'teaching'
-                  ? 'bg-neon-green text-navy'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-              }`}
-            >
-              Teaching
-            </button>
-            <button
-              onClick={() => setFilter('joined')}
-              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                filter === 'joined'
-                  ? 'bg-neon-green text-navy'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-              }`}
-            >
-              Attending
-            </button>
+        {/* Week Navigation */}
+        <div className="flex items-center justify-between mb-6 bg-white rounded-lg shadow-sm p-4">
+          <button
+            onClick={goToPreviousWeek}
+            className="btn-outline px-4 py-2 text-sm"
+          >
+            ← Previous Week
+          </button>
+          <div className="text-center">
+            <div className="text-lg font-bold text-navy">
+              Week of {weekRangeText}
+            </div>
           </div>
-
-          {/* Status Filter */}
-          <div className="flex gap-2 overflow-x-auto">
-            <span className="text-sm text-gray-600 px-2 py-1.5">Status:</span>
-            <button
-              onClick={() => setStatusFilter('all')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                statusFilter === 'all'
-                  ? 'bg-gray-800 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setStatusFilter('available')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                statusFilter === 'available'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-green-50 text-green-700 hover:bg-green-100'
-              }`}
-            >
-              Available
-            </button>
-            <button
-              onClick={() => setStatusFilter('booked')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                statusFilter === 'booked'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
-              }`}
-            >
-              Booked
-            </button>
-          </div>
+          <button
+            onClick={goToNextWeek}
+            className="btn-outline px-4 py-2 text-sm"
+          >
+            Next Week →
+          </button>
         </div>
 
-        {/* Sessions Grid */}
+        {/* Calendar Grid */}
         {gamesLoading ? (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon-green"></div>
           </div>
-        ) : filteredGames.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4">🧘</div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              {filter === 'upcoming' ? 'No available sessions' : 'No claimed sessions yet'}
-            </h3>
-            <p className="text-gray-500 mb-6">
-              {filter === 'upcoming' 
-                ? 'Check back soon for new studio availability!' 
-                : 'Browse available sessions to claim your first time slot'}
-            </p>
-          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGames.map((game) => (
-              <GameCard key={game.id} game={game} />
-            ))}
+          <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
+            <div className="min-w-[800px]">
+              {/* Day Headers */}
+              <div className="grid grid-cols-8 border-b border-gray-200">
+                <div className="p-3 font-semibold text-gray-600 text-sm">
+                  Time
+                </div>
+                {weekDays.map((day, index) => (
+                  <div
+                    key={index}
+                    className={`p-3 text-center ${
+                      isSameDay(day, new Date())
+                        ? 'bg-neon-green text-navy font-bold'
+                        : 'text-gray-700 font-semibold'
+                    }`}
+                  >
+                    <div className="text-xs uppercase">
+                      {format(day, 'EEE')}
+                    </div>
+                    <div className="text-lg">
+                      {format(day, 'd')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Time Slot Rows */}
+              {TIME_SLOTS.map((slot) => (
+                <div
+                  key={slot.time}
+                  className="grid grid-cols-8 border-b border-gray-200 last:border-b-0"
+                >
+                  {/* Time Label */}
+                  <div className="p-3 font-semibold text-gray-600 text-sm flex items-center">
+                    {slot.display}
+                  </div>
+
+                  {/* Day Slots */}
+                  {weekDays.map((day, dayIndex) => {
+                    const dateStr = format(day, 'yyyy-MM-dd')
+                    const session = getSessionForSlot(dateStr, slot.time)
+                    const isAvailable = isSlotAvailable(dateStr, slot.time)
+                    const isPastSlot = isSlotPast(dateStr, slot.time)
+                    const instructorName = session?.instructor_id
+                      ? instructorProfiles.get(session.instructor_id)
+                      : undefined
+
+                    return (
+                      <div key={dayIndex} className="p-2">
+                        <TimeSlotCard
+                          date={dateStr}
+                          time={slot.time}
+                          timeDisplay={slot.display}
+                          session={session}
+                          isAvailable={isAvailable}
+                          isPast={isPastSlot}
+                          instructorName={instructorName}
+                          onClick={() => handleSlotClick(dateStr, slot.time)}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
         )}
+
+        {/* Legend */}
+        <div className="mt-6 flex gap-6 justify-center text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-green-100 border-2 border-green-300 rounded"></div>
+            <span className="text-gray-600">Available</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-red-100 border-2 border-red-300 rounded"></div>
+            <span className="text-gray-600">Claimed</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-gray-100 border-2 border-gray-200 rounded"></div>
+            <span className="text-gray-600">Past</span>
+          </div>
+        </div>
       </div>
+
+      {/* Booking Modal */}
+      {selectedSlot && (
+        <BookingModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false)
+            setSelectedSlot(null)
+          }}
+          selectedDate={selectedSlot.date}
+          selectedTime={selectedSlot.time}
+          onClaim={handleClaimSession}
+        />
+      )}
     </div>
   )
 }
-

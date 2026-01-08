@@ -55,15 +55,8 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* Book Session Button & User Menu */}
+          {/* User Menu */}
           <div className="flex items-center space-x-4">
-            <Link
-              href="/create-game"
-              className="btn-primary text-sm px-4 py-2"
-            >
-              + Book Session
-            </Link>
-            
             <div className="relative group">
               <button className="flex items-center space-x-2 hover:opacity-80">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-blue to-neon-green flex items-center justify-center text-white font-bold">
