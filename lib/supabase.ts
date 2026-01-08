@@ -16,6 +16,7 @@ export type Profile = {
   favorite_sports?: string[]
   location_lat?: number
   location_lng?: number
+  sport_preference?: 'pickleball' | 'yoga' | 'both'
   created_at: string
 }
 
@@ -33,6 +34,8 @@ export type Game = {
   image_url?: string
   is_private: boolean
   skill_level?: string
+  instructor_id?: string | null
+  status?: 'available' | 'booked'
   created_at: string
 }
 

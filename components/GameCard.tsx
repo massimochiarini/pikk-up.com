@@ -11,9 +11,9 @@ interface GameCardProps {
 }
 
 export function GameCard({ game }: GameCardProps) {
-  const [currentPlayers, setCurrentPlayers] = useState(0)
   const gameDate = parseISO(game.game_date)
   const formattedDate = format(gameDate, 'MMM d, yyyy')
+  const isBooked = game.status === 'booked' || !!game.instructor_id
 
   // Format time (HH:mm:ss to h:mm AM/PM)
   const formatTime = (time: string) => {
@@ -24,20 +24,17 @@ export function GameCard({ game }: GameCardProps) {
     return `${displayHour}:${minutes} ${period}`
   }
 
-  useEffect(() => {
-    fetchRsvpCount()
-  }, [game.id])
-
-  const fetchRsvpCount = async () => {
-    const { count } = await supabase
-      .from('rsvps')
-      .select('*', { count: 'exact', head: true })
-      .eq('game_id', game.id)
-
-    setCurrentPlayers(count || 0)
+  // Get emoji based on sport
+  const getSportEmoji = (sport: string) => {
+    switch (sport.toLowerCase()) {
+      case 'yoga':
+        return '🧘'
+      case 'pickleball':
+        return '🏓'
+      default:
+        return '🎾'
+    }
   }
-
-  const spotsLeft = game.max_players - currentPlayers
 
   return (
     <Link href={`/game/${game.id}`}>
@@ -45,24 +42,22 @@ export function GameCard({ game }: GameCardProps) {
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <div className="text-3xl">🎾</div>
+            <div className="text-3xl">{getSportEmoji(game.sport)}</div>
             <div>
-              <h3 className="font-bold text-lg text-navy capitalize">{game.sport}</h3>
+              <h3 className="font-bold text-lg text-navy capitalize">{game.sport} Session</h3>
               {game.skill_level && (
                 <span className="text-sm text-gray-500 capitalize">{game.skill_level}</span>
               )}
             </div>
           </div>
           
-          {/* Spots Badge */}
+          {/* Status Badge */}
           <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
-            spotsLeft === 0 
-              ? 'bg-red-100 text-red-700'
-              : spotsLeft <= 2
-              ? 'bg-orange-100 text-orange-700'
+            isBooked 
+              ? 'bg-purple-100 text-purple-700'
               : 'bg-green-100 text-green-700'
           }`}>
-            {spotsLeft === 0 ? 'Full' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''}`}
+            {isBooked ? 'Booked' : 'Available'}
           </div>
         </div>
 
@@ -89,15 +84,15 @@ export function GameCard({ game }: GameCardProps) {
           </p>
         )}
 
-        {/* Players Count */}
+        {/* Capacity Info */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="flex items-center space-x-2">
             <span className="text-gray-500 text-sm">
-              {currentPlayers} / {game.max_players} players
+              Capacity: {game.max_players} students
             </span>
           </div>
           <div className="text-sky-blue font-semibold text-sm">
-            View Details →
+            {isBooked ? 'View Details' : 'Claim Session'} →
           </div>
         </div>
       </div>

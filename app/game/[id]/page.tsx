@@ -21,6 +21,8 @@ export default function GameDetailPage() {
   const [rsvpLoading, setRsvpLoading] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [claimLoading, setClaimLoading] = useState(false)
+  const [claimError, setClaimError] = useState('')
 
   useEffect(() => {
     if (gameId) {
@@ -154,6 +156,72 @@ export default function GameDetailPage() {
     }
   }
 
+  const handleClaimSession = async () => {
+    if (!user || !game) return
+
+    setClaimLoading(true)
+    setClaimError('')
+
+    try {
+      // Check if already booked
+      if (game.status === 'booked' && game.instructor_id && game.instructor_id !== user.id) {
+        setClaimError('This session has already been claimed by another instructor')
+        return
+      }
+
+      // Call the claim_session function
+      const { data, error } = await supabase.rpc('claim_session', {
+        p_game_id: gameId,
+        p_instructor_id: user.id
+      })
+
+      if (error) throw error
+
+      if (data && !data.success) {
+        setClaimError(data.error || 'Failed to claim session')
+        return
+      }
+
+      // Refresh game details
+      await fetchGameDetails()
+    } catch (error: any) {
+      console.error('Error claiming session:', error)
+      setClaimError(error.message || 'Failed to claim session')
+    } finally {
+      setClaimLoading(false)
+    }
+  }
+
+  const handleUnclaimSession = async () => {
+    if (!user || !game) return
+
+    setClaimLoading(true)
+    setClaimError('')
+
+    try {
+      // Call the unclaim_session function
+      const { data, error } = await supabase.rpc('unclaim_session', {
+        p_game_id: gameId,
+        p_instructor_id: user.id
+      })
+
+      if (error) throw error
+
+      if (data && !data.success) {
+        setClaimError(data.error || 'Failed to release session')
+        return
+      }
+
+      // Refresh game details
+      await fetchGameDetails()
+    } catch (error: any) {
+      console.error('Error releasing session:', error)
+      setClaimError(error.message || 'Failed to release session')
+    } finally {
+      setClaimLoading(false)
+    }
+  }
+
   const handleDeleteGame = async () => {
     if (!user || !game || game.created_by !== user.id) return
 
@@ -238,6 +306,9 @@ export default function GameDetailPage() {
   const currentPlayers = attendees.length
   const spotsLeft = game.max_players - currentPlayers
   const isUserGoing = userRsvp !== null
+  const isUserInstructor = user && game.instructor_id === user.id
+  const isSessionBooked = game.status === 'booked' || !!game.instructor_id
+  const isSessionAvailable = !isSessionBooked
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -297,9 +368,9 @@ export default function GameDetailPage() {
               <span className="text-2xl">👥</span>
               <div>
                 <div className="font-semibold text-gray-900">
-                  {currentPlayers} / {game.max_players} players
+                  {currentPlayers} / {game.max_players} participants
                 </div>
-                <div className="text-gray-600">Players going</div>
+                <div className="text-gray-600">Participants attending</div>
               </div>
             </div>
           </div>
@@ -307,21 +378,135 @@ export default function GameDetailPage() {
           {/* Description */}
           {game.description && (
             <div className="mb-8">
-              <h3 className="font-semibold text-gray-900 mb-2">About this game</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">About this session</h3>
               <p className="text-gray-700 whitespace-pre-wrap">{game.description}</p>
+            </div>
+          )}
+
+          {/* Instructor Claiming Section */}
+          {user && user.id !== game.created_by && (
+            <div className="border-t border-gray-200 pt-6 mb-8">
+              <h3 className="font-semibold text-gray-900 mb-3">
+                {isUserInstructor ? 'You are teaching this session' : 'Claim this session'}
+              </h3>
+              
+              {claimError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
+                  {claimError}
+                </div>
+              )}
+
+              {isUserInstructor ? (
+                <button
+                  onClick={handleUnclaimSession}
+                  disabled={claimLoading}
+                  className="w-full py-3 rounded-lg font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors disabled:opacity-50"
+                >
+                  {claimLoading ? 'Releasing...' : 'Release Session'}
+                </button>
+              ) : isSessionAvailable ? (
+                <button
+                  onClick={handleClaimSession}
+                  disabled={claimLoading}
+                  className="w-full py-3 rounded-lg font-semibold bg-neon-green hover:bg-neon-green-dark text-navy transition-colors disabled:opacity-50"
+                >
+                  {claimLoading ? 'Claiming...' : '✓ Claim as Instructor'}
+                </button>
+              ) : (
+                <div className="w-full py-3 rounded-lg font-semibold bg-purple-50 text-purple-700 text-center">
+                  Already Booked by Another Instructor
+                </div>
+              )}
+
+              <p className="text-xs text-gray-500 mt-2">
+                {isUserInstructor 
+                  ? 'Release this session to make it available for other instructors'
+                  : isSessionAvailable
+                  ? 'Claim this session to teach it. One instructor per session.'
+                  : 'This session has been claimed by another instructor'}
+              </p>
+            </div>
+          )}
+
+          {/* Class Analytics - Instructor View */}
+          {isUserInstructor && (
+            <div className="border-t border-gray-200 pt-6 mb-8">
+              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="text-2xl">📊</span>
+                Class Analytics
+              </h3>
+              
+              <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-6 space-y-4">
+                {/* Number of Students */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">👥</span>
+                    <span className="text-gray-700 font-medium">Students Enrolled</span>
+                  </div>
+                  <div className="text-2xl font-bold text-navy">
+                    {currentPlayers}
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-purple-200"></div>
+
+                {/* Total Revenue */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">💰</span>
+                    <span className="text-gray-700 font-medium">Total Revenue</span>
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    ${((game.cost_cents * currentPlayers) / 100).toFixed(2)}
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-purple-200"></div>
+
+                {/* Instructor Cut */}
+                <div className="flex items-center justify-between bg-white/60 rounded-lg p-4 -mx-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">✨</span>
+                    <div>
+                      <div className="text-gray-700 font-semibold">Your Earnings</div>
+                      <div className="text-xs text-gray-500">50% instructor cut</div>
+                    </div>
+                  </div>
+                  <div className="text-3xl font-bold text-neon-green">
+                    ${((game.cost_cents * currentPlayers * 0.5) / 100).toFixed(2)}
+                  </div>
+                </div>
+
+                {/* Info Note */}
+                <div className="text-xs text-gray-600 bg-white/40 rounded p-3 mt-4">
+                  <p>💡 <strong>Revenue Breakdown:</strong> ${(game.cost_cents / 100).toFixed(2)} per student × {currentPlayers} student{currentPlayers !== 1 ? 's' : ''} = ${((game.cost_cents * currentPlayers) / 100).toFixed(2)} total</p>
+                  <p className="mt-1">As the instructor, you receive 50% of total revenue.</p>
+                </div>
+              </div>
             </div>
           )}
 
           {/* Host Actions */}
           {user && user.id === game.created_by && (
             <div className="border-t border-gray-200 pt-6 mb-8">
-              <h3 className="font-semibold text-gray-900 mb-3">Manage Game</h3>
+              <h3 className="font-semibold text-gray-900 mb-3">Manage Session</h3>
+              
+              {isSessionBooked && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-purple-700">
+                    ✓ This session has been claimed by an instructor
+                  </p>
+                </div>
+              )}
+              
               <button
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={isDeleting}
                 className="w-full py-3 rounded-lg font-semibold bg-red-50 hover:bg-red-100 text-red-700 transition-colors disabled:opacity-50"
               >
-                {isDeleting ? 'Deleting...' : 'Delete Game'}
+                {isDeleting ? 'Canceling...' : 'Cancel Session'}
               </button>
             </div>
           )}
@@ -329,7 +514,7 @@ export default function GameDetailPage() {
           {/* RSVP Button */}
           {user && user.id !== game.created_by && (
             <div className="border-t border-gray-200 pt-6 mb-8">
-              <h3 className="font-semibold text-gray-900 mb-3">Join this game?</h3>
+              <h3 className="font-semibold text-gray-900 mb-3">Join this session?</h3>
               <button
                 onClick={handleRsvp}
                 disabled={rsvpLoading || (spotsLeft === 0 && !isUserGoing)}
@@ -339,7 +524,7 @@ export default function GameDetailPage() {
                     : 'bg-neon-green hover:bg-neon-green-dark text-navy'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {rsvpLoading ? 'Loading...' : isUserGoing ? '✓ Going - Click to Cancel' : '+ Join Game'}
+                {rsvpLoading ? 'Loading...' : isUserGoing ? '✓ Attending - Click to Cancel' : '+ Join Session'}
               </button>
             </div>
           )}
@@ -390,10 +575,10 @@ export default function GameDetailPage() {
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-xl font-bold text-navy mb-3">Delete Game?</h3>
+              <h3 className="text-xl font-bold text-navy mb-3">Cancel Session?</h3>
               <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this game? This will also delete the group chat and 
-                remove all RSVPs. This action cannot be undone.
+                Are you sure you want to cancel this session? This will also delete the group chat and 
+                remove all bookings. This action cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button
@@ -408,7 +593,7 @@ export default function GameDetailPage() {
                   disabled={isDeleting}
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
                 >
-                  {isDeleting ? 'Deleting...' : 'Delete'}
+                  {isDeleting ? 'Canceling...' : 'Cancel Session'}
                 </button>
               </div>
             </div>

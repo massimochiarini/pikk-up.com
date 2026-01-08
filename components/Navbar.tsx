@@ -41,7 +41,7 @@ export function Navbar() {
                   : 'text-gray-700 hover:bg-gray-100'
               }`}
             >
-              My Games
+              My Classes
             </Link>
             <Link
               href="/messages"
@@ -65,13 +65,13 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* Create Game Button & User Menu */}
+          {/* Book Session Button & User Menu */}
           <div className="flex items-center space-x-4">
             <Link
               href="/create-game"
               className="btn-primary text-sm px-4 py-2"
             >
-              + Create Game
+              + Book Session
             </Link>
             
             <div className="relative group">
@@ -123,8 +123,8 @@ export function Navbar() {
               isActive('/my-games') ? 'text-neon-green' : 'text-gray-600'
             }`}
           >
-            <span className="text-xl">🎾</span>
-            <span className="text-xs">My Games</span>
+            <span className="text-xl">📚</span>
+            <span className="text-xs">Classes</span>
           </Link>
           <Link
             href="/messages"

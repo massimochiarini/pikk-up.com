@@ -12,8 +12,6 @@ export default function CreateGamePage() {
 
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
-  const [venue, setVenue] = useState('')
-  const [address, setAddress] = useState('')
   const [description, setDescription] = useState('')
   const [skillLevel, setSkillLevel] = useState('')
   const [loading, setLoading] = useState(false)
@@ -33,11 +31,11 @@ export default function CreateGamePage() {
         .insert({
           created_by: user.id,
           sport: 'pickleball',
-          venue_name: venue,
-          address: address || venue,
+          venue_name: 'Pick Up Studio',
+          address: '2500 Rear South Miami Avenue',
           game_date: date,
           start_time: time,
-          max_players: 4,
+          max_players: 15,
           cost_cents: 0,
           description: description || null,
           skill_level: skillLevel || null,
@@ -63,7 +61,7 @@ export default function CreateGamePage() {
         .from('group_chats')
         .insert({
           game_id: data.id,
-          name: venue,
+          name: 'Pick Up Studio',
           created_at: new Date().toISOString(),
         })
         .select()
@@ -98,10 +96,10 @@ export default function CreateGamePage() {
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-navy mb-2">
-            Create a Game
+            Book a Session
           </h1>
           <p className="text-gray-600">
-            Host a pickleball game and invite others to join
+            Schedule a class session and invite students to join
           </p>
         </div>
 
@@ -112,36 +110,6 @@ export default function CreateGamePage() {
                 {error}
               </div>
             )}
-
-            {/* Venue Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Venue Name *
-              </label>
-              <input
-                type="text"
-                value={venue}
-                onChange={(e) => setVenue(e.target.value)}
-                className="input-field"
-                placeholder="e.g., Dinko Pickleball Courts"
-                required
-              />
-            </div>
-
-            {/* Address */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Address
-              </label>
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="input-field"
-                placeholder="e.g., 6301 NE 4th Ave, Miami, FL 33138"
-              />
-              <p className="text-xs text-gray-500 mt-1">Optional - helps players find the venue</p>
-            </div>
 
             {/* Date & Time */}
             <div className="grid grid-cols-2 gap-4">
@@ -170,15 +138,12 @@ export default function CreateGamePage() {
                   required
                 >
                   <option value="">Select time</option>
-                  {Array.from({ length: 48 }, (_, i) => {
-                    const hour = Math.floor(i / 2)
-                    const minute = i % 2 === 0 ? '00' : '30'
-                    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
-                    const period = hour < 12 ? 'AM' : 'PM'
-                    const value = `${String(hour).padStart(2, '0')}:${minute}:00`
-                    const display = `${displayHour}:${minute} ${period}`
-                    return <option key={value} value={value}>{display}</option>
-                  })}
+                  <option value="07:00:00">7:00 AM</option>
+                  <option value="09:00:00">9:00 AM</option>
+                  <option value="11:00:00">11:00 AM</option>
+                  <option value="13:00:00">1:00 PM</option>
+                  <option value="17:00:00">5:00 PM</option>
+                  <option value="19:00:00">7:00 PM</option>
                 </select>
               </div>
             </div>
@@ -200,13 +165,13 @@ export default function CreateGamePage() {
               </select>
             </div>
 
-            {/* Players Info */}
+            {/* Capacity Info */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center space-x-2">
                 <span className="text-2xl">👥</span>
                 <div>
-                  <div className="font-semibold text-gray-900">4 Players (Doubles)</div>
-                  <div className="text-sm text-gray-600">Standard pickleball doubles game</div>
+                  <div className="font-semibold text-gray-900">15 Participants Max</div>
+                  <div className="text-sm text-gray-600">Group session</div>
                 </div>
               </div>
             </div>
@@ -221,7 +186,7 @@ export default function CreateGamePage() {
                 onChange={(e) => setDescription(e.target.value)}
                 className="input-field"
                 rows={4}
-                placeholder="Add any additional details about the game..."
+                placeholder="Add any additional details about the session..."
               />
             </div>
 
@@ -239,7 +204,7 @@ export default function CreateGamePage() {
                 disabled={loading}
                 className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Creating...' : 'Create Game'}
+                {loading ? 'Booking...' : 'Book Session'}
               </button>
             </div>
           </form>
