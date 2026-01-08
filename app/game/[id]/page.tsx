@@ -312,7 +312,7 @@ export default function GameDetailPage() {
 
   // Parse event title and description
   // Description format: "Event Name\n\nActual description"
-  const parseEventDetails = (description: string | null) => {
+  const parseEventDetails = (description: string | null | undefined) => {
     if (!description) return { title: game.sport, description: null }
     
     const parts = description.split('\n\n')
