@@ -227,12 +227,6 @@ export default function MyClassesPage() {
                             >
                               View Details
                             </Link>
-                            <Link 
-                              href={`/game/${session.id}/analytics`}
-                              className="btn-outline flex-1 text-center"
-                            >
-                              📊 Analytics
-                            </Link>
                           </div>
                         </div>
                       )
