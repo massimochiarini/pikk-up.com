@@ -70,6 +70,11 @@ export function TimeSlotCard({
             <div className="text-red-700 font-semibold text-sm mb-1">
               Claimed
             </div>
+            {session.description && (
+              <div className="text-red-700 text-xs font-medium mb-1 line-clamp-2">
+                {session.description.split('\n')[0]}
+              </div>
+            )}
             {instructorName && (
               <div className="text-red-600 text-xs">
                 👤 {instructorName}

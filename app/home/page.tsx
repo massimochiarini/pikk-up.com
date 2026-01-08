@@ -117,10 +117,13 @@ export default function HomePage() {
     }
   }
 
-  const handleClaimSession = async (description: string, skillLevel: string) => {
+  const handleClaimSession = async (eventName: string, description: string, skillLevel: string) => {
     if (!user || !selectedSlot) return
 
     try {
+      // Combine event name and description
+      const fullDescription = eventName + (description ? `\n\n${description}` : '')
+      
       // Step 1: Create the game
       const { data: gameData, error: gameError } = await supabase
         .from('games')
@@ -134,7 +137,7 @@ export default function HomePage() {
           start_time: selectedSlot.time,
           max_players: 15,
           cost_cents: 0,
-          description: description || null,
+          description: fullDescription || null,
           skill_level: skillLevel || null,
           is_private: false,
           status: 'booked',
@@ -249,70 +252,81 @@ export default function HomePage() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon-green"></div>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
-            <div className="min-w-[800px]">
-              {/* Day Headers */}
-              <div className="grid grid-cols-8 border-b border-gray-200">
-                <div className="p-3 font-semibold text-gray-600 text-sm">
-                  Time
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            {/* Scrollable container */}
+            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+              <div className="inline-flex">
+                {/* Fixed Time Column */}
+                <div className="sticky left-0 z-10 bg-white border-r-2 border-gray-200">
+                  {/* Time Header */}
+                  <div className="h-24 p-4 font-semibold text-gray-600 text-sm border-b-2 border-gray-200 flex items-center justify-center">
+                    Time
+                  </div>
+                  {/* Time Labels */}
+                  {TIME_SLOTS.map((slot) => (
+                    <div
+                      key={slot.time}
+                      className="h-32 p-4 font-semibold text-gray-600 text-base flex items-center justify-center border-b border-gray-200 last:border-b-0"
+                    >
+                      {slot.display}
+                    </div>
+                  ))}
                 </div>
-                {weekDays.map((day, index) => (
-                  <div
-                    key={index}
-                    className={`p-3 text-center ${
-                      isSameDay(day, new Date())
-                        ? 'bg-neon-green text-navy font-bold'
-                        : 'text-gray-700 font-semibold'
-                    }`}
-                  >
-                    <div className="text-xs uppercase">
-                      {format(day, 'EEE')}
-                    </div>
-                    <div className="text-lg">
-                      {format(day, 'd')}
-                    </div>
-                  </div>
-                ))}
-              </div>
 
-              {/* Time Slot Rows */}
-              {TIME_SLOTS.map((slot) => (
-                <div
-                  key={slot.time}
-                  className="grid grid-cols-8 border-b border-gray-200 last:border-b-0"
-                >
-                  {/* Time Label */}
-                  <div className="p-3 font-semibold text-gray-600 text-sm flex items-center">
-                    {slot.display}
-                  </div>
-
-                  {/* Day Slots */}
-                  {weekDays.map((day, dayIndex) => {
-                    const dateStr = format(day, 'yyyy-MM-dd')
-                    const session = getSessionForSlot(dateStr, slot.time)
-                    const isAvailable = isSlotAvailable(dateStr, slot.time)
-                    const isPastSlot = isSlotPast(dateStr, slot.time)
-                    const instructorName = session?.instructor_id
-                      ? instructorProfiles.get(session.instructor_id)
-                      : undefined
-
-                    return (
-                      <div key={dayIndex} className="p-2">
-                        <TimeSlotCard
-                          date={dateStr}
-                          time={slot.time}
-                          timeDisplay={slot.display}
-                          session={session}
-                          isAvailable={isAvailable}
-                          isPast={isPastSlot}
-                          instructorName={instructorName}
-                          onClick={() => handleSlotClick(dateStr, slot.time)}
-                        />
+                {/* Day Columns */}
+                {weekDays.map((day, index) => {
+                  const dateStr = format(day, 'yyyy-MM-dd')
+                  const isToday = isSameDay(day, new Date())
+                  
+                  return (
+                    <div key={index} className="flex-shrink-0 w-80 border-r border-gray-200 last:border-r-0">
+                      {/* Day Header */}
+                      <div
+                        className={`h-24 p-4 text-center border-b-2 border-gray-200 ${
+                          isToday
+                            ? 'bg-neon-green text-navy'
+                            : 'bg-gray-50 text-gray-700'
+                        }`}
+                      >
+                        <div className="text-sm uppercase font-bold mb-1">
+                          {format(day, 'EEEE')}
+                        </div>
+                        <div className="text-3xl font-bold">
+                          {format(day, 'd')}
+                        </div>
+                        <div className="text-xs font-medium mt-1">
+                          {format(day, 'MMM yyyy')}
+                        </div>
                       </div>
-                    )
-                  })}
-                </div>
-              ))}
+
+                      {/* Time Slots for this day */}
+                      {TIME_SLOTS.map((slot) => {
+                        const session = getSessionForSlot(dateStr, slot.time)
+                        const isAvailable = isSlotAvailable(dateStr, slot.time)
+                        const isPastSlot = isSlotPast(dateStr, slot.time)
+                        const instructorName = session?.instructor_id
+                          ? instructorProfiles.get(session.instructor_id)
+                          : undefined
+
+                        return (
+                          <div key={slot.time} className="h-32 p-3 border-b border-gray-200 last:border-b-0">
+                            <TimeSlotCard
+                              date={dateStr}
+                              time={slot.time}
+                              timeDisplay={slot.display}
+                              session={session}
+                              isAvailable={isAvailable}
+                              isPast={isPastSlot}
+                              instructorName={instructorName}
+                              onClick={() => handleSlotClick(dateStr, slot.time)}
+                            />
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
         )}

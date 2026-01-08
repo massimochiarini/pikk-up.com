@@ -8,10 +8,11 @@ interface BookingModalProps {
   onClose: () => void
   selectedDate: string
   selectedTime: string
-  onClaim: (description: string, skillLevel: string) => Promise<void>
+  onClaim: (eventName: string, description: string, skillLevel: string) => Promise<void>
 }
 
 export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onClaim }: BookingModalProps) {
+  const [eventName, setEventName] = useState('')
   const [description, setDescription] = useState('')
   const [skillLevel, setSkillLevel] = useState('')
   const [loading, setLoading] = useState(false)
@@ -38,8 +39,9 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
     e.preventDefault()
     setLoading(true)
     try {
-      await onClaim(description, skillLevel)
+      await onClaim(eventName, description, skillLevel)
       // Reset form
+      setEventName('')
       setDescription('')
       setSkillLevel('')
     } catch (error) {
@@ -51,6 +53,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
 
   const handleClose = () => {
     if (!loading) {
+      setEventName('')
       setDescription('')
       setSkillLevel('')
       onClose()
@@ -85,6 +88,21 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
               <div className="text-sm mt-1 opacity-90">
                 Duration: 1.5 hours
               </div>
+            </div>
+
+            {/* Event Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Event Name *
+              </label>
+              <input
+                type="text"
+                value={eventName}
+                onChange={(e) => setEventName(e.target.value)}
+                className="input-field"
+                placeholder="e.g., Morning Vinyasa Flow"
+                required
+              />
             </div>
 
             {/* Skill Level */}
