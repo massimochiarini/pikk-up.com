@@ -46,6 +46,8 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
       setSkillLevel('')
     } catch (error) {
       console.error('Error claiming session:', error)
+      // Let the error propagate to the parent
+      throw error
     } finally {
       setLoading(false)
     }

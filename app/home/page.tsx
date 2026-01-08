@@ -148,7 +148,18 @@ export default function HomePage() {
 
       if (gameError) throw gameError
 
-      // Step 2: Create group chat
+      // Step 2: Auto-RSVP the creator
+      const { error: rsvpError } = await supabase
+        .from('rsvps')
+        .insert({
+          game_id: gameData.id,
+          user_id: user.id,
+          created_at: new Date().toISOString(),
+        })
+
+      if (rsvpError) throw rsvpError
+
+      // Step 3: Create group chat
       const { data: groupChatData, error: groupChatError } = await supabase
         .from('group_chats')
         .insert({
@@ -161,7 +172,7 @@ export default function HomePage() {
 
       if (groupChatError) throw groupChatError
 
-      // Step 3: Add creator as group chat member
+      // Step 4: Add creator as group chat member
       const { error: memberError } = await supabase
         .from('group_chat_members')
         .insert({
@@ -176,9 +187,10 @@ export default function HomePage() {
       await fetchWeekSessions()
       setIsModalOpen(false)
       setSelectedSlot(null)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error claiming session:', error)
-      alert('Failed to claim session. Please try again.')
+      const errorMessage = error?.message || error?.error_description || 'Unknown error'
+      alert(`Failed to claim session: ${errorMessage}`)
     }
   }
 
