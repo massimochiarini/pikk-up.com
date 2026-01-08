@@ -18,13 +18,14 @@ const TIME_SLOTS = [
   { time: '19:00:00', display: '7:00 PM', duration: '1.5h' },
 ]
 
+const CATEGORIES = ['All', 'Breathe', 'Move', 'Meditate']
+
 export default function HomePage() {
   const { user, profile, loading } = useAuth()
   const router = useRouter()
   
-  // Get Monday of current week as default
   const getWeekStart = (date: Date) => {
-    return startOfWeek(date, { weekStartsOn: 1 }) // 1 = Monday
+    return startOfWeek(date, { weekStartsOn: 1 })
   }
   
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getWeekStart(new Date()))
@@ -33,6 +34,7 @@ export default function HomePage() {
   const [gamesLoading, setGamesLoading] = useState(true)
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState('All')
 
   useEffect(() => {
     if (!loading && !user) {
@@ -52,12 +54,10 @@ export default function HomePage() {
     try {
       setGamesLoading(true)
       
-      // Calculate week range
       const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 })
       const startDate = format(currentWeekStart, 'yyyy-MM-dd')
       const endDate = format(weekEnd, 'yyyy-MM-dd')
 
-      // Fetch all sessions for the week
       const { data, error } = await supabase
         .from('games')
         .select('*')
@@ -71,7 +71,6 @@ export default function HomePage() {
 
       setSessions(data || [])
 
-      // Fetch instructor profiles for claimed sessions
       const instructorIds = [...new Set((data || [])
         .filter(s => s.instructor_id)
         .map(s => s.instructor_id))]
@@ -128,7 +127,6 @@ export default function HomePage() {
     if (!user || !selectedSlot) return
 
     try {
-      // Step 1: Create the game
       const { data: gameData, error: gameError } = await supabase
         .from('games')
         .insert({
@@ -156,7 +154,6 @@ export default function HomePage() {
 
       if (gameError) throw gameError
 
-      // Step 2: Auto-RSVP the creator
       const { error: rsvpError } = await supabase
         .from('rsvps')
         .insert({
@@ -167,7 +164,6 @@ export default function HomePage() {
 
       if (rsvpError) throw rsvpError
 
-      // Step 3: Create group chat
       const { data: groupChatData, error: groupChatError } = await supabase
         .from('group_chats')
         .insert({
@@ -180,7 +176,6 @@ export default function HomePage() {
 
       if (groupChatError) throw groupChatError
 
-      // Step 4: Add creator as group chat member
       const { error: memberError } = await supabase
         .from('group_chat_members')
         .insert({
@@ -191,7 +186,6 @@ export default function HomePage() {
 
       if (memberError) throw memberError
 
-      // Refresh sessions and close modal
       await fetchWeekSessions()
       setIsModalOpen(false)
       setSelectedSlot(null)
@@ -220,150 +214,209 @@ export default function HomePage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon-green"></div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-pulse text-white text-xl tracking-wider">Loading...</div>
       </div>
     )
   }
 
   const weekDays = getWeekDays()
-  const weekEnd = weekDays[6]
-  const weekRangeText = `${format(currentWeekStart, 'MMM d')} - ${format(weekEnd, 'MMM d, yyyy')}`
+  const todaySessions = sessions.filter(s => {
+    const sessionDate = new Date(s.game_date)
+    return isSameDay(sessionDate, new Date()) && s.instructor_id
+  })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black text-white">
       <Navbar />
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-navy mb-2">
-            Studio Schedule
-          </h1>
-          <p className="text-gray-600">
-            Click on available time slots to claim your teaching session
-          </p>
-        </div>
-
-        {/* Week Navigation */}
-        <div className="flex items-center justify-between mb-6 bg-white rounded-lg shadow-sm p-4">
-          <button
-            onClick={goToPreviousWeek}
-            className="btn-outline px-4 py-2 text-sm"
-          >
-            ← Previous Week
-          </button>
-          <div className="text-center">
-            <div className="text-lg font-bold text-navy">
-              Week of {weekRangeText}
-            </div>
-          </div>
-          <button
-            onClick={goToNextWeek}
-            className="btn-outline px-4 py-2 text-sm"
-          >
-            Next Week →
-          </button>
-        </div>
-
-        {/* Calendar Grid */}
-        {gamesLoading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon-green"></div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            {/* Scrollable container */}
-            <div className="overflow-x-auto">
-              <div className="inline-flex min-w-full">
-                {/* Fixed Time Column */}
-                <div className="sticky left-0 z-10 bg-white border-r-2 border-gray-200">
-                  {/* Time Header */}
-                  <div className="h-16 px-3 py-2 font-semibold text-gray-600 text-xs border-b-2 border-gray-200 flex items-center justify-center">
-                    Time
-                  </div>
-                  {/* Time Labels */}
-                  {TIME_SLOTS.map((slot) => (
-                    <div
-                      key={slot.time}
-                      className="h-20 px-2 py-1 font-semibold text-gray-700 text-sm flex items-center justify-center border-b border-gray-200 last:border-b-0"
-                    >
-                      {slot.display}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Day Columns */}
-                {weekDays.map((day, index) => {
-                  const dateStr = format(day, 'yyyy-MM-dd')
-                  const isToday = isSameDay(day, new Date())
-                  
-                  return (
-                    <div key={index} className="flex-1 min-w-[140px] border-r border-gray-200 last:border-r-0">
-                      {/* Day Header */}
-                      <div
-                        className={`h-16 px-2 py-1 text-center border-b-2 border-gray-200 ${
-                          isToday
-                            ? 'bg-neon-green text-navy'
-                            : 'bg-gray-50 text-gray-700'
-                        }`}
-                      >
-                        <div className="text-xs uppercase font-bold">
-                          {format(day, 'EEE')}
-                        </div>
-                        <div className="text-2xl font-bold">
-                          {format(day, 'd')}
-                        </div>
-                      </div>
-
-                      {/* Time Slots for this day */}
-                      {TIME_SLOTS.map((slot) => {
-                        const session = getSessionForSlot(dateStr, slot.time)
-                        const isAvailable = isSlotAvailable(dateStr, slot.time)
-                        const isPastSlot = isSlotPast(dateStr, slot.time)
-                        const instructorName = session?.instructor_id
-                          ? instructorProfiles.get(session.instructor_id)
-                          : undefined
-
-                        return (
-                          <div key={slot.time} className="h-20 p-2 border-b border-gray-200 last:border-b-0">
-                            <TimeSlotCard
-                              date={dateStr}
-                              time={slot.time}
-                              timeDisplay={slot.display}
-                              session={session}
-                              isAvailable={isAvailable}
-                              isPast={isPastSlot}
-                              instructorName={instructorName}
-                              onClick={() => handleSlotClick(dateStr, slot.time)}
-                            />
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Legend */}
-        <div className="mt-6 flex gap-6 justify-center text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-100 border-2 border-green-300 rounded"></div>
-            <span className="text-gray-600">Available</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-red-100 border-2 border-red-300 rounded"></div>
-            <span className="text-gray-600">Claimed</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-gray-100 border-2 border-gray-200 rounded"></div>
-            <span className="text-gray-600">Past</span>
+      {/* Hero Section */}
+      <div className="relative h-[70vh] overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-10" />
+        <div 
+          className="absolute inset-0 bg-cover bg-center transform scale-105 animate-slow-zoom"
+          style={{ 
+            backgroundImage: 'url(https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2400)',
+            filter: 'brightness(0.7)'
+          }}
+        />
+        <div className="relative z-20 h-full flex flex-col items-center justify-center px-4">
+          <div className="text-center max-w-4xl mx-auto space-y-6">
+            <h1 className="text-7xl md:text-8xl font-light tracking-wide mb-4">
+              {profile?.sport_preference === 'yoga' ? 'Be Present' : 'Find Your Flow'}
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-300 font-light tracking-wide max-w-2xl mx-auto">
+              {format(new Date(), 'EEEE, MMMM d')}
+            </p>
           </div>
         </div>
       </div>
+
+      {/* Filter Categories */}
+      <div className="sticky top-16 z-30 bg-black/95 backdrop-blur-sm border-b border-gray-800 py-6">
+        <div className="container mx-auto px-6">
+          <div className="flex items-center justify-center gap-4">
+            {CATEGORIES.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-6 py-2 rounded-full font-light tracking-wide transition-all duration-300 ${
+                  selectedCategory === category
+                    ? 'bg-white text-black'
+                    : 'text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Today's Sessions */}
+      {todaySessions.length > 0 && (
+        <section className="py-16 px-6 border-b border-gray-900">
+          <div className="container mx-auto max-w-7xl">
+            <div className="mb-12">
+              <h2 className="text-4xl font-light tracking-wide mb-3">Today</h2>
+              <p className="text-gray-400 text-lg font-light">Your practice awaits</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {todaySessions.map((session) => (
+                <div
+                  key={session.id}
+                  className="group relative overflow-hidden rounded-2xl bg-gray-900 hover:scale-[1.02] transition-all duration-500 cursor-pointer"
+                  onClick={() => router.push(`/game/${session.id}`)}
+                >
+                  <div className="aspect-[16/10] relative overflow-hidden">
+                    {session.image_url ? (
+                      <img
+                        src={session.image_url}
+                        alt={session.custom_title || session.venue_name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-8">
+                      <h3 className="text-3xl font-light mb-3 tracking-wide">
+                        {session.custom_title || session.venue_name}
+                      </h3>
+                      <div className="flex items-center gap-6 text-gray-300">
+                        <span className="text-lg font-light">
+                          {format(new Date(`2000-01-01T${session.start_time}`), 'h:mm a')}
+                        </span>
+                        {session.instructor_id && (
+                          <>
+                            <span className="text-gray-500">•</span>
+                            <span className="text-lg font-light">
+                              w/ {instructorProfiles.get(session.instructor_id)}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Week Schedule */}
+      <section className="py-16 px-6">
+        <div className="container mx-auto max-w-7xl">
+          <div className="mb-12 flex items-center justify-between">
+            <div>
+              <h2 className="text-4xl font-light tracking-wide mb-3">This Week</h2>
+              <p className="text-gray-400 text-lg font-light">
+                {format(currentWeekStart, 'MMM d')} - {format(addDays(currentWeekStart, 6), 'MMM d, yyyy')}
+              </p>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={goToPreviousWeek}
+                className="p-3 rounded-full border border-gray-700 hover:border-gray-500 hover:bg-gray-900 transition-all"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={goToNextWeek}
+                className="p-3 rounded-full border border-gray-700 hover:border-gray-500 hover:bg-gray-900 transition-all"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {gamesLoading ? (
+            <div className="flex justify-center items-center py-32">
+              <div className="animate-pulse text-gray-500 text-xl tracking-wider">Loading schedule...</div>
+            </div>
+          ) : (
+            <div className="space-y-16">
+              {weekDays.map((day) => {
+                const dateStr = format(day, 'yyyy-MM-dd')
+                const daySessions = sessions.filter(s => s.game_date === dateStr && s.instructor_id)
+                
+                if (daySessions.length === 0) return null
+
+                return (
+                  <div key={dateStr} className="space-y-6">
+                    <div className="flex items-baseline gap-4">
+                      <h3 className="text-3xl font-light tracking-wide">{format(day, 'EEEE')}</h3>
+                      <span className="text-gray-500 font-light">{format(day, 'MMMM d')}</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {daySessions.map((session) => (
+                        <div
+                          key={session.id}
+                          className="group relative overflow-hidden rounded-xl bg-gray-900 hover:scale-[1.02] transition-all duration-500 cursor-pointer"
+                          onClick={() => router.push(`/game/${session.id}`)}
+                        >
+                          <div className="aspect-[4/3] relative overflow-hidden">
+                            {session.image_url ? (
+                              <img
+                                src={session.image_url}
+                                alt={session.custom_title || session.venue_name}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900" />
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                            <div className="absolute bottom-0 left-0 right-0 p-6">
+                              <p className="text-sm text-gray-300 mb-2 font-light tracking-wide">
+                                {format(new Date(`2000-01-01T${session.start_time}`), 'h:mm a')}
+                              </p>
+                              <h4 className="text-xl font-light mb-2 tracking-wide line-clamp-1">
+                                {session.custom_title || session.venue_name}
+                              </h4>
+                              {session.instructor_id && (
+                                <p className="text-sm text-gray-400 font-light">
+                                  w/ {instructorProfiles.get(session.instructor_id)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Booking Modal */}
       {selectedSlot && (

@@ -128,7 +128,7 @@ export default function MyClassesPage() {
         <div className="flex gap-2 mb-6 border-b border-gray-200">
           <button
             onClick={() => setActiveTab('upcoming')}
-            className={`px-6 py-3 font-semibold transition-colors ${
+            className={`px-6 py-3 font-semibold transition-all rounded-t-lg ${
               activeTab === 'upcoming'
                 ? 'text-neon-green border-b-2 border-neon-green'
                 : 'text-gray-500 hover:text-gray-700'
@@ -138,9 +138,9 @@ export default function MyClassesPage() {
           </button>
           <button
             onClick={() => setActiveTab('past')}
-            className={`px-6 py-3 font-semibold transition-colors ${
+            className={`px-6 py-3 font-semibold transition-all rounded-lg ${
               activeTab === 'past'
-                ? 'text-neon-green border-b-2 border-neon-green'
+                ? 'bg-neon-green text-black'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -301,15 +301,9 @@ export default function MyClassesPage() {
                           <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
                             <Link 
                               href={`/game/${session.id}`}
-                              className="btn-outline flex-1 text-center"
+                              className="btn-secondary flex-1 text-center"
                             >
                               View Details
-                            </Link>
-                            <Link 
-                              href={`/game/${session.id}/analytics`}
-                              className="btn-primary flex-1 text-center"
-                            >
-                              📊 View Analytics
                             </Link>
                           </div>
                         </div>
