@@ -12,8 +12,6 @@ export default function CreateGamePage() {
 
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
-  const [venue, setVenue] = useState('')
-  const [address, setAddress] = useState('')
   const [description, setDescription] = useState('')
   const [skillLevel, setSkillLevel] = useState('')
   const [loading, setLoading] = useState(false)
@@ -33,11 +31,11 @@ export default function CreateGamePage() {
         .insert({
           created_by: user.id,
           sport: 'pickleball',
-          venue_name: venue,
-          address: address || venue,
+          venue_name: 'Pick Up Studio',
+          address: '2500 South Miami Avenue',
           game_date: date,
           start_time: time,
-          max_players: 4,
+          max_players: 15,
           cost_cents: 0,
           description: description || null,
           skill_level: skillLevel || null,
@@ -63,7 +61,7 @@ export default function CreateGamePage() {
         .from('group_chats')
         .insert({
           game_id: data.id,
-          name: venue,
+          name: 'Pick Up Studio',
           created_at: new Date().toISOString(),
         })
         .select()
@@ -105,6 +103,26 @@ export default function CreateGamePage() {
           </p>
         </div>
 
+        {/* Studio Info Card */}
+        <div className="bg-gradient-to-br from-neon-green to-sky-blue rounded-2xl p-8 mb-8 text-center shadow-lg">
+          <div className="mb-4">
+            <h2 className="text-4xl md:text-5xl font-black text-navy tracking-tight" style={{ fontFamily: 'Georgia, serif', textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}>
+              Pick<span className="italic">Up</span> Studio
+            </h2>
+          </div>
+          <a
+            href="https://www.google.com/maps/search/?api=1&query=2500+South+Miami+Avenue"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-navy hover:text-white transition-colors group"
+          >
+            <span className="text-2xl">📍</span>
+            <span className="text-lg font-semibold underline decoration-2 underline-offset-4 group-hover:decoration-white">
+              2500 South Miami Ave
+            </span>
+          </a>
+        </div>
+
         <div className="card">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
@@ -112,36 +130,6 @@ export default function CreateGamePage() {
                 {error}
               </div>
             )}
-
-            {/* Venue Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Studio/Venue Name *
-              </label>
-              <input
-                type="text"
-                value={venue}
-                onChange={(e) => setVenue(e.target.value)}
-                className="input-field"
-                placeholder="e.g., Sunrise Yoga Studio"
-                required
-              />
-            </div>
-
-            {/* Address */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Address
-              </label>
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="input-field"
-                placeholder="e.g., 6301 NE 4th Ave, Miami, FL 33138"
-              />
-              <p className="text-xs text-gray-500 mt-1">Optional - helps players find the venue</p>
-            </div>
 
             {/* Date & Time */}
             <div className="grid grid-cols-2 gap-4">
@@ -170,15 +158,12 @@ export default function CreateGamePage() {
                   required
                 >
                   <option value="">Select time</option>
-                  {Array.from({ length: 48 }, (_, i) => {
-                    const hour = Math.floor(i / 2)
-                    const minute = i % 2 === 0 ? '00' : '30'
-                    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
-                    const period = hour < 12 ? 'AM' : 'PM'
-                    const value = `${String(hour).padStart(2, '0')}:${minute}:00`
-                    const display = `${displayHour}:${minute} ${period}`
-                    return <option key={value} value={value}>{display}</option>
-                  })}
+                  <option value="07:00:00">7:00 AM</option>
+                  <option value="09:00:00">9:00 AM</option>
+                  <option value="11:00:00">11:00 AM</option>
+                  <option value="13:00:00">1:00 PM</option>
+                  <option value="17:00:00">5:00 PM</option>
+                  <option value="19:00:00">7:00 PM</option>
                 </select>
               </div>
             </div>
@@ -205,8 +190,8 @@ export default function CreateGamePage() {
               <div className="flex items-center space-x-2">
                 <span className="text-2xl">👥</span>
                 <div>
-                  <div className="font-semibold text-gray-900">4 Participants Max</div>
-                  <div className="text-sm text-gray-600">Small group session</div>
+                  <div className="font-semibold text-gray-900">15 Participants Max</div>
+                  <div className="text-sm text-gray-600">Group session</div>
                 </div>
               </div>
             </div>

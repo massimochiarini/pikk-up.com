@@ -4,63 +4,177 @@
 
 @layer base {
   :root {
-    /* Default theme colors (Pickleball) */
     --primary-color: #D3FD00;
     --primary-dark: #B8E000;
     --accent-color: #4A9EBF;
-    --background-color: #0F1B2E;
-    --text-color: #1F2937;
+    --background-color: #000000;
+    --text-color: #FFFFFF;
   }
 
   body {
-    @apply bg-white text-gray-900;
+    @apply bg-black text-white;
+    font-feature-settings: "kern" 1, "liga" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom Selection */
+  ::selection {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
   }
 }
 
 @layer components {
   .btn-primary {
-    background: var(--primary-color);
-    color: var(--text-color);
-    @apply font-semibold py-3 px-6 rounded-lg transition-all duration-200;
+    @apply bg-white text-black font-light py-4 px-8 rounded-full transition-all duration-300 tracking-wide;
   }
   
   .btn-primary:hover {
-    background: var(--primary-dark);
-  }
-  
-  /* Special handling for gradient backgrounds (Both option) */
-  [data-theme="both"] .btn-primary {
-    background: linear-gradient(135deg, #D3FD00 0%, #C4B5FD 100%);
-  }
-  
-  [data-theme="both"] .btn-primary:hover {
-    background: linear-gradient(135deg, #B8E000 0%, #A78BFA 100%);
+    @apply scale-105 shadow-2xl;
   }
   
   .btn-secondary {
-    @apply bg-navy hover:bg-navy-light text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200;
+    @apply bg-transparent border border-white/30 text-white hover:bg-white/10 font-light py-4 px-8 rounded-full transition-all duration-300 tracking-wide;
   }
   
   .btn-outline {
-    @apply border-2 border-navy text-navy hover:bg-navy hover:text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200;
+    @apply border border-gray-300 text-gray-700 hover:border-gray-500 hover:bg-gray-50 font-light py-3 px-6 rounded-full transition-all duration-300 tracking-wide;
   }
   
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200;
-    border-color: #D1D5DB;
+    @apply w-full px-6 py-4 bg-white/5 border border-gray-800 rounded-2xl outline-none transition-all duration-300 text-white placeholder-gray-500;
   }
   
   .input-field:focus {
-    border-color: transparent;
-    box-shadow: 0 0 0 2px var(--primary-color);
+    @apply border-white/30 bg-white/10;
   }
   
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+    @apply bg-black rounded-2xl border border-gray-800 p-8;
   }
   
-  .game-card {
-    @apply bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-gray-100;
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-8;
   }
 }
 
+/* Smooth Animations */
+@keyframes slow-zoom {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-slow-zoom {
+  animation: slow-zoom 20s ease-in-out infinite alternate;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out forwards;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #111;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #333 #111;
+}
+
+/* Smooth Image Loading */
+img {
+  @apply transition-opacity duration-500;
+}
+
+/* Text Truncation */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Elegant hover effects */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Backdrop blur for modals */
+.backdrop-blur-xl {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Smooth gradient backgrounds */
+.gradient-radial {
+  background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0) 70%);
+}
