@@ -12,7 +12,6 @@ export default function HomePage() {
   const router = useRouter()
   const [games, setGames] = useState<Game[]>([])
   const [joinedGames, setJoinedGames] = useState<Game[]>([])
-  const [hostingGames, setHostingGames] = useState<Game[]>([])
   const [filteredGames, setFilteredGames] = useState<Game[]>([])
   const [gamesLoading, setGamesLoading] = useState(true)
   const [filter, setFilter] = useState<'upcoming' | 'joined' | 'teaching'>('upcoming')
@@ -77,14 +76,6 @@ export default function HomePage() {
         .order('game_date', { ascending: true })
 
       if (claimedError) throw claimedError
-
-      // Filter out sessions that have already passed (including time)
-      const upcomingClaimedSessions = (claimedData || []).filter(game => {
-        const gameDateTime = new Date(`${game.game_date}T${game.start_time}`)
-        return gameDateTime > now
-      })
-
-      setHostingGames(upcomingClaimedSessions)
 
       // For now, instructors don't "join" sessions as attendees
       // This feature is for mobile app users (students)
@@ -233,14 +224,6 @@ export default function HomePage() {
                 ? 'Check back soon for new studio availability!' 
                 : 'Browse available sessions to claim your first time slot'}
             </p>
-            {filter === 'hosting' && (
-              <button
-                onClick={() => setFilter('upcoming')}
-                className="btn-primary"
-              >
-                Browse Available Sessions
-              </button>
-            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
