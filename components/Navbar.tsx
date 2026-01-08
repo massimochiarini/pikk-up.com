@@ -34,16 +34,6 @@ export function Navbar() {
               Home
             </Link>
             <Link
-              href="/my-games"
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                isActive('/my-games')
-                  ? 'bg-neon-green text-navy'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              My Classes
-            </Link>
-            <Link
               href="/messages"
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 isActive('/messages')
@@ -66,6 +56,12 @@ export function Navbar() {
               
               {/* Dropdown */}
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                <Link
+                  href="/my-games"
+                  className="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100"
+                >
+                  📚 My Classes
+                </Link>
                 <Link
                   href="/profile"
                   className="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100"

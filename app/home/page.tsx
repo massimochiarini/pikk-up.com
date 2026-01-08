@@ -266,19 +266,19 @@ export default function HomePage() {
         ) : (
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             {/* Scrollable container */}
-            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-              <div className="inline-flex">
+            <div className="overflow-x-auto">
+              <div className="inline-flex min-w-full">
                 {/* Fixed Time Column */}
                 <div className="sticky left-0 z-10 bg-white border-r-2 border-gray-200">
                   {/* Time Header */}
-                  <div className="h-24 p-4 font-semibold text-gray-600 text-sm border-b-2 border-gray-200 flex items-center justify-center">
+                  <div className="h-16 px-3 py-2 font-semibold text-gray-600 text-xs border-b-2 border-gray-200 flex items-center justify-center">
                     Time
                   </div>
                   {/* Time Labels */}
                   {TIME_SLOTS.map((slot) => (
                     <div
                       key={slot.time}
-                      className="h-32 p-4 font-semibold text-gray-600 text-base flex items-center justify-center border-b border-gray-200 last:border-b-0"
+                      className="h-20 px-2 py-1 font-semibold text-gray-700 text-sm flex items-center justify-center border-b border-gray-200 last:border-b-0"
                     >
                       {slot.display}
                     </div>
@@ -291,23 +291,20 @@ export default function HomePage() {
                   const isToday = isSameDay(day, new Date())
                   
                   return (
-                    <div key={index} className="flex-shrink-0 w-80 border-r border-gray-200 last:border-r-0">
+                    <div key={index} className="flex-1 min-w-[140px] border-r border-gray-200 last:border-r-0">
                       {/* Day Header */}
                       <div
-                        className={`h-24 p-4 text-center border-b-2 border-gray-200 ${
+                        className={`h-16 px-2 py-1 text-center border-b-2 border-gray-200 ${
                           isToday
                             ? 'bg-neon-green text-navy'
                             : 'bg-gray-50 text-gray-700'
                         }`}
                       >
-                        <div className="text-sm uppercase font-bold mb-1">
-                          {format(day, 'EEEE')}
+                        <div className="text-xs uppercase font-bold">
+                          {format(day, 'EEE')}
                         </div>
-                        <div className="text-3xl font-bold">
+                        <div className="text-2xl font-bold">
                           {format(day, 'd')}
-                        </div>
-                        <div className="text-xs font-medium mt-1">
-                          {format(day, 'MMM yyyy')}
                         </div>
                       </div>
 
@@ -321,7 +318,7 @@ export default function HomePage() {
                           : undefined
 
                         return (
-                          <div key={slot.time} className="h-32 p-3 border-b border-gray-200 last:border-b-0">
+                          <div key={slot.time} className="h-20 p-2 border-b border-gray-200 last:border-b-0">
                             <TimeSlotCard
                               date={dateStr}
                               time={slot.time}
