@@ -16,7 +16,6 @@ export default function SignupPage() {
   // Credentials
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [inviteCode, setInviteCode] = useState('')
   
   // Sport preference
   const [selectedSport, setSelectedSport] = useState<SportPreference>('pickleball')
@@ -36,17 +35,6 @@ export default function SignupPage() {
     setError('')
 
     try {
-      // Validate invite code
-      const validCodes = process.env.NEXT_PUBLIC_VALID_INVITE_CODES?.split(',').map(code => code.trim()) || []
-      
-      if (!inviteCode) {
-        throw new Error('Invite code is required')
-      }
-      
-      if (!validCodes.includes(inviteCode)) {
-        throw new Error('Invalid invite code. Please contact support to get a valid code.')
-      }
-
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -104,8 +92,8 @@ export default function SignupPage() {
         {step === 'credentials' ? (
           <>
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-navy mb-2">Create Instructor Account</h1>
-              <p className="text-gray-600">For approved instructors only</p>
+              <h1 className="text-3xl font-bold text-navy mb-2">Create Account</h1>
+              <p className="text-gray-600">Join our community</p>
             </div>
 
             <form onSubmit={handleSignup} className="space-y-6">
@@ -117,30 +105,13 @@ export default function SignupPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Invite Code <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={inviteCode}
-                  onChange={(e) => setInviteCode(e.target.value.trim())}
-                  className="input-field"
-                  placeholder="Enter your invite code"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Contact support if you don't have an invite code
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="input-field"
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg outline-none transition-all duration-300 text-gray-900 placeholder-gray-400 focus:border-sky-blue focus:ring-2 focus:ring-sky-blue/20"
                   placeholder="you@example.com"
                   required
                 />
@@ -154,7 +125,7 @@ export default function SignupPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input-field"
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg outline-none transition-all duration-300 text-gray-900 placeholder-gray-400 focus:border-sky-blue focus:ring-2 focus:ring-sky-blue/20"
                   placeholder="••••••••"
                   minLength={6}
                   required
@@ -165,7 +136,7 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-sky-blue text-white font-semibold py-3 px-6 rounded-lg hover:bg-sky-blue/90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Creating account...' : 'Continue'}
               </button>
@@ -313,7 +284,7 @@ export default function SignupPage() {
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="input-field"
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg outline-none transition-all duration-300 text-gray-900 placeholder-gray-400 focus:border-sky-blue focus:ring-2 focus:ring-sky-blue/20"
                     required
                   />
                 </div>
@@ -326,7 +297,7 @@ export default function SignupPage() {
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="input-field"
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg outline-none transition-all duration-300 text-gray-900 placeholder-gray-400 focus:border-sky-blue focus:ring-2 focus:ring-sky-blue/20"
                     required
                   />
                 </div>
@@ -340,7 +311,7 @@ export default function SignupPage() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="input-field"
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg outline-none transition-all duration-300 text-gray-900 placeholder-gray-400 focus:border-sky-blue focus:ring-2 focus:ring-sky-blue/20"
                   placeholder="@username"
                 />
               </div>
@@ -352,7 +323,7 @@ export default function SignupPage() {
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="input-field"
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg outline-none transition-all duration-300 text-gray-900 placeholder-gray-400 focus:border-sky-blue focus:ring-2 focus:ring-sky-blue/20"
                   rows={3}
                   placeholder="Tell us about yourself..."
                 />
@@ -361,7 +332,7 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-sky-blue text-white font-semibold py-3 px-6 rounded-lg hover:bg-sky-blue/90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Creating profile...' : 'Complete Signup'}
               </button>
