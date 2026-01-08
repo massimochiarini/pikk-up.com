@@ -3,16 +3,23 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { SportPreference } from '@/lib/theme'
+import { useTheme } from '@/components/ThemeProvider'
 import Link from 'next/link'
 
 export default function SignupPage() {
   const router = useRouter()
-  const [step, setStep] = useState<'credentials' | 'profile'>('credentials')
+  const { setSportPreference } = useTheme()
+  const [step, setStep] = useState<'credentials' | 'sport' | 'profile'>('credentials')
   const [userId, setUserId] = useState('')
   
   // Credentials
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [inviteCode, setInviteCode] = useState('')
+  
+  // Sport preference
+  const [selectedSport, setSelectedSport] = useState<SportPreference>('pickleball')
   
   // Profile
   const [firstName, setFirstName] = useState('')
@@ -29,6 +36,17 @@ export default function SignupPage() {
     setError('')
 
     try {
+      // Validate invite code
+      const validCodes = process.env.NEXT_PUBLIC_VALID_INVITE_CODES?.split(',').map(code => code.trim()) || []
+      
+      if (!inviteCode) {
+        throw new Error('Invite code is required')
+      }
+      
+      if (!validCodes.includes(inviteCode)) {
+        throw new Error('Invalid invite code. Please contact support to get a valid code.')
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -38,12 +56,18 @@ export default function SignupPage() {
       if (!data.user) throw new Error('Failed to create account')
 
       setUserId(data.user.id)
-      setStep('profile')
+      setStep('sport')
     } catch (error: any) {
       setError(error.message || 'Failed to create account')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSportSelection = (sport: SportPreference) => {
+    setSelectedSport(sport)
+    setSportPreference(sport)
+    setStep('profile')
   }
 
   const handleProfileSetup = async (e: React.FormEvent) => {
@@ -60,6 +84,7 @@ export default function SignupPage() {
           last_name: lastName,
           username: username || null,
           bio: bio || null,
+          sport_preference: selectedSport,
           created_at: new Date().toISOString(),
         })
 
@@ -79,8 +104,8 @@ export default function SignupPage() {
         {step === 'credentials' ? (
           <>
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-navy mb-2">Create Account</h1>
-              <p className="text-gray-600">Join the pickleball community</p>
+              <h1 className="text-3xl font-bold text-navy mb-2">Create Instructor Account</h1>
+              <p className="text-gray-600">For approved instructors only</p>
             </div>
 
             <form onSubmit={handleSignup} className="space-y-6">
@@ -89,6 +114,23 @@ export default function SignupPage() {
                   {error}
                 </div>
               )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Invite Code <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value.trim())}
+                  className="input-field"
+                  placeholder="Enter your invite code"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Contact support if you don't have an invite code
+                </p>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -136,6 +178,116 @@ export default function SignupPage() {
                   Sign in
                 </Link>
               </p>
+            </div>
+          </>
+        ) : step === 'sport' ? (
+          <>
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-navy mb-2">Choose Your Sport</h1>
+              <p className="text-gray-600">Select your primary interest</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {/* Pickleball Option */}
+              <button
+                onClick={() => handleSportSelection('pickleball')}
+                className="relative group p-6 rounded-xl border-3 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                style={{
+                  borderColor: selectedSport === 'pickleball' ? '#D3FD00' : '#E5E7EB',
+                  backgroundColor: selectedSport === 'pickleball' ? '#F0FFF4' : 'white',
+                }}
+              >
+                <div className="flex flex-col items-center space-y-4">
+                  <div 
+                    className="w-20 h-20 rounded-full flex items-center justify-center text-4xl transition-colors"
+                    style={{ backgroundColor: '#D3FD00' }}
+                  >
+                    🏓
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">Pickleball</h3>
+                  <p className="text-sm text-gray-600 text-center">
+                    Join the fastest growing sport
+                  </p>
+                  {selectedSport === 'pickleball' && (
+                    <div className="absolute top-3 right-3">
+                      <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </button>
+
+              {/* Yoga Option */}
+              <button
+                onClick={() => handleSportSelection('yoga')}
+                className="relative group p-6 rounded-xl border-3 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                style={{
+                  borderColor: selectedSport === 'yoga' ? '#C4B5FD' : '#E5E7EB',
+                  backgroundColor: selectedSport === 'yoga' ? '#FAF5FF' : 'white',
+                }}
+              >
+                <div className="flex flex-col items-center space-y-4">
+                  <div 
+                    className="w-20 h-20 rounded-full flex items-center justify-center text-4xl transition-colors"
+                    style={{ backgroundColor: '#C4B5FD' }}
+                  >
+                    🧘
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">Yoga</h3>
+                  <p className="text-sm text-gray-600 text-center">
+                    Find your inner peace
+                  </p>
+                  {selectedSport === 'yoga' && (
+                    <div className="absolute top-3 right-3">
+                      <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </button>
+
+              {/* Both Option */}
+              <button
+                onClick={() => handleSportSelection('both')}
+                className="relative group p-6 rounded-xl border-3 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                style={{
+                  borderColor: selectedSport === 'both' ? '#D3FD00' : '#E5E7EB',
+                  background: selectedSport === 'both' 
+                    ? 'linear-gradient(135deg, #F0FFF4 0%, #FAF5FF 100%)' 
+                    : 'white',
+                }}
+              >
+                <div className="flex flex-col items-center space-y-4">
+                  <div 
+                    className="w-20 h-20 rounded-full flex items-center justify-center text-4xl transition-colors"
+                    style={{ background: 'linear-gradient(135deg, #D3FD00 0%, #C4B5FD 100%)' }}
+                  >
+                    ✨
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">Both</h3>
+                  <p className="text-sm text-gray-600 text-center">
+                    Enjoy the best of both worlds
+                  </p>
+                  {selectedSport === 'both' && (
+                    <div className="absolute top-3 right-3">
+                      <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </button>
+            </div>
+
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setStep('credentials')}
+                className="text-gray-500 text-sm hover:underline"
+              >
+                ← Back
+              </button>
             </div>
           </>
         ) : (
@@ -202,7 +354,7 @@ export default function SignupPage() {
                   onChange={(e) => setBio(e.target.value)}
                   className="input-field"
                   rows={3}
-                  placeholder="Tell us about your pickleball experience..."
+                  placeholder="Tell us about yourself..."
                 />
               </div>
 
@@ -213,15 +365,27 @@ export default function SignupPage() {
               >
                 {loading ? 'Creating profile...' : 'Complete Signup'}
               </button>
+
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => setStep('sport')}
+                  className="text-gray-500 text-sm hover:underline"
+                >
+                  ← Back
+                </button>
+              </div>
             </form>
           </>
         )}
 
-        <div className="mt-4 text-center">
-          <Link href="/" className="text-gray-500 text-sm hover:underline">
-            ← Back to home
-          </Link>
-        </div>
+        {step === 'credentials' && (
+          <div className="mt-4 text-center">
+            <Link href="/" className="text-gray-500 text-sm hover:underline">
+              ← Back to home
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -3,6 +3,15 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Default theme colors (Pickleball) */
+    --primary-color: #D3FD00;
+    --primary-dark: #B8E000;
+    --accent-color: #4A9EBF;
+    --background-color: #0F1B2E;
+    --text-color: #1F2937;
+  }
+
   body {
     @apply bg-white text-gray-900;
   }
@@ -10,7 +19,22 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-neon-green hover:bg-neon-green-dark text-gray-900 font-semibold py-3 px-6 rounded-lg transition-colors duration-200;
+    background: var(--primary-color);
+    color: var(--text-color);
+    @apply font-semibold py-3 px-6 rounded-lg transition-all duration-200;
+  }
+  
+  .btn-primary:hover {
+    background: var(--primary-dark);
+  }
+  
+  /* Special handling for gradient backgrounds (Both option) */
+  [data-theme="both"] .btn-primary {
+    background: linear-gradient(135deg, #D3FD00 0%, #C4B5FD 100%);
+  }
+  
+  [data-theme="both"] .btn-primary:hover {
+    background: linear-gradient(135deg, #B8E000 0%, #A78BFA 100%);
   }
   
   .btn-secondary {
@@ -22,7 +46,13 @@
   }
   
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-neon-green focus:border-transparent outline-none;
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg outline-none transition-all duration-200;
+    border-color: #D1D5DB;
+  }
+  
+  .input-field:focus {
+    border-color: transparent;
+    box-shadow: 0 0 0 2px var(--primary-color);
   }
   
   .card {
