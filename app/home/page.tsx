@@ -326,7 +326,7 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Week Schedule */}
+      {/* Week Schedule - Calendar Grid */}
       <section className="py-16 px-6">
         <div className="container mx-auto max-w-7xl">
           <div className="mb-12 flex items-center justify-between">
@@ -361,58 +361,102 @@ export default function HomePage() {
               <div className="animate-pulse text-gray-500 text-xl tracking-wider">Loading schedule...</div>
             </div>
           ) : (
-            <div className="space-y-16">
-              {weekDays.map((day) => {
-                const dateStr = format(day, 'yyyy-MM-dd')
-                const daySessions = sessions.filter(s => s.game_date === dateStr && s.instructor_id)
-                
-                if (daySessions.length === 0) return null
-
-                return (
-                  <div key={dateStr} className="space-y-6">
-                    <div className="flex items-baseline gap-4">
-                      <h3 className="text-3xl font-light tracking-wide">{format(day, 'EEEE')}</h3>
-                      <span className="text-gray-500 font-light">{format(day, 'MMMM d')}</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {daySessions.map((session) => (
-                        <div
-                          key={session.id}
-                          className="group relative overflow-hidden rounded-xl bg-gray-900 hover:scale-[1.02] transition-all duration-500 cursor-pointer"
-                          onClick={() => router.push(`/game/${session.id}`)}
+            <div className="bg-gray-900/50 rounded-2xl overflow-hidden border border-gray-800">
+              {/* Calendar Grid */}
+              <div className="overflow-x-auto">
+                <div className="min-w-[900px]">
+                  {/* Header Row - Days of Week */}
+                  <div className="grid grid-cols-8 border-b border-gray-800">
+                    <div className="p-4 text-gray-500 font-light text-sm">Time</div>
+                    {weekDays.map((day) => {
+                      const dateStr = format(day, 'yyyy-MM-dd')
+                      const isToday = isSameDay(day, new Date())
+                      return (
+                        <div 
+                          key={dateStr} 
+                          className={`p-4 text-center border-l border-gray-800 ${
+                            isToday ? 'bg-gray-800/50' : ''
+                          }`}
                         >
-                          <div className="aspect-[4/3] relative overflow-hidden">
-                            {session.image_url ? (
-                              <img
-                                src={session.image_url}
-                                alt={session.custom_title || session.venue_name}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900" />
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                            <div className="absolute bottom-0 left-0 right-0 p-6">
-                              <p className="text-sm text-gray-300 mb-2 font-light tracking-wide">
-                                {format(new Date(`2000-01-01T${session.start_time}`), 'h:mm a')}
-                              </p>
-                              <h4 className="text-xl font-light mb-2 tracking-wide line-clamp-1">
-                                {session.custom_title || session.venue_name}
-                              </h4>
-                              {session.instructor_id && (
-                                <p className="text-sm text-gray-400 font-light">
-                                  w/ {instructorProfiles.get(session.instructor_id)}
-                                </p>
-                              )}
-                            </div>
+                          <div className={`text-sm font-light mb-1 ${
+                            isToday ? 'text-white' : 'text-gray-400'
+                          }`}>
+                            {format(day, 'EEE')}
+                          </div>
+                          <div className={`text-lg ${
+                            isToday ? 'text-white font-medium' : 'text-gray-300'
+                          }`}>
+                            {format(day, 'd')}
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      )
+                    })}
                   </div>
-                )
-              })}
+
+                  {/* Time Slot Rows */}
+                  {TIME_SLOTS.map((slot) => (
+                    <div key={slot.time} className="grid grid-cols-8 border-b border-gray-800 last:border-b-0">
+                      {/* Time Label */}
+                      <div className="p-4 flex items-center">
+                        <div>
+                          <div className="text-white font-light">{slot.display}</div>
+                          <div className="text-xs text-gray-500">{slot.duration}</div>
+                        </div>
+                      </div>
+
+                      {/* Day Cells */}
+                      {weekDays.map((day) => {
+                        const dateStr = format(day, 'yyyy-MM-dd')
+                        const session = getSessionForSlot(dateStr, slot.time)
+                        const isAvailable = isSlotAvailable(dateStr, slot.time)
+                        const isPastSlot = isSlotPast(dateStr, slot.time)
+                        const isToday = isSameDay(day, new Date())
+                        const instructorName = session?.instructor_id 
+                          ? instructorProfiles.get(session.instructor_id) 
+                          : undefined
+
+                        return (
+                          <div 
+                            key={`${dateStr}-${slot.time}`}
+                            className={`p-2 border-l border-gray-800 ${
+                              isToday ? 'bg-gray-800/30' : ''
+                            }`}
+                          >
+                            <TimeSlotCard
+                              date={dateStr}
+                              time={slot.time}
+                              timeDisplay={slot.display}
+                              session={session}
+                              isAvailable={isAvailable}
+                              isPast={isPastSlot}
+                              instructorName={instructorName}
+                              onClick={() => handleSlotClick(dateStr, slot.time)}
+                            />
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="px-6 py-4 bg-gray-900/80 border-t border-gray-800">
+                <div className="flex items-center justify-center gap-8 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-green-500/20 border-2 border-green-500"></div>
+                    <span className="text-gray-400 font-light">Available</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-red-500/20 border-2 border-red-500"></div>
+                    <span className="text-gray-400 font-light">Claimed</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-gray-500/20 border-2 border-gray-500"></div>
+                    <span className="text-gray-400 font-light">Past</span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
