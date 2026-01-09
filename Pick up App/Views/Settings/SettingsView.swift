@@ -184,7 +184,7 @@ struct SettingsView: View {
                     HStack {
                         Spacer()
                         VStack(spacing: 4) {
-                            Text("Pickleball Games")
+                            Text("Pick Up Yoga")
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(AppTheme.textSecondary)
                             Text("Version 1.0.0")

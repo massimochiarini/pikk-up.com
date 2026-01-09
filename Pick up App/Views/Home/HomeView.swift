@@ -14,7 +14,6 @@ struct HomeView: View {
     @StateObject private var gameService = GameService()
     @ObservedObject private var locationManager = LocationManager.shared
     
-    @State private var showCreateSheet = false
     @State private var showSettings = false
     @State private var showAddFriends = false
     @State private var selectedPost: PostWithProfile?
@@ -47,29 +46,8 @@ struct HomeView: View {
                 .refreshable {
                     await feedService.refresh(currentUserId: authService.currentUser?.id)
                 }
-                
-                // Floating create button
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        createButton
-                            .padding(.trailing, 20)
-                            .padding(.bottom, 16)
-                    }
-                }
             }
             .navigationBarHidden(true)
-            .sheet(isPresented: $showCreateSheet, onDismiss: {
-                // Refresh feed after creating a game
-                Task {
-                    await feedService.refresh(currentUserId: authService.currentUser?.id)
-                }
-            }) {
-                CreateGameView()
-                    .environmentObject(authService)
-                    .environmentObject(gameService)
-            }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
                     .environmentObject(authService)
@@ -136,7 +114,7 @@ struct HomeView: View {
     private var headerView: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Pickleball Games")
+                Text("Pick Up Yoga")
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(AppTheme.textPrimary)
                 
@@ -261,30 +239,12 @@ struct HomeView: View {
                 .font(.system(size: 17, weight: .medium))
                 .foregroundColor(AppTheme.textSecondary)
             
-            Text("Tap + to create a game")
+            Text("Pull to refresh or check back soon.")
                 .font(.system(size: 14))
                 .foregroundColor(AppTheme.textTertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 80)
-    }
-    
-    // MARK: - Create Button
-    
-    private var createButton: some View {
-        Button(action: { showCreateSheet = true }) {
-            ZStack {
-                Circle()
-                    .fill(AppTheme.neonGreen)
-                    .frame(width: 60, height: 60)
-                    .shadow(color: AppTheme.neonGlow, radius: 12, x: 0, y: 6)
-                    .shadow(color: AppTheme.neonGlow, radius: 20, x: 0, y: 10)
-                
-                Image(systemName: "plus")
-                    .font(.system(size: 24, weight: .black))
-                    .foregroundColor(AppTheme.onPrimary)
-            }
-        }
     }
     
     // MARK: - Actions
