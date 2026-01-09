@@ -270,7 +270,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
                 type="text"
                 value={eventName}
                 onChange={(e) => setEventName(e.target.value)}
-                className="input-field"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-neon-green focus:ring-2 focus:ring-neon-green/20 outline-none transition-all text-gray-900 bg-white"
                 placeholder="e.g., Morning Vinyasa Flow"
                 required
               />
@@ -284,7 +284,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
               <select
                 value={skillLevel}
                 onChange={(e) => setSkillLevel(e.target.value)}
-                className="input-field"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-neon-green focus:ring-2 focus:ring-neon-green/20 outline-none transition-all text-gray-900 bg-white"
               >
                 <option value="">All Levels</option>
                 <option value="beginner">Beginner</option>
@@ -301,34 +301,23 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="input-field"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-neon-green focus:ring-2 focus:ring-neon-green/20 outline-none transition-all text-gray-900 bg-white"
                 rows={4}
                 placeholder="Add details about your class..."
               />
             </div>
 
-            {/* Location */}
+            {/* Location - Fixed, hidden field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Location
               </label>
-              <input
-                type="text"
-                value={locationAddress}
-                onChange={(e) => setLocationAddress(e.target.value)}
-                className="input-field"
-                placeholder="Enter address to adjust pin location"
-              />
+              <div className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-700">
+                📍 Pick Up Studio - 2500 South Miami Avenue
+              </div>
               <p className="text-xs text-gray-500 mt-1">
-                Update the address to adjust the pin location on the map
+                All yoga sessions are held at our studio
               </p>
-              
-              {/* Coordinate display */}
-              {(latitude && longitude) && (
-                <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                  📍 Coordinates: {latitude.toFixed(6)}, {longitude.toFixed(6)}
-                </div>
-              )}
             </div>
 
             {/* Actions */}
