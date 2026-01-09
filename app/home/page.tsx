@@ -18,7 +18,7 @@ const TIME_SLOTS = [
   { time: '19:00:00', display: '7:00 PM', duration: '1.5h' },
 ]
 
-const CATEGORIES = ['All', 'Breathe', 'Move', 'Meditate']
+const CATEGORIES = ['Breathe', 'Move', 'Meditate']
 
 export default function HomePage() {
   const { user, profile, loading } = useAuth()
@@ -34,7 +34,7 @@ export default function HomePage() {
   const [gamesLoading, setGamesLoading] = useState(true)
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [selectedCategory, setSelectedCategory] = useState('Breathe')
 
   useEffect(() => {
     if (!loading && !user) {
@@ -240,8 +240,8 @@ export default function HomePage() {
             filter: 'brightness(0.7)'
           }}
         />
-        <div className="relative z-20 h-full flex flex-col items-center justify-center px-4">
-          <div className="text-center max-w-4xl mx-auto space-y-6">
+        <div className="relative z-20 h-full flex flex-col items-center justify-between px-4 py-12">
+          <div className="text-center max-w-4xl mx-auto space-y-6 mt-20">
             <h1 className="text-7xl md:text-8xl font-light tracking-wide mb-4">
               {profile?.sport_preference === 'yoga' ? 'Be Present' : 'Find Your Flow'}
             </h1>
@@ -249,21 +249,17 @@ export default function HomePage() {
               {format(new Date(), 'EEEE, MMMM d')}
             </p>
           </div>
-        </div>
-      </div>
-
-      {/* Filter Categories */}
-      <div className="sticky top-16 z-30 bg-black/95 backdrop-blur-sm border-b border-gray-800 py-6">
-        <div className="container mx-auto px-6">
-          <div className="flex items-center justify-center gap-4">
+          
+          {/* Filter Categories at Bottom */}
+          <div className="flex items-center justify-center gap-12 mb-8">
             {CATEGORIES.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-6 py-2 rounded-full font-light tracking-wide transition-all duration-300 ${
+                className={`text-2xl font-light tracking-wider transition-all duration-300 ${
                   selectedCategory === category
-                    ? 'bg-white text-black'
-                    : 'text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500'
+                    ? 'text-white'
+                    : 'text-gray-400 hover:text-white'
                 }`}
               >
                 {category}
