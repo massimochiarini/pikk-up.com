@@ -51,12 +51,47 @@ struct GameCardNew: View {
     var body: some View {
         Button(action: onDetailsTapped) {
             VStack(alignment: .leading, spacing: 0) {
-                // Map snapshot at the top
-                MapSnapshotView(
-                    address: game.address,
-                    height: 120,
-                    cornerRadius: 12
-                )
+                // Show custom image if available, otherwise show map snapshot
+                if let imageUrl = game.imageUrl, !imageUrl.isEmpty {
+                    AsyncImage(url: URL(string: imageUrl)) { phase in
+                        switch phase {
+                        case .empty:
+                            ZStack {
+                                Rectangle()
+                                    .fill(AppTheme.cardBackground)
+                                    .frame(height: 120)
+                                ProgressView()
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(height: 120)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        case .failure:
+                            // Fallback to map if image fails to load
+                            MapSnapshotView(
+                                address: game.address,
+                                height: 120,
+                                cornerRadius: 12
+                            )
+                        @unknown default:
+                            MapSnapshotView(
+                                address: game.address,
+                                height: 120,
+                                cornerRadius: 12
+                            )
+                        }
+                    }
+                } else {
+                    // No custom image, show map snapshot
+                    MapSnapshotView(
+                        address: game.address,
+                        height: 120,
+                        cornerRadius: 12
+                    )
+                }
                 
                 VStack(alignment: .leading, spacing: 14) {
                     // Top row: Title on left, badges on right

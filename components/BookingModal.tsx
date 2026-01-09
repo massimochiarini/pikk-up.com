@@ -9,13 +9,14 @@ interface BookingModalProps {
   onClose: () => void
   selectedDate: string
   selectedTime: string
-  onClaim: (eventName: string, description: string, skillLevel: string, imageUrl: string | null, latitude: number | null, longitude: number | null) => Promise<void>
+  onClaim: (eventName: string, description: string, skillLevel: string, imageUrl: string | null, latitude: number | null, longitude: number | null, costCents: number) => Promise<void>
 }
 
 export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onClaim }: BookingModalProps) {
   const [eventName, setEventName] = useState('')
   const [description, setDescription] = useState('')
   const [skillLevel, setSkillLevel] = useState('')
+  const [cost, setCost] = useState<string>('0')
   const [loading, setLoading] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [coverImage, setCoverImage] = useState<File | null>(null)
@@ -154,12 +155,16 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
         }
       }
 
-      await onClaim(eventName, description, skillLevel, imageUrl, finalLat, finalLng)
+      // Convert dollars to cents
+      const costCents = Math.round(parseFloat(cost || '0') * 100)
+
+      await onClaim(eventName, description, skillLevel, imageUrl, finalLat, finalLng, costCents)
       
       // Reset form
       setEventName('')
       setDescription('')
       setSkillLevel('')
+      setCost('0')
       setCoverImage(null)
       setCoverImagePreview(null)
       setLatitude(null)
@@ -178,6 +183,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
       setEventName('')
       setDescription('')
       setSkillLevel('')
+      setCost('0')
       setCoverImage(null)
       setCoverImagePreview(null)
       setLatitude(null)
@@ -291,6 +297,28 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
               </select>
+            </div>
+
+            {/* Cost */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Class Cost
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={cost}
+                  onChange={(e) => setCost(e.target.value)}
+                  className="input-field pl-7"
+                  placeholder="0"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Enter 0 for free classes
+              </p>
             </div>
 
             {/* Description */}

@@ -122,7 +122,8 @@ export default function HomePage() {
     skillLevel: string,
     imageUrl: string | null,
     latitude: number | null,
-    longitude: number | null
+    longitude: number | null,
+    costCents: number
   ) => {
     if (!user || !selectedSlot) return
 
@@ -139,7 +140,7 @@ export default function HomePage() {
           game_date: selectedSlot.date,
           start_time: selectedSlot.time,
           max_players: 15,
-          cost_cents: 0,
+          cost_cents: costCents,
           description: description || null,
           image_url: imageUrl,
           latitude: latitude,
