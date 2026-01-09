@@ -13,6 +13,7 @@ export default function MyClassesPage() {
   const [pastClasses, setPastClasses] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming')
+  const [rsvpCounts, setRsvpCounts] = useState<Map<string, number>>(new Map())
 
   useEffect(() => {
     if (user) {
@@ -36,6 +37,23 @@ export default function MyClassesPage() {
         .order('start_time', { ascending: false })
 
       if (error) throw error
+
+      // Fetch RSVP counts for all classes
+      if (allClasses && allClasses.length > 0) {
+        const gameIds = allClasses.map(g => g.id)
+        const { data: rsvps, error: rsvpError } = await supabase
+          .from('rsvps')
+          .select('game_id')
+          .in('game_id', gameIds)
+
+        if (!rsvpError && rsvps) {
+          const counts = new Map<string, number>()
+          rsvps.forEach(rsvp => {
+            counts.set(rsvp.game_id, (counts.get(rsvp.game_id) || 0) + 1)
+          })
+          setRsvpCounts(counts)
+        }
+      }
 
       // Split into upcoming and past
       const upcoming = [] as Game[]
@@ -75,6 +93,17 @@ export default function MyClassesPage() {
     return `${displayHour}:${minutes} ${period}`
   }
 
+  // Format cost helper
+  const formatCost = (costCents: number) => {
+    if (costCents === 0) return 'Free'
+    return `$${(costCents / 100).toFixed(0)}`
+  }
+
+  // Get RSVP count for a session
+  const getRsvpCount = (sessionId: string) => {
+    return rsvpCounts.get(sessionId) || 0
+  }
+
   // Get status badge
   const getStatusBadge = (session: Game) => {
     const sessionDateTime = new Date(`${session.game_date}T${session.start_time}`)
@@ -110,12 +139,19 @@ export default function MyClassesPage() {
         {!loading && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="text-sm text-gray-600 mb-1">Income</div>
-              <div className="text-3xl font-bold text-navy">{upcomingClasses.length}</div>
+              <div className="text-sm text-gray-600 mb-1">Projected Income</div>
+              <div className="text-3xl font-bold text-green-600">
+                ${upcomingClasses.reduce((total, session) => {
+                  const attendees = getRsvpCount(session.id)
+                  return total + ((session.cost_cents / 100) * attendees)
+                }, 0).toFixed(0)}
+              </div>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="text-sm text-gray-600 mb-1">Students Taught</div>
-              <div className="text-3xl font-bold text-navy">{pastClasses.length}</div>
+              <div className="text-3xl font-bold text-purple-600">
+                {pastClasses.reduce((total, session) => total + getRsvpCount(session.id), 0)}
+              </div>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="text-sm text-gray-600 mb-1">Total Classes</div>
@@ -197,15 +233,21 @@ export default function MyClassesPage() {
                                 <span>📅</span>
                                 <span className="font-medium">{formattedDate}</span>
                               </div>
-                              <div className="flex items-center space-x-2 text-gray-700">
+                              <div className="flex items-center space-x-2 text-gray-700 mb-2">
                                 <span>🕐</span>
                                 <span className="font-medium">{formatTime(session.start_time)}</span>
+                              </div>
+                              <div className="flex items-center space-x-2 text-gray-700">
+                                <span>💰</span>
+                                <span className="font-semibold text-green-600">{formatCost(session.cost_cents)} per student</span>
                               </div>
                             </div>
                             <div>
                               <div className="flex items-center space-x-2 text-gray-700 mb-2">
                                 <span>👥</span>
-                                <span className="font-medium">Capacity: {session.max_players} students</span>
+                                <span className="font-medium">
+                                  <span className="text-purple-600 font-bold">{getRsvpCount(session.id)}</span> attending / {session.max_players} capacity
+                                </span>
                               </div>
                               <div className="flex items-center space-x-2 text-gray-700">
                                 <span>📍</span>
@@ -275,15 +317,21 @@ export default function MyClassesPage() {
                                 <span>📅</span>
                                 <span className="font-medium">{formattedDate}</span>
                               </div>
-                              <div className="flex items-center space-x-2 text-gray-700">
+                              <div className="flex items-center space-x-2 text-gray-700 mb-2">
                                 <span>🕐</span>
                                 <span className="font-medium">{formatTime(session.start_time)}</span>
+                              </div>
+                              <div className="flex items-center space-x-2 text-gray-700">
+                                <span>💰</span>
+                                <span className="font-semibold text-green-600">{formatCost(session.cost_cents)} per student</span>
                               </div>
                             </div>
                             <div>
                               <div className="flex items-center space-x-2 text-gray-700 mb-2">
                                 <span>👥</span>
-                                <span className="font-medium">Capacity: {session.max_players} students</span>
+                                <span className="font-medium">
+                                  <span className="text-purple-600 font-bold">{getRsvpCount(session.id)}</span> attended / {session.max_players} capacity
+                                </span>
                               </div>
                               <div className="flex items-center space-x-2 text-gray-700">
                                 <span>📍</span>
