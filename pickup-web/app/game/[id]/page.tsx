@@ -337,15 +337,21 @@ export default function GameDetailPage() {
           ← Back
         </button>
 
-        <div className="card">
-          {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          {/* Sport Icon & Title */}
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center space-x-3">
-              <div className="text-5xl">🎾</div>
+              <div className="text-5xl">
+                {game.sport === 'yoga' ? '🧘' : '🎾'}
+              </div>
               <div>
-                <h1 className="text-3xl font-bold text-navy">{eventTitle}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  {game.custom_title || game.venue_name}
+                </h1>
                 {game.skill_level && (
-                  <span className="text-gray-600 capitalize">{game.skill_level}</span>
+                  <span className="inline-block mt-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 capitalize">
+                    {game.skill_level}
+                  </span>
                 )}
               </div>
             </div>
@@ -362,12 +368,12 @@ export default function GameDetailPage() {
           </div>
 
           {/* Game Details */}
-          <div className="space-y-4 mb-8">
+          <div className="space-y-4 mb-8 bg-gray-50 rounded-lg p-4">
             <div className="flex items-start space-x-3">
               <span className="text-2xl">📅</span>
               <div>
                 <div className="font-semibold text-gray-900">{formattedDate}</div>
-                <div className="text-gray-600">at {formatTime(game.start_time)}</div>
+                <div className="text-gray-700">at {formatTime(game.start_time)}</div>
               </div>
             </div>
 
@@ -375,7 +381,7 @@ export default function GameDetailPage() {
               <span className="text-2xl">📍</span>
               <div>
                 <div className="font-semibold text-gray-900">{game.venue_name}</div>
-                {game.address && <div className="text-gray-600">{game.address}</div>}
+                {game.address && <div className="text-gray-700">{game.address}</div>}
               </div>
             </div>
 
@@ -383,83 +389,41 @@ export default function GameDetailPage() {
               <span className="text-2xl">👥</span>
               <div>
                 <div className="font-semibold text-gray-900">
-                  {currentPlayers} / {game.max_players} participants
+                  {currentPlayers} / {game.max_players} {game.instructor_id ? 'attending' : 'players'}
                 </div>
-                <div className="text-gray-600">Participants attending</div>
+                <div className="text-gray-700">
+                  {game.instructor_id ? 'Participants attending' : 'Players registered'}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Description */}
-          {eventDescription && (
-            <div className="mb-8">
-              <h3 className="font-semibold text-gray-900 mb-2">About this session</h3>
-              <p className="text-gray-700 whitespace-pre-wrap">{eventDescription}</p>
+          {game.description && (
+            <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-semibold text-gray-900 mb-2 text-lg">About this session</h3>
+              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{game.description}</p>
             </div>
           )}
 
           {/* Instructor Claiming Section */}
-          {user && user.id !== game.created_by && (
-            <div className="border-t border-gray-200 pt-6 mb-8">
-              <h3 className="font-semibold text-gray-900 mb-3">
-                {isUserInstructor ? 'You are teaching this session' : 'Claim this session'}
-              </h3>
-              
-              {claimError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
-                  {claimError}
-                </div>
-              )}
-
-              {isUserInstructor ? (
-                <button
-                  onClick={handleUnclaimSession}
-                  disabled={claimLoading}
-                  className="w-full py-3 rounded-lg font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors disabled:opacity-50"
-                >
-                  {claimLoading ? 'Releasing...' : 'Release Session'}
-                </button>
-              ) : isSessionAvailable ? (
-                <button
-                  onClick={handleClaimSession}
-                  disabled={claimLoading}
-                  className="w-full py-3 rounded-lg font-semibold bg-neon-green hover:bg-neon-green-dark text-navy transition-colors disabled:opacity-50"
-                >
-                  {claimLoading ? 'Claiming...' : '✓ Claim as Instructor'}
-                </button>
-              ) : (
-                <div className="w-full py-3 rounded-lg font-semibold bg-purple-50 text-purple-700 text-center">
-                  Already Booked by Another Instructor
-                </div>
-              )}
-
-              <p className="text-xs text-gray-500 mt-2">
-                {isUserInstructor 
-                  ? 'Release this session to make it available for other instructors'
-                  : isSessionAvailable
-                  ? 'Claim this session to teach it. One instructor per session.'
-                  : 'This session has been claimed by another instructor'}
+          {isSessionBooked && game.instructor_id && (
+            <div className="mb-8 p-4 bg-purple-50 border-2 border-purple-200 rounded-lg">
+              <p className="text-purple-800 font-medium text-center">
+                ✓ This session has been claimed by an instructor
               </p>
             </div>
           )}
 
           {/* Host Actions */}
           {user && user.id === game.created_by && (
-            <div className="border-t border-gray-200 pt-6 mb-8">
-              <h3 className="font-semibold text-gray-900 mb-3">Manage Session</h3>
-              
-              {isSessionBooked && (
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-purple-700">
-                    ✓ This session has been claimed by an instructor
-                  </p>
-                </div>
-              )}
+            <div className="border-t border-gray-200 pt-6 mb-6">
+              <h3 className="font-semibold text-gray-900 mb-4 text-lg">Manage Session</h3>
               
               <button
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={isDeleting}
-                className="w-full py-3 rounded-lg font-semibold bg-red-50 hover:bg-red-100 text-red-700 transition-colors disabled:opacity-50"
+                className="w-full py-3 rounded-lg font-semibold bg-red-50 hover:bg-red-100 text-red-700 border-2 border-red-200 transition-colors disabled:opacity-50"
               >
                 {isDeleting ? 'Canceling...' : 'Cancel Session'}
               </button>
@@ -467,37 +431,36 @@ export default function GameDetailPage() {
           )}
 
           {/* RSVP Button */}
-          {user && user.id !== game.created_by && (
-            <div className="border-t border-gray-200 pt-6 mb-8">
-              <h3 className="font-semibold text-gray-900 mb-3">Join this session?</h3>
+          {user && user.id !== game.created_by && !isUserInstructor && (
+            <div className="border-t border-gray-200 pt-6 mb-6">
               <button
                 onClick={handleRsvp}
                 disabled={rsvpLoading || (spotsLeft === 0 && !isUserGoing)}
-                className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                className={`w-full py-4 rounded-lg font-semibold text-lg transition-colors shadow-sm ${
                   isUserGoing
-                    ? 'bg-red-100 hover:bg-red-200 text-red-700'
-                    : 'bg-neon-green hover:bg-neon-green-dark text-navy'
+                    ? 'bg-white hover:bg-gray-50 text-red-700 border-2 border-red-300'
+                    : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {rsvpLoading ? 'Loading...' : isUserGoing ? '✓ Attending - Click to Cancel' : '+ Join Session'}
+                {rsvpLoading ? 'Loading...' : isUserGoing ? '✓ Attending - Tap to Cancel' : '+ Join Session'}
               </button>
             </div>
           )}
 
           {/* Host */}
           {creator && (
-            <div className="border-t border-gray-200 pt-6 mb-8">
-              <h3 className="font-semibold text-gray-900 mb-3">Hosted by</h3>
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sky-blue to-neon-green flex items-center justify-center text-white font-bold text-lg">
+            <div className="border-t border-gray-200 pt-6 mb-6">
+              <h3 className="font-semibold text-gray-900 mb-4 text-lg">Hosted by</h3>
+              <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                   {creator.first_name[0]}
                 </div>
                 <div>
-                  <div className="font-semibold">
+                  <div className="font-semibold text-gray-900">
                     {creator.first_name} {creator.last_name}
                   </div>
                   {creator.username && (
-                    <div className="text-gray-500 text-sm">@{creator.username}</div>
+                    <div className="text-gray-600 text-sm">@{creator.username}</div>
                   )}
                 </div>
               </div>
@@ -507,16 +470,16 @@ export default function GameDetailPage() {
           {/* Attendees */}
           {attendees.length > 0 && (
             <div className="border-t border-gray-200 pt-6">
-              <h3 className="font-semibold text-gray-900 mb-3">
+              <h3 className="font-semibold text-gray-900 mb-4 text-lg">
                 Who's going ({attendees.length})
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {attendees.map((attendee) => (
-                  <div key={attendee.id} className="flex items-center space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-blue to-neon-green flex items-center justify-center text-white font-bold text-sm">
+                  <div key={attendee.id} className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                       {attendee.first_name[0]}
                     </div>
-                    <div className="text-sm font-medium truncate">
+                    <div className="text-sm font-medium text-gray-900 truncate">
                       {attendee.first_name} {attendee.last_name[0]}.
                     </div>
                   </div>

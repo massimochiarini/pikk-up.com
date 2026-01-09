@@ -54,6 +54,19 @@
   .input-field:focus {
     @apply border-white/30 bg-white/10;
   }
+
+  /* Modal input overrides for white backgrounds */
+  .modal-inputs .input-field {
+    @apply bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400;
+  }
+
+  .modal-inputs .input-field:focus {
+    @apply border-gray-400 bg-white;
+  }
+
+  .modal-inputs select.input-field option {
+    @apply text-gray-900 bg-white;
+  }
   
   .card {
     @apply bg-gray-900 rounded-2xl border border-gray-800 p-8;
