@@ -57,9 +57,9 @@ struct WelcomeView: View {
                 
                 // Description
                 VStack(spacing: 16) {
-                    FeatureRow(icon: "mappin.circle.fill", text: "Discover games happening nearby")
-                    FeatureRow(icon: "person.2.fill", text: "Connect with local players")
-                    FeatureRow(icon: "calendar.badge.plus", text: "Schedule and join matches")
+                    FeatureRow(icon: "mappin.circle.fill", text: "Find sessions and classes nearby")
+                    FeatureRow(icon: "person.2.fill", text: "Connect with your community")
+                    FeatureRow(icon: "calendar.badge.plus", text: "Book and join sessions")
                 }
                 .padding(.horizontal, 32)
                 
