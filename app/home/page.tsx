@@ -231,100 +231,8 @@ export default function HomePage() {
     <div className="min-h-screen bg-black text-white">
       <Navbar />
 
-      {/* Hero Section */}
-      <div className="relative h-[70vh] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-10" />
-        <div 
-          className="absolute inset-0 bg-cover bg-center transform scale-105 animate-slow-zoom"
-          style={{ 
-            backgroundImage: 'url(https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2400)',
-            filter: 'brightness(0.7)'
-          }}
-        />
-        <div className="relative z-20 h-full flex flex-col items-center justify-between px-4 py-12">
-          <div className="text-center max-w-4xl mx-auto space-y-6 mt-20">
-            <h1 className="text-7xl md:text-8xl font-light tracking-wide mb-4">
-              {profile?.sport_preference === 'yoga' ? 'Be Present' : 'Find Your Flow'}
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 font-light tracking-wide max-w-2xl mx-auto">
-              {format(new Date(), 'EEEE, MMMM d')}
-            </p>
-          </div>
-          
-          {/* Filter Categories at Bottom */}
-          <div className="flex items-center justify-center gap-12 mb-8">
-            {CATEGORIES.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`text-2xl font-light tracking-wider transition-all duration-300 ${
-                  selectedCategory === category
-                    ? 'text-white'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Today's Sessions */}
-      {todaySessions.length > 0 && (
-        <section className="py-16 px-6 border-b border-gray-900">
-          <div className="container mx-auto max-w-7xl">
-            <div className="mb-12">
-              <h2 className="text-4xl font-light tracking-wide mb-3">Today</h2>
-              <p className="text-gray-400 text-lg font-light">Your practice awaits</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {todaySessions.map((session) => (
-                <div
-                  key={session.id}
-                  className="group relative overflow-hidden rounded-2xl bg-gray-900 hover:scale-[1.02] transition-all duration-500 cursor-pointer"
-                  onClick={() => router.push(`/game/${session.id}`)}
-                >
-                  <div className="aspect-[16/10] relative overflow-hidden">
-                    {session.image_url ? (
-                      <img
-                        src={session.image_url}
-                        alt={session.custom_title || session.venue_name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-8">
-                      <h3 className="text-3xl font-light mb-3 tracking-wide">
-                        {session.custom_title || session.venue_name}
-                      </h3>
-                      <div className="flex items-center gap-6 text-gray-300">
-                        <span className="text-lg font-light">
-                          {format(new Date(`2000-01-01T${session.start_time}`), 'h:mm a')}
-                        </span>
-                        {session.instructor_id && (
-                          <>
-                            <span className="text-gray-500">•</span>
-                            <span className="text-lg font-light">
-                              w/ {instructorProfiles.get(session.instructor_id)}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Week Schedule - Calendar Grid */}
-      <section className="py-16 px-6">
+      <section className="pt-24 pb-8 px-6">
         <div className="container mx-auto max-w-7xl">
           <div className="mb-12 flex items-center justify-between">
             <div>
@@ -456,6 +364,27 @@ export default function HomePage() {
               </div>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Filter Categories */}
+      <section className="py-12 px-6 border-t border-gray-900">
+        <div className="container mx-auto max-w-7xl">
+          <div className="flex items-center justify-center gap-12">
+            {CATEGORIES.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`text-2xl font-light tracking-wider transition-all duration-300 ${
+                  selectedCategory === category
+                    ? 'text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 

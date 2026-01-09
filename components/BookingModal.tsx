@@ -365,7 +365,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
                 type="button"
                 onClick={handleClose}
                 disabled={loading}
-                className="btn-outline flex-1 disabled:opacity-50"
+                className="flex-1 border border-gray-300 text-gray-600 hover:border-gray-400 hover:bg-gray-50 font-medium py-3 px-6 rounded-full transition-all duration-300 disabled:opacity-50"
               >
                 Cancel
               </button>

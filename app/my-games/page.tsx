@@ -139,11 +139,13 @@ export default function MyClassesPage() {
         {!loading && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="text-sm text-gray-600 mb-1">Projected Income</div>
+              <div className="text-sm text-gray-600 mb-1">Revenue</div>
               <div className="text-3xl font-bold text-green-600">
                 ${upcomingClasses.reduce((total, session) => {
+                  // Calculate revenue from attendees (excluding host)
                   const attendees = getRsvpCount(session.id)
-                  return total + ((session.cost_cents / 100) * attendees)
+                  const revenuePerClass = (session.cost_cents / 100) * attendees
+                  return total + revenuePerClass
                 }, 0).toFixed(0)}
               </div>
             </div>
@@ -164,9 +166,9 @@ export default function MyClassesPage() {
         <div className="flex gap-2 mb-6 border-b border-gray-200">
           <button
             onClick={() => setActiveTab('upcoming')}
-            className={`px-6 py-3 font-semibold transition-all rounded-t-lg ${
+            className={`px-6 py-3 font-semibold transition-all rounded-lg ${
               activeTab === 'upcoming'
-                ? 'text-neon-green border-b-2 border-neon-green'
+                ? 'bg-neon-green text-black'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >

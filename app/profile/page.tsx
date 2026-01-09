@@ -161,30 +161,30 @@ export default function ProfilePage() {
 
   if (!user || !profile) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-black">
         <Navbar />
         <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon-green"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black">
       <Navbar />
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-navy mb-2">
+          <h1 className="text-3xl font-light tracking-wide text-white mb-2">
             My Profile
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-400">
             Manage your personal information
           </p>
         </div>
 
-        <div className="card">
+        <div className="bg-white rounded-2xl p-8 shadow-2xl">
           {/* Avatar */}
           <div className="flex flex-col items-center mb-8">
             <div className="relative group">
@@ -192,10 +192,10 @@ export default function ProfilePage() {
                 <img 
                   src={avatarUrl} 
                   alt="Profile" 
-                  className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                  className="w-32 h-32 rounded-full object-cover border-4 border-gray-100 shadow-lg"
                 />
               ) : (
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-sky-blue to-neon-green flex items-center justify-center text-white font-bold text-5xl border-4 border-white shadow-lg">
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-white font-bold text-5xl border-4 border-gray-100 shadow-lg">
                   {profile.first_name[0]}
                 </div>
               )}
@@ -229,7 +229,7 @@ export default function ProfilePage() {
             {uploadingImage && (
               <div className="mt-3 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-neon-green"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-800"></div>
                   <span>Uploading...</span>
                 </div>
               </div>
@@ -252,28 +252,28 @@ export default function ProfilePage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-600 mb-2">
                   First Name
                 </label>
                 <input
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="input-field"
+                  className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-black placeholder-gray-400 focus:border-gray-400 focus:bg-gray-50 outline-none transition-all disabled:opacity-60"
                   disabled={!editing}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-600 mb-2">
                   Last Name
                 </label>
                 <input
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="input-field"
+                  className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-black placeholder-gray-400 focus:border-gray-400 focus:bg-gray-50 outline-none transition-all disabled:opacity-60"
                   disabled={!editing}
                   required
                 />
@@ -281,27 +281,27 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 Username
               </label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="input-field"
+                className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-black placeholder-gray-400 focus:border-gray-400 focus:bg-gray-50 outline-none transition-all disabled:opacity-60"
                 disabled={!editing}
                 placeholder="@username"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 Bio
               </label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="input-field"
+                className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-black placeholder-gray-400 focus:border-gray-400 focus:bg-gray-50 outline-none transition-all disabled:opacity-60 resize-none"
                 rows={4}
                 disabled={!editing}
                 placeholder="Tell others about yourself..."
@@ -309,13 +309,13 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 Email
               </label>
               <input
                 type="email"
                 value={user.email}
-                className="input-field bg-gray-100"
+                className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-black placeholder-gray-400 outline-none opacity-60"
                 disabled
               />
               <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
@@ -328,7 +328,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="btn-outline flex-1"
+                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-black font-medium rounded-full hover:bg-gray-50 transition-all disabled:opacity-50"
                     disabled={loading}
                   >
                     Cancel
@@ -336,7 +336,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-6 py-3 bg-black text-white font-medium rounded-full hover:bg-gray-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -345,7 +345,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setEditing(true)}
-                  className="btn-primary w-full"
+                  className="w-full px-6 py-3 bg-black text-white font-medium rounded-full hover:bg-gray-900 transition-all"
                 >
                   Edit Profile
                 </button>
@@ -355,11 +355,11 @@ export default function ProfilePage() {
 
           {/* Stats */}
           <div className="border-t border-gray-200 mt-8 pt-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Account Info</h3>
+            <h3 className="font-semibold text-black mb-4">Account Info</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Member since</span>
-                <span className="font-medium">
+                <span className="font-medium text-black">
                   {new Date(profile.created_at).toLocaleDateString()}
                 </span>
               </div>
