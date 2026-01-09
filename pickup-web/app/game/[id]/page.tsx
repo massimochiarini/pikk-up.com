@@ -502,7 +502,7 @@ export default function GameDetailPage() {
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isDeleting}
-                  className="flex-1 btn-outline"
+                  className="flex-1 bg-white hover:bg-gray-100 text-gray-900 font-semibold py-2 px-4 rounded-lg border-2 border-gray-300 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>

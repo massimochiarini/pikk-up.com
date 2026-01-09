@@ -37,10 +37,13 @@ class FeedService: ObservableObject {
             let games = try await fetchGames(currentUserId: currentUserId)
             items.append(contentsOf: games)
             
+            // Count games happening today only
+            let todayGamesCount = countGamesToday(from: games)
+            
             // Add activity cards
             let activities = generateActivityItems(
                 postsCount: posts.count,
-                gamesCount: games.count
+                gamesCount: todayGamesCount
             )
             items.append(contentsOf: activities)
             
@@ -277,6 +280,17 @@ class FeedService: ObservableObject {
             .value
         
         return rsvps.count
+    }
+    
+    private func countGamesToday(from feedItems: [FeedItem]) -> Int {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
+        return feedItems.filter { item in
+            guard case .game(let game) = item.type else { return false }
+            let gameDay = calendar.startOfDay(for: game.gameDate)
+            return gameDay == today
+        }.count
     }
     
     // MARK: - Generate Activity Items

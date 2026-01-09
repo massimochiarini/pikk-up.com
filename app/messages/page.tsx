@@ -536,7 +536,7 @@ export default function MessagesPage() {
         {/* Message Input */}
         <div className="bg-white border-t border-gray-200 px-4 py-4">
           <div className="container mx-auto max-w-4xl">
-            <div className="flex gap-2">
+            <div className="flex gap-2 modal-inputs">
               <input
                 type="text"
                 value={newMessage}
@@ -692,7 +692,7 @@ export default function MessagesPage() {
               </button>
             </div>
 
-            <div className="mb-4">
+            <div className="mb-4 modal-inputs">
               <input
                 type="text"
                 value={searchQuery}
