@@ -8,17 +8,12 @@ import Auth
 
 struct ProfileView: View {
     @EnvironmentObject var authService: AuthService
-    @StateObject private var profileService = ProfileService()
     @StateObject private var gameService = GameService()
     @StateObject private var postService = PostService()
     
-    @State private var stats: ProfileStats?
-    @State private var userGames: [Game] = []
+    @State private var pastSessions: [Game] = []
     @State private var showEditProfile = false
     @State private var showSettings = false
-    @State private var selectedSegment = 0
-    
-    private let segments = ["Games", "Posts", "Activity"]
     
     var body: some View {
         NavigationStack {
@@ -27,22 +22,14 @@ struct ProfileView: View {
                     // Profile header
                     profileHeader
                     
-                    // Stats row
-                    statsRow
-                        .padding(.top, 20)
-                    
                     // Action buttons
                     actionButtons
                         .padding(.top, 20)
                         .padding(.horizontal, 24)
                     
-                    // Segment control
-                    segmentControl
-                        .padding(.top, 24)
-                    
-                    // Content grid
-                    contentGrid
-                        .padding(.top, 16)
+                    // Past Sessions
+                    pastSessionsSection
+                        .padding(.top, 32)
                     
                     Spacer(minLength: 100)
                 }
@@ -169,52 +156,45 @@ struct ProfileView: View {
         }
     }
     
-    // MARK: - Segment Control
+    // MARK: - Past Sessions
     
-    private var segmentControl: some View {
-        HStack(spacing: 0) {
-            ForEach(0..<segments.count, id: \.self) { index in
-                Button(action: { selectedSegment = index }) {
-                    VStack(spacing: 8) {
-                        Text(segments[index])
-                            .font(.system(size: 14, weight: selectedSegment == index ? .bold : .medium))
-                            .foregroundColor(selectedSegment == index ? AppTheme.neonGreenDark : AppTheme.textSecondary)
-                        
-                        Rectangle()
-                            .fill(selectedSegment == index ? AppTheme.neonGreen : Color.clear)
-                            .frame(height: 3)
-                            .cornerRadius(1.5)
-                    }
+    private var pastSessionsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Past Sessions")
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(AppTheme.textPrimary)
+                .padding(.horizontal, 24)
+            
+            if pastSessions.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "calendar.badge.clock")
+                        .font(.system(size: 48))
+                        .foregroundColor(AppTheme.textTertiary)
+                    
+                    Text("No past sessions yet")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(AppTheme.textSecondary)
+                    
+                    Text("Classes you attend will appear here")
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundColor(AppTheme.textTertiary)
+                        .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
+                .padding(.vertical, 40)
+            } else {
+                VStack(spacing: 12) {
+                    ForEach(pastSessions) { session in
+                        GameCardCompact(
+                            game: session,
+                            onTap: {},
+                            isJoined: true
+                        )
+                    }
+                }
+                .padding(.horizontal, 20)
             }
         }
-        .padding(.horizontal, 24)
-    }
-    
-    // MARK: - Content Grid
-    
-    private var contentGrid: some View {
-        LazyVGrid(
-            columns: [GridItem(.flexible()), GridItem(.flexible())],
-            spacing: 12
-        ) {
-            switch selectedSegment {
-            case 0:
-                ForEach(userGames) { game in
-                    GameCardMini(game: game, onTap: {})
-                }
-            case 1:
-                ForEach(postService.userPosts) { post in
-                    PostMiniCard(post: post)
-                }
-            default:
-                // Activity placeholder
-                Text("Activity coming soon")
-                    .foregroundColor(AppTheme.textSecondary)
-            }
-        }
-        .padding(.horizontal, 20)
     }
     
     // MARK: - Actions
@@ -227,13 +207,54 @@ struct ProfileView: View {
             stats = profileStats
         }
         
-        // Load games
-        if let games = try? await gameService.fetchUserCreatedGames(userId: userId) {
-            userGames = games
+        // Load past sessions (games user attended via RSVP)
+        await fetchPastSessions(userId: userId)
+    }
+    
+    private func fetchPastSessions(userId: UUID) async {
+        do {
+            let supabase = SupabaseManager.shared.client
+            
+            // Get all RSVPs for this user
+            let rsvps: [RSVP] = try await supabase
+                .from("rsvps")
+                .select()
+                .eq("user_id", value: userId)
+                .execute()
+                .value
+            
+            let gameIds = rsvps.map { $0.gameId }
+            
+            if !gameIds.isEmpty {
+                // Fetch all games user has RSVPed to
+                let allGames: [Game] = try await supabase
+                    .from("games")
+                    .select()
+                    .in("id", values: gameIds)
+                    .order("game_date", ascending: false)
+                    .order("start_time", ascending: false)
+                    .execute()
+                    .value
+                
+                // Filter to only past sessions
+                let now = Date()
+                let past = allGames.filter { game in
+                    let sessionDateTime = Calendar.current.date(
+                        bySettingHour: Int(game.startTime.prefix(2)) ?? 0,
+                        minute: Int(game.startTime.dropFirst(3).prefix(2)) ?? 0,
+                        second: 0,
+                        of: game.gameDate
+                    ) ?? game.gameDate
+                    return sessionDateTime < now
+                }
+                
+                await MainActor.run {
+                    pastSessions = past
+                }
+            }
+        } catch {
+            print("❌ [ProfileView] Error fetching past sessions: \(error)")
         }
-        
-        // Load posts
-        await postService.fetchUserPosts(userId: userId)
     }
     
     private func shareProfile() {
