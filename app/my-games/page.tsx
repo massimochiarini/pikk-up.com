@@ -39,18 +39,21 @@ export default function MyClassesPage() {
 
       if (error) throw error
 
-      // Fetch RSVP counts for all classes
+      // Fetch RSVP counts for all classes (excluding instructor)
       if (allClasses && allClasses.length > 0) {
         const gameIds = allClasses.map(g => g.id)
         const { data: rsvps, error: rsvpError } = await supabase
           .from('rsvps')
-          .select('game_id')
+          .select('game_id, user_id')
           .in('game_id', gameIds)
 
         if (!rsvpError && rsvps) {
           const counts = new Map<string, number>()
           rsvps.forEach(rsvp => {
-            counts.set(rsvp.game_id, (counts.get(rsvp.game_id) || 0) + 1)
+            // Exclude the instructor from the count
+            if (rsvp.user_id !== user.id) {
+              counts.set(rsvp.game_id, (counts.get(rsvp.game_id) || 0) + 1)
+            }
           })
           setRsvpCounts(counts)
         }

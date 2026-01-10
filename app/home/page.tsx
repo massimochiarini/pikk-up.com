@@ -221,33 +221,33 @@ export default function HomePage() {
   const weekDays = getWeekDays()
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="h-screen bg-white text-black overflow-hidden flex flex-col">
       <Navbar />
 
       {/* Week Schedule - Calendar Grid */}
-      <section className="pt-24 pb-8 px-6">
-        <div className="container mx-auto max-w-7xl">
-          <div className="mb-12 flex items-center justify-between">
+      <section className="flex-1 pt-20 pb-4 px-6 overflow-hidden">
+        <div className="container mx-auto max-w-7xl h-full flex flex-col">
+          <div className="mb-6 flex items-center justify-between flex-shrink-0">
             <div>
-              <h2 className="text-4xl font-semibold tracking-wide mb-3">This Week</h2>
-              <p className="text-gray-600 text-lg font-normal">
+              <h2 className="text-3xl font-semibold tracking-wide mb-2">This Week</h2>
+              <p className="text-gray-600 text-base font-normal">
                 {format(currentWeekStart, 'MMM d')} - {format(addDays(currentWeekStart, 6), 'MMM d, yyyy')}
               </p>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <button
                 onClick={goToPreviousWeek}
-                className="p-3 rounded-full border-2 border-gray-300 hover:border-black hover:bg-gray-50 transition-all"
+                className="p-2 rounded-full border-2 border-gray-300 hover:border-black hover:bg-gray-50 transition-all"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               <button
                 onClick={goToNextWeek}
-                className="p-3 rounded-full border-2 border-gray-300 hover:border-black hover:bg-gray-50 transition-all"
+                className="p-2 rounded-full border-2 border-gray-300 hover:border-black hover:bg-gray-50 transition-all"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
@@ -255,33 +255,33 @@ export default function HomePage() {
           </div>
 
           {gamesLoading ? (
-            <div className="flex justify-center items-center py-32">
-              <div className="animate-pulse text-gray-500 text-xl tracking-wider font-semibold">Loading schedule...</div>
+            <div className="flex justify-center items-center flex-1">
+              <div className="animate-pulse text-gray-500 text-lg tracking-wider font-semibold">Loading schedule...</div>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl overflow-hidden border-2 border-gray-200 shadow-lg">
+            <div className="bg-white rounded-2xl overflow-hidden border-2 border-gray-200 shadow-lg flex-1 flex flex-col min-h-0">
               {/* Calendar Grid */}
-              <div className="overflow-x-auto">
-                <div className="min-w-[900px]">
+              <div className="flex-1 overflow-auto">
+                <div className="min-w-[900px] h-full">
                   {/* Header Row - Days of Week */}
-                  <div className="grid grid-cols-8 border-b-2 border-gray-200">
-                    <div className="p-4 text-gray-500 font-semibold text-sm">Time</div>
+                  <div className="grid grid-cols-8 border-b-2 border-gray-200 bg-white sticky top-0 z-10">
+                    <div className="p-3 text-gray-500 font-semibold text-sm">Time</div>
                     {weekDays.map((day) => {
                       const dateStr = format(day, 'yyyy-MM-dd')
                       const isToday = isSameDay(day, new Date())
                       return (
                         <div 
                           key={dateStr} 
-                          className={`p-4 text-center border-l-2 border-gray-200 ${
+                          className={`p-3 text-center border-l-2 border-gray-200 ${
                             isToday ? 'bg-gray-100' : ''
                           }`}
                         >
-                          <div className={`text-sm font-semibold mb-1 ${
+                          <div className={`text-xs font-semibold mb-1 ${
                             isToday ? 'text-black' : 'text-gray-600'
                           }`}>
                             {format(day, 'EEE')}
                           </div>
-                          <div className={`text-lg ${
+                          <div className={`text-base ${
                             isToday ? 'text-black font-bold' : 'text-gray-700'
                           }`}>
                             {format(day, 'd')}
@@ -295,9 +295,9 @@ export default function HomePage() {
                   {TIME_SLOTS.map((slot) => (
                     <div key={slot.time} className="grid grid-cols-8 border-b-2 border-gray-200 last:border-b-0">
                       {/* Time Label */}
-                      <div className="p-4 flex items-center">
+                      <div className="p-3 flex items-center">
                         <div>
-                          <div className="text-black font-semibold">{slot.display}</div>
+                          <div className="text-black font-semibold text-sm">{slot.display}</div>
                           <div className="text-xs text-gray-500">{slot.duration}</div>
                         </div>
                       </div>
@@ -339,18 +339,18 @@ export default function HomePage() {
               </div>
 
               {/* Legend */}
-              <div className="px-6 py-4 bg-gray-50 border-t-2 border-gray-200">
-                <div className="flex items-center justify-center gap-8 text-sm">
+              <div className="px-4 py-3 bg-gray-50 border-t-2 border-gray-200 flex-shrink-0">
+                <div className="flex items-center justify-center gap-6 text-xs">
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-green-500/20 border-2 border-green-500"></div>
+                    <div className="w-3 h-3 rounded bg-green-500/20 border-2 border-green-500"></div>
                     <span className="text-gray-600 font-semibold">Available</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-red-500/20 border-2 border-red-500"></div>
+                    <div className="w-3 h-3 rounded bg-red-500/20 border-2 border-red-500"></div>
                     <span className="text-gray-600 font-semibold">Claimed</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-gray-500/20 border-2 border-gray-500"></div>
+                    <div className="w-3 h-3 rounded bg-gray-500/20 border-2 border-gray-500"></div>
                     <span className="text-gray-600 font-semibold">Past</span>
                   </div>
                 </div>

@@ -74,6 +74,7 @@ struct Game: Codable, Identifiable, Hashable, Sendable {
     let customTitle: String? // Custom class title (e.g., "Vinyasa Flow", "Hot Yoga")
     let latitude: Double?
     let longitude: Double?
+    let status: String? // Session status: 'available' or 'booked' (used by web app)
     let createdAt: Date
     
     // Computed property for RSVP count (participants)
@@ -176,6 +177,7 @@ struct Game: Codable, Identifiable, Hashable, Sendable {
         case customTitle = "custom_title"
         case latitude
         case longitude
+        case status
         case createdAt = "created_at"
     }
     
@@ -204,6 +206,7 @@ struct Game: Codable, Identifiable, Hashable, Sendable {
         customTitle = try container.decodeIfPresent(String.self, forKey: .customTitle)
         latitude = try container.decodeIfPresent(Double.self, forKey: .latitude)
         longitude = try container.decodeIfPresent(Double.self, forKey: .longitude)
+        status = try container.decodeIfPresent(String.self, forKey: .status)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
     }
     
@@ -230,6 +233,7 @@ struct Game: Codable, Identifiable, Hashable, Sendable {
         try container.encodeIfPresent(customTitle, forKey: .customTitle)
         try container.encodeIfPresent(latitude, forKey: .latitude)
         try container.encodeIfPresent(longitude, forKey: .longitude)
+        try container.encodeIfPresent(status, forKey: .status)
         try container.encode(createdAt, forKey: .createdAt)
     }
 }

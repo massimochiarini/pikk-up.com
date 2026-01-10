@@ -120,7 +120,8 @@ export default function PublicBookingPage() {
 
       // Send confirmation email
       try {
-        await supabase.functions.invoke('send-booking-confirmation', {
+        console.log('Attempting to send email to:', email)
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-booking-confirmation', {
           body: {
             to: email.toLowerCase().trim(),
             guestName: `${firstName.trim()} ${lastName.trim()}`,
@@ -134,6 +135,12 @@ export default function PublicBookingPage() {
             bookingId: rsvpData.id,
           }
         })
+        
+        if (emailError) {
+          console.error('Email function error:', emailError)
+        } else {
+          console.log('Email sent successfully:', emailData)
+        }
       } catch (emailError) {
         // Log email error but don't fail the booking
         console.error('Failed to send confirmation email:', emailError)
