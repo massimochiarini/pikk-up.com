@@ -448,6 +448,7 @@ extension Game {
             customTitle: nil,
             latitude: nil,
             longitude: nil,
+            status: nil,
             createdAt: createdAt
         ))
     }
@@ -470,6 +471,7 @@ extension Game {
         self.customTitle = mock.customTitle
         self.latitude = mock.latitude
         self.longitude = mock.longitude
+        self.status = mock.status
         self.createdAt = mock.createdAt
         self.rsvpCount = 3
     }
@@ -492,6 +494,7 @@ extension Game {
         let customTitle: String?
         let latitude: Double?
         let longitude: Double?
+        let status: String?
         let createdAt: Date
     }
 }
