@@ -13,25 +13,25 @@ export interface ThemeColors {
 
 export const sportThemes: Record<SportPreference, ThemeColors> = {
   pickleball: {
-    primary: '#D3FD00',      // Neon green
-    primaryDark: '#B8E000',  // Darker neon green
-    accent: '#4A9EBF',       // Sky blue
-    background: '#0F1B2E',   // Navy
-    text: '#1F2937',         // Gray-900
+    primary: '#1F2937',      // Dark gray (was neon green)
+    primaryDark: '#111827',  // Darker gray
+    accent: '#6B7280',       // Medium gray
+    background: '#FFFFFF',   // White
+    text: '#1F2937',         // Dark gray
   },
   yoga: {
-    primary: '#C4B5FD',      // Light purple
-    primaryDark: '#A78BFA',  // Medium purple
-    accent: '#DDD6FE',       // Lighter purple
-    background: '#1E1B4B',   // Deep purple/indigo
-    text: '#1F2937',         // Gray-900
+    primary: '#1F2937',      // Dark gray
+    primaryDark: '#111827',  // Darker gray
+    accent: '#6B7280',       // Medium gray
+    background: '#FFFFFF',   // White
+    text: '#1F2937',         // Dark gray
   },
   both: {
-    primary: 'linear-gradient(135deg, #D3FD00 0%, #C4B5FD 100%)', // Green to purple gradient
-    primaryDark: 'linear-gradient(135deg, #B8E000 0%, #A78BFA 100%)',
-    accent: '#7BB8D0',       // Sky blue light
-    background: '#0F1B2E',   // Navy
-    text: '#1F2937',         // Gray-900
+    primary: 'linear-gradient(135deg, #374151 0%, #1F2937 100%)', // Gray gradient
+    primaryDark: 'linear-gradient(135deg, #1F2937 0%, #111827 100%)',
+    accent: '#6B7280',       // Medium gray
+    background: '#FFFFFF',   // White
+    text: '#1F2937',         // Dark gray
   },
 }
 

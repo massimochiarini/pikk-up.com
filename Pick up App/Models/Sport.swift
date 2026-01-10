@@ -43,10 +43,10 @@ enum Sport: String, Codable, CaseIterable, Sendable, Identifiable {
     
     var color: Color {
         switch self {
-        case .yoga: return Color(hex: "C4B5FD") // Light purple
-        case .pickleball: return Color(hex: "D3FD00") // Neon green
-        case .tennis: return Color(hex: "4A9EBF") // Sky blue
-        case .other: return Color(hex: "9CA3AF") // Gray
+        case .yoga: return Color(hex: "6B7280")      // Medium gray
+        case .pickleball: return Color(hex: "9CA3AF") // Light gray
+        case .tennis: return Color(hex: "4B5563")     // Dark gray
+        case .other: return Color(hex: "9CA3AF")      // Light gray
         }
     }
 }

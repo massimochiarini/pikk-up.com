@@ -58,30 +58,30 @@ struct AppTheme {
     static let info = skyBlue                        // Info uses sky blue
     
     // MARK: - Card Gradients
-    // Primary card - vibrant neon gradient (main cards, CTAs)
+    // Primary card - subtle gray gradient (main cards, CTAs)
     static let playerCardGradient = LinearGradient(
-        colors: [neonGreen, Color(hex: "B8E000")],
+        colors: [Color(hex: "374151"), Color(hex: "1F2937")],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
     
-    // Game card - neon green gradient (primary action cards)
+    // Game card - dark gray gradient (primary action cards)
     static let gameCardGradient = LinearGradient(
-        colors: [neonGreen, Color(hex: "C4F000")],
+        colors: [Color(hex: "1F2937"), Color(hex: "111827")],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
     
-    // Secondary card - deep navy gradient (secondary/info cards)
+    // Secondary card - light gray gradient (secondary/info cards)
     static let navyCardGradient = LinearGradient(
-        colors: [navy, navyLight],
+        colors: [Color(hex: "F3F4F6"), Color(hex: "E5E7EB")],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
     
-    // Premium/featured card - navy to sky blue
+    // Premium/featured card - gray to lighter gray
     static let premiumCardGradient = LinearGradient(
-        colors: [navy, skyBlue],
+        colors: [Color(hex: "6B7280"), Color(hex: "9CA3AF")],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
@@ -93,16 +93,16 @@ struct AppTheme {
         endPoint: .bottom
     )
     
-    // Sky blue subtle gradient
+    // Subtle gray gradient
     static let mintGradient = LinearGradient(
-        colors: [skyBlue.opacity(0.3), skyBlue.opacity(0.1)],
+        colors: [Color(hex: "E5E7EB"), Color(hex: "F3F4F6")],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
     
-    // Neon accent gradient (for CTAs and highlights)
+    // Dark gray accent gradient (for CTAs and highlights)
     static let neonGradient = LinearGradient(
-        colors: [neonGreen, Color(hex: "B8E000")],
+        colors: [Color(hex: "1F2937"), Color(hex: "111827")],
         startPoint: .leading,
         endPoint: .trailing
     )
@@ -111,7 +111,7 @@ struct AppTheme {
     static let cardShadow = Color.black.opacity(0.1)
     static let buttonShadow = Color.black.opacity(0.15)
     static let tabBarShadow = Color.black.opacity(0.1)
-    static let neonGlow = neonGreen.opacity(0.3)     // Subtle glow for neon
+    static let neonGlow = Color.black.opacity(0.2)       // Subtle shadow for buttons
     
     // MARK: - Corner Radii
     static let cornerRadiusSmall: CGFloat = 8
@@ -165,7 +165,7 @@ extension View {
             .padding(.horizontal, AppTheme.spacingM)
             .padding(.vertical, AppTheme.spacingS)
             .background(AppTheme.neonGreen)
-            .foregroundColor(AppTheme.onPrimary)
+            .foregroundColor(.white)
             .cornerRadius(AppTheme.cornerRadiusPill)
             .shadow(color: AppTheme.neonGlow, radius: 4, x: 0, y: 2)
     }
@@ -184,10 +184,10 @@ extension View {
             .padding(.horizontal, AppTheme.spacingM)
             .padding(.vertical, AppTheme.spacingS)
             .background(Color.clear)
-            .foregroundColor(AppTheme.neonGreen)
+            .foregroundColor(.black)
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.cornerRadiusPill)
-                    .stroke(AppTheme.neonGreen, lineWidth: 2)
+                    .stroke(Color.black.opacity(0.3), lineWidth: 2)
             )
     }
     
@@ -205,7 +205,7 @@ struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(AppTheme.Typography.headline)
-            .foregroundColor(AppTheme.onPrimary)
+            .foregroundColor(.white)
             .frame(maxWidth: .infinity)
             .frame(height: 56)
             .background(isEnabled ? AppTheme.neonGreen : AppTheme.neonGreen.opacity(0.5))
@@ -254,7 +254,7 @@ struct CoralButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(AppTheme.Typography.headline)
-            .foregroundColor(AppTheme.onPrimary)
+            .foregroundColor(.white)
             .frame(maxWidth: .infinity)
             .frame(height: 56)
             .background(AppTheme.neonGreen)

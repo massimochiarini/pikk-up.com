@@ -4,9 +4,9 @@
 
 @layer base {
   :root {
-    --primary-color: #D3FD00;
-    --primary-dark: #B8E000;
-    --accent-color: #4A9EBF;
+    --primary-color: #1F2937;
+    --primary-dark: #111827;
+    --accent-color: #6B7280;
     --background-color: #FFFFFF;
     --text-color: #000000;
   }
