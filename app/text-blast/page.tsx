@@ -218,7 +218,7 @@ export default function TextBlastPage() {
                 <option value="">Choose a class...</option>
                 {myGames.map(({ game, participantCount }) => (
                   <option key={game.id} value={game.id}>
-                    {game.title} - {format(parseISO(game.game_date), 'MMM d, yyyy')} ({participantCount} student{participantCount === 1 ? '' : 's'})
+                    {game.custom_title || game.venue_name} - {format(parseISO(game.game_date), 'MMM d, yyyy')} ({participantCount} student{participantCount === 1 ? '' : 's'})
                   </option>
                 ))}
               </select>
@@ -233,7 +233,7 @@ export default function TextBlastPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-400">Class:</span>
-                    <span className="text-white font-medium">{selectedGame.game.title}</span>
+                    <span className="text-white font-medium">{selectedGame.game.custom_title || selectedGame.game.venue_name}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Date:</span>
@@ -241,7 +241,7 @@ export default function TextBlastPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Time:</span>
-                    <span className="text-white">{selectedGame.game.time}</span>
+                    <span className="text-white">{selectedGame.game.start_time}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Total Students:</span>
