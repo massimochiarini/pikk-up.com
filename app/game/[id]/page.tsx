@@ -302,10 +302,10 @@ export default function GameDetailPage() {
 
   if (loading || !game) {
     return (
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon-green"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
         </div>
       </div>
     )
@@ -346,87 +346,96 @@ export default function GameDetailPage() {
   const { title: eventTitle, description: eventDescription } = parseEventDetails(game.description)
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <button
           onClick={() => router.back()}
-          className="text-gray-400 hover:text-white mb-6 flex items-center gap-2"
+          className="text-gray-600 hover:text-black mb-6 flex items-center gap-2 font-medium transition-colors"
         >
           ← Back
         </button>
 
-        <div className="card">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           {/* Header */}
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="text-5xl">🧘</div>
-              <div>
-                <h1 className="text-3xl font-bold text-white">{eventTitle}</h1>
-                {game.skill_level && (
-                  <span className="text-gray-400 capitalize">{game.skill_level}</span>
-                )}
-              </div>
-            </div>
-
-            <div className={`px-4 py-2 rounded-full text-sm font-semibold ${
-              spotsLeft === 0 
-                ? 'bg-red-500/20 text-red-400'
-                : spotsLeft <= 2
-                ? 'bg-orange-500/20 text-orange-400'
-                : 'bg-neon-green/20 text-neon-green'
-            }`}>
-              {spotsLeft === 0 ? 'FULL' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
-            </div>
-          </div>
-
-          {/* Game Details */}
-          <div className="space-y-4 mb-8">
-            <div className="flex items-start space-x-3">
-              <span className="text-2xl">📅</span>
-              <div>
-                <div className="font-semibold text-white">{formattedDate}</div>
-                <div className="text-gray-400">at {formatTime(game.start_time)}</div>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <span className="text-2xl">📍</span>
-              <div>
-                <div className="font-semibold text-white">{game.venue_name}</div>
-                {game.address && <div className="text-gray-400">{game.address}</div>}
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <span className="text-2xl">👥</span>
-              <div>
-                <div className="font-semibold text-white">
-                  {currentPlayers} / {game.max_players} participants
+          <div className="p-8 border-b border-gray-200">
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <div className="text-6xl">🧘</div>
+                <div>
+                  <h1 className="text-4xl font-bold text-black mb-2">{eventTitle}</h1>
+                  {game.skill_level && (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 capitalize">
+                      {game.skill_level}
+                    </span>
+                  )}
                 </div>
-                <div className="text-gray-400">Participants attending</div>
+              </div>
+
+              <div className={`px-5 py-2.5 rounded-full text-sm font-bold ${
+                spotsLeft === 0 
+                  ? 'bg-red-100 text-red-700'
+                  : spotsLeft <= 2
+                  ? 'bg-orange-100 text-orange-700'
+                  : 'bg-green-100 text-green-700'
+              }`}>
+                {spotsLeft === 0 ? 'FULL' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
+              </div>
+            </div>
+
+            {/* Game Details */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex items-start space-x-3">
+                <span className="text-3xl">📅</span>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Date & Time</div>
+                  <div className="font-semibold text-black">{formattedDate}</div>
+                  <div className="text-gray-600">{formatTime(game.start_time)}</div>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <span className="text-3xl">📍</span>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Location</div>
+                  <div className="font-semibold text-black">{game.venue_name}</div>
+                  {game.address && <div className="text-gray-600 text-sm">{game.address}</div>}
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <span className="text-3xl">👥</span>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Participants</div>
+                  <div className="font-semibold text-black">
+                    {currentPlayers} / {game.max_players} attending
+                  </div>
+                  <div className="text-gray-600 text-sm">
+                    {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} available
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Description */}
           {eventDescription && (
-            <div className="mb-8">
-              <h3 className="font-semibold text-white mb-2">About this session</h3>
-              <p className="text-gray-300 whitespace-pre-wrap">{eventDescription}</p>
+            <div className="p-8 border-b border-gray-200 bg-gray-50">
+              <h3 className="text-lg font-bold text-black mb-3">About this session</h3>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{eventDescription}</p>
             </div>
           )}
 
           {/* Instructor Claiming Section */}
           {user && user.id !== game.created_by && (
-            <div className="border-t border-gray-800 pt-6 mb-8">
-              <h3 className="font-semibold text-white mb-3">
+            <div className="p-8 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-black mb-4">
                 {isUserInstructor ? 'You are teaching this session' : 'Claim this session'}
               </h3>
               
               {claimError && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg mb-4 text-sm">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
                   {claimError}
                 </div>
               )}
@@ -436,26 +445,26 @@ export default function GameDetailPage() {
                   <button
                     onClick={handleUnclaimSession}
                     disabled={claimLoading}
-                    className="w-full py-3 rounded-lg font-semibold bg-gray-800 hover:bg-gray-700 text-white transition-colors disabled:opacity-50 mb-4"
+                    className="w-full py-3.5 rounded-xl font-semibold bg-gray-200 hover:bg-gray-300 text-black transition-colors disabled:opacity-50 mb-4"
                   >
                     {claimLoading ? 'Releasing...' : 'Release Session'}
                   </button>
 
                   {/* Booking Link Section */}
-                  <div className="bg-neon-green/10 border border-neon-green/20 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-neon-green text-sm">📎 Public Booking Link</h4>
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-bold text-green-900 text-sm">📎 Public Booking Link</h4>
                       <button
                         onClick={handleCopyBookingLink}
-                        className="text-xs bg-neon-green hover:bg-neon-green/90 text-black px-3 py-1.5 rounded-md font-semibold transition-colors"
+                        className="text-xs bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
                       >
                         {copySuccess ? '✓ Copied!' : 'Copy Link'}
                       </button>
                     </div>
-                    <p className="text-xs text-gray-400 mb-2">
+                    <p className="text-sm text-gray-700 mb-3">
                       Share this link with clients so they can RSVP without downloading the app
                     </p>
-                    <div className="bg-black/40 rounded px-3 py-2 text-xs text-gray-300 font-mono break-all">
+                    <div className="bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-800 font-mono break-all">
                       {typeof window !== 'undefined' ? `${window.location.origin}/book/${gameId}` : '...'}
                     </div>
                   </div>
@@ -464,17 +473,17 @@ export default function GameDetailPage() {
                 <button
                   onClick={handleClaimSession}
                   disabled={claimLoading}
-                  className="w-full py-3 rounded-lg font-semibold bg-neon-green hover:bg-neon-green/90 text-black transition-colors disabled:opacity-50"
+                  className="w-full py-3.5 rounded-xl font-bold bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50"
                 >
                   {claimLoading ? 'Claiming...' : '✓ Claim as Instructor'}
                 </button>
               ) : (
-                <div className="w-full py-3 rounded-lg font-semibold bg-purple-500/10 text-purple-400 text-center">
+                <div className="w-full py-3.5 rounded-xl font-semibold bg-purple-50 text-purple-700 text-center border border-purple-200">
                   ✓ This session has been claimed by an instructor
                 </div>
               )}
 
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-sm text-gray-600 mt-3">
                 {isUserInstructor 
                   ? 'Share the booking link with your clients to allow them to register'
                   : isSessionAvailable
@@ -486,12 +495,12 @@ export default function GameDetailPage() {
 
           {/* Host Actions */}
           {user && user.id === game.created_by && (
-            <div className="border-t border-gray-800 pt-6 mb-8">
-              <h3 className="font-semibold text-white mb-3">Manage Session</h3>
+            <div className="p-8 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-black mb-4">Manage Session</h3>
               
               {isSessionBooked && (
-                <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-purple-400">
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-purple-700 font-medium">
                     ✓ This session has been claimed by an instructor
                   </p>
                 </div>
@@ -500,7 +509,7 @@ export default function GameDetailPage() {
               <button
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={isDeleting}
-                className="w-full py-3 rounded-lg font-semibold bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors disabled:opacity-50"
+                className="w-full py-3.5 rounded-xl font-bold bg-red-50 hover:bg-red-100 text-red-700 transition-colors disabled:opacity-50 border border-red-200"
               >
                 {isDeleting ? 'Canceling...' : 'Cancel Session'}
               </button>
@@ -509,15 +518,15 @@ export default function GameDetailPage() {
 
           {/* RSVP Button */}
           {user && user.id !== game.created_by && (
-            <div className="border-t border-gray-800 pt-6 mb-8">
-              <h3 className="font-semibold text-white mb-3">Join this session?</h3>
+            <div className="p-8 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-black mb-4">Join this session?</h3>
               <button
                 onClick={handleRsvp}
                 disabled={rsvpLoading || (spotsLeft === 0 && !isUserGoing)}
-                className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                className={`w-full py-3.5 rounded-xl font-bold transition-colors ${
                   isUserGoing
-                    ? 'bg-red-500/10 hover:bg-red-500/20 text-red-400'
-                    : 'bg-neon-green hover:bg-neon-green/90 text-black'
+                    ? 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200'
+                    : 'bg-black hover:bg-gray-800 text-white'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {rsvpLoading ? 'Loading...' : isUserGoing ? '✓ Attending - Click to Cancel' : '+ Join Session'}
@@ -527,28 +536,28 @@ export default function GameDetailPage() {
 
           {/* Host */}
           {creator && (
-            <div className="border-t border-gray-800 pt-6 mb-8">
-              <h3 className="font-semibold text-white mb-3">Hosted by</h3>
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sky-blue to-neon-green flex items-center justify-center text-white font-bold text-lg">
+            <div className="p-8 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-black mb-4">Hosted by</h3>
+              <div className="flex items-center space-x-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-xl shadow-md">
                   {creator.first_name[0]}
                 </div>
                 <div className="flex-1">
-                  <div className="font-semibold text-white">
+                  <div className="font-bold text-black text-lg">
                     {creator.first_name} {creator.last_name}
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 mt-1">
                     {creator.username && (
-                      <div className="text-gray-400 text-sm">@{creator.username}</div>
+                      <div className="text-gray-600 text-sm">@{creator.username}</div>
                     )}
                     {creator.instagram && (
                       <>
-                        {creator.username && <span className="text-gray-600">•</span>}
+                        {creator.username && <span className="text-gray-400">•</span>}
                         <a
                           href={`https://instagram.com/${creator.instagram}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-pink-400 hover:text-pink-300 text-sm flex items-center gap-1 transition-colors"
+                          className="text-pink-600 hover:text-pink-700 text-sm flex items-center gap-1 transition-colors font-medium"
                         >
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
@@ -565,29 +574,29 @@ export default function GameDetailPage() {
 
           {/* Attendees */}
           {(attendees.length > 0 || guestAttendees.length > 0) && (
-            <div className="border-t border-gray-800 pt-6">
-              <h3 className="font-semibold text-white mb-3">
+            <div className="p-8">
+              <h3 className="text-lg font-bold text-black mb-4">
                 Who's going ({currentPlayers})
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {/* User attendees */}
                 {attendees.map((attendee) => (
-                  <div key={attendee.id} className="flex items-center space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-blue to-neon-green flex items-center justify-center text-white font-bold text-sm">
+                  <div key={attendee.id} className="flex items-center space-x-3 bg-gray-50 rounded-lg p-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white font-bold shadow-sm">
                       {attendee.first_name[0]}
                     </div>
-                    <div className="text-sm font-medium text-white truncate">
+                    <div className="text-sm font-semibold text-black truncate">
                       {attendee.first_name} {attendee.last_name[0]}.
                     </div>
                   </div>
                 ))}
                 {/* Guest attendees */}
                 {guestAttendees.map((guest) => (
-                  <div key={guest.id} className="flex items-center space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
+                  <div key={guest.id} className="flex items-center space-x-3 bg-gray-50 rounded-lg p-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-orange-400 flex items-center justify-center text-white font-bold shadow-sm">
                       {guest.guest_first_name?.[0] || '?'}
                     </div>
-                    <div className="text-sm font-medium text-white truncate">
+                    <div className="text-sm font-semibold text-black truncate">
                       {guest.guest_first_name} {guest.guest_last_name?.[0]}.
                     </div>
                   </div>
@@ -599,10 +608,10 @@ export default function GameDetailPage() {
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-xl font-bold text-white mb-3">Cancel Session?</h3>
-              <p className="text-gray-400 mb-6">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+              <h3 className="text-2xl font-bold text-black mb-3">Cancel Session?</h3>
+              <p className="text-gray-700 mb-6 leading-relaxed">
                 Are you sure you want to cancel this session? This will also delete the group chat and 
                 remove all bookings. This action cannot be undone.
               </p>
@@ -610,14 +619,14 @@ export default function GameDetailPage() {
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isDeleting}
-                  className="flex-1 border border-gray-700 text-white hover:border-gray-500 hover:bg-gray-800 py-2 px-4 rounded-lg transition-colors"
+                  className="flex-1 border-2 border-gray-300 text-black hover:bg-gray-50 py-3 px-4 rounded-xl font-semibold transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDeleteGame}
                   disabled={isDeleting}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl transition-colors disabled:opacity-50"
                 >
                   {isDeleting ? 'Canceling...' : 'Cancel Session'}
                 </button>

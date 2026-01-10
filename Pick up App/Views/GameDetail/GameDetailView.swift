@@ -590,7 +590,18 @@ struct GameDetailView: View {
     }
     
     private func shareGame() {
-        let shareText = "Join me for \((Sport(rawValue: game.sport) ?? .other).displayName) at \(game.customTitle ?? game.venueName) on \(game.formattedDate) at \(game.formattedTime)!"
+        // Generate web app booking link
+        let webAppBaseURL = "https://pikk-up-com.vercel.app" // Update this to your actual domain
+        let bookingURL = "\(webAppBaseURL)/book/\(game.id)"
+        
+        let className = game.customTitle ?? "\(game.sport.capitalized) Class"
+        let shareText = """
+        📅 \(className)
+        📍 \(game.venueName)
+        🗓️ \(game.formattedDate) at \(game.formattedTime)
+        
+        Book your spot: \(bookingURL)
+        """
         
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first,

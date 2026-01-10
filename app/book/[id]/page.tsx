@@ -19,7 +19,6 @@ export default function PublicBookingPage() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -112,7 +111,6 @@ export default function PublicBookingPage() {
           guest_first_name: firstName.trim(),
           guest_last_name: lastName.trim(),
           guest_email: email.toLowerCase().trim(),
-          guest_phone: phone.trim() || null,
           created_at: new Date().toISOString(),
         })
 
@@ -381,20 +379,6 @@ export default function PublicBookingPage() {
                         required
                         className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-blue focus:border-transparent text-gray-900"
                         placeholder="john@example.com"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-1">
-                        Phone Number <span className="text-gray-400 font-normal">(optional)</span>
-                      </label>
-                      <input
-                        type="tel"
-                        id="phone"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-blue focus:border-transparent text-gray-900"
-                        placeholder="+1 (555) 123-4567"
                       />
                     </div>
 

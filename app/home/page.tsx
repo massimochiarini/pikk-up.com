@@ -18,8 +18,6 @@ const TIME_SLOTS = [
   { time: '19:00:00', display: '7:00 PM', duration: '1.5h' },
 ]
 
-const CATEGORIES = ['Breathe', 'Move', 'Meditate']
-
 export default function HomePage() {
   const { user, profile, loading } = useAuth()
   const router = useRouter()
@@ -34,7 +32,6 @@ export default function HomePage() {
   const [gamesLoading, setGamesLoading] = useState(true)
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState('Breathe')
 
   useEffect(() => {
     if (!loading && !user) {
@@ -222,10 +219,6 @@ export default function HomePage() {
   }
 
   const weekDays = getWeekDays()
-  const todaySessions = sessions.filter(s => {
-    const sessionDate = new Date(s.game_date)
-    return isSameDay(sessionDate, new Date()) && s.instructor_id
-  })
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -364,27 +357,6 @@ export default function HomePage() {
               </div>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* Filter Categories */}
-      <section className="py-12 px-6 border-t-2 border-gray-200">
-        <div className="container mx-auto max-w-7xl">
-          <div className="flex items-center justify-center gap-12">
-            {CATEGORIES.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`text-2xl font-semibold tracking-wider transition-all duration-300 ${
-                  selectedCategory === category
-                    ? 'text-black'
-                    : 'text-gray-400 hover:text-black'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
         </div>
       </section>
 
