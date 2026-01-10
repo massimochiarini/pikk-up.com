@@ -14,7 +14,6 @@ struct MyGamesView: View {
     @State private var historyGames: [Game] = []
     @State private var isLoading = true
     @State private var selectedGame: Game?
-    @State private var showCreateGame = false
     
     var body: some View {
         NavigationStack {
@@ -23,28 +22,13 @@ struct MyGamesView: View {
                     // Header
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("My Games")
+                            Text("My Classes")
                                 .font(.system(size: 28, weight: .semibold))
                                 .foregroundColor(AppTheme.textPrimary)
                             
-                            Text("Your upcoming and past games")
+                            Text("Your upcoming and past classes")
                                 .font(.system(size: 17, weight: .medium))
                                 .foregroundColor(AppTheme.textSecondary)
-                        }
-                        
-                        Spacer()
-                        
-                        // Create button
-                        Button(action: { showCreateGame = true }) {
-                            ZStack {
-                                Circle()
-                                    .fill(AppTheme.neonGreen)
-                                    .frame(width: 44, height: 44)
-                                
-                                Image(systemName: "plus")
-                                    .font(.system(size: 20, weight: .bold))
-                                    .foregroundColor(AppTheme.textPrimary)
-                            }
                         }
                     }
                     .padding(.horizontal, 20)
@@ -61,7 +45,7 @@ struct MyGamesView: View {
                         .padding(.horizontal, 20)
                     } else if hostedGames.isEmpty && rsvpedGames.isEmpty && historyGames.isEmpty {
                         // Empty state
-                        EmptyMyGamesView(onCreateTapped: { showCreateGame = true })
+                        EmptyMyGamesView()
                             .padding(.horizontal, 20)
                             .padding(.top, 20)
                     } else {
@@ -100,16 +84,6 @@ struct MyGamesView: View {
             .navigationBarHidden(true)
             .navigationDestination(item: $selectedGame) { game in
                 GameDetailView(game: game)
-            }
-            .sheet(isPresented: $showCreateGame, onDismiss: {
-                // Refresh games after creating a new game
-                Task {
-                    await loadGames()
-                }
-            }) {
-                CreateGameView()
-                    .environmentObject(authService)
-                    .environmentObject(gameService)
             }
         }
         .task {
@@ -446,8 +420,6 @@ struct HistoryGameCard: View {
 
 // MARK: - Empty State View
 struct EmptyMyGamesView: View {
-    let onCreateTapped: () -> Void
-    
     var body: some View {
         VStack(spacing: 24) {
             // Icon
@@ -466,23 +438,10 @@ struct EmptyMyGamesView: View {
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(AppTheme.textPrimary)
                 
-                Text("Create your first game or join one\nto see it here!")
+                Text("Join a session to see it here. Check the feed for available classes.")
                     .font(.system(size: 15))
                     .foregroundColor(AppTheme.textSecondary)
                     .multilineTextAlignment(.center)
-            }
-            
-            Button(action: onCreateTapped) {
-                HStack(spacing: 8) {
-                    Image(systemName: "plus.circle.fill")
-                    Text("Create Game")
-                }
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(AppTheme.textPrimary)
-                .padding(.horizontal, 28)
-                .padding(.vertical, 14)
-                .background(AppTheme.neonGreen)
-                .cornerRadius(12)
             }
         }
         .frame(maxWidth: .infinity)

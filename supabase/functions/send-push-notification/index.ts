@@ -25,6 +25,13 @@ interface MessagePayload {
     conversation_id?: string
     group_chat_id?: string
     created_at: string
+    sport?: string
+    venue_name?: string
+    custom_title?: string | null
+    game_date?: string
+    start_time?: string
+    is_private?: boolean
+    created_by?: string
   }
 }
 
@@ -154,10 +161,11 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
     const { record } = payload
-    const senderId = record.sender_id
+    const senderId = record.sender_id || record.created_by || ""
     let tokens: { token: string; user_id: string }[] = []
     let notificationTitle = ""
-    let notificationBody = record.content.substring(0, 100)
+    let notificationBody =
+      typeof record.content === "string" ? record.content.substring(0, 100) : ""
     let notificationType = ""
     let extraData: Record<string, string> = {}
 
@@ -172,7 +180,9 @@ serve(async (req) => {
       ? `${senderProfile.first_name} ${senderProfile.last_name}`
       : "Someone"
 
-    if (payload.table === "messages" && record.conversation_id) {
+  const isGameInsert = payload.table === "games"
+
+  if (payload.table === "messages" && record.conversation_id) {
       // Direct message
       notificationType = "message"
       notificationTitle = senderName
@@ -206,6 +216,35 @@ serve(async (req) => {
         exclude_user_id: senderId,
       })
       tokens = data || []
+    } else if (isGameInsert && record.sport?.toLowerCase() === "yoga") {
+      // New yoga session created
+      notificationType = "yoga_session"
+      notificationTitle = "New Yoga Session"
+      const gameTitle = record.custom_title || record.venue_name || "Yoga Class"
+      const formattedDateTime = formatDateTime(record.game_date, record.start_time)
+      notificationBody = formattedDateTime
+        ? `${gameTitle} · ${formattedDateTime}`
+        : gameTitle
+      extraData = { game_id: record.id }
+
+      if (record.is_private) {
+        console.log("Skipping push for private yoga session")
+        tokens = []
+      } else {
+        // Notify users who prefer yoga (or both), exclude creator
+        const { data, error } = await supabase
+          .from("device_tokens")
+          .select("token, user_id, profiles!inner(sport_preference)")
+          .neq("user_id", record.created_by || "")
+          .in("profiles.sport_preference", ["yoga", "both"])
+
+        if (error) {
+          console.error("Error fetching yoga tokens:", error)
+          tokens = []
+        } else {
+          tokens = data || []
+        }
+      }
     }
 
     console.log(`Found ${tokens.length} tokens to notify`)
@@ -253,3 +292,13 @@ serve(async (req) => {
     )
   }
 })
+
+function formatDateTime(dateStr?: string, timeStr?: string): string | undefined {
+  if (!dateStr) return undefined
+  try {
+    const trimmedTime = timeStr?.slice(0, 5) // HH:mm
+    return trimmedTime ? `${dateStr} at ${trimmedTime}` : dateStr
+  } catch {
+    return dateStr
+  }
+}

@@ -1,13 +1,16 @@
 //
 //  GameService.swift
-//  PickleballApp
+//  Pick Up Yoga
+//
+//  Service for yoga class management (read-only for mobile app)
+//  Classes are created and managed by instructors via web app
 //
 
 import Foundation
 import Combine
 import Supabase
 
-// Notification name for game updates
+// Notification name for class updates
 extension Notification.Name {
     static let gameDeleted = Notification.Name("gameDeleted")
     static let gameUpdated = Notification.Name("gameUpdated")
@@ -26,7 +29,7 @@ class GameService: ObservableObject {
         errorMessage = nil
         
         do {
-            // Fetch games ordered by date
+            // Fetch yoga classes ordered by date
             var fetchedGames: [Game] = try await supabase
                 .from("games")
                 .select()
@@ -36,8 +39,8 @@ class GameService: ObservableObject {
                 .execute()
                 .value
             
-            // Filter out private games unless user is the creator
-            // Also filter out games that have already passed
+            // Filter out private classes unless user is the creator
+            // Also filter out classes that have already passed
             fetchedGames = fetchedGames.filter { game in
                 !game.hasPassed && (!game.isPrivate || game.createdBy == currentUserId)
             }
@@ -56,6 +59,11 @@ class GameService: ObservableObject {
         isLoading = false
     }
     
+    // MARK: - Class Creation/Management (Disabled for Mobile - Web Only)
+    // Classes are created and managed by instructors via the web app
+    // Mobile users can only view and join classes
+    
+    /*
     func createGame(_ newGame: NewGame) async throws -> Game {
         // 1. Create the game record
         let game: Game = try await supabase
@@ -69,15 +77,18 @@ class GameService: ObservableObject {
         // 2. Auto-add host as the first participant
         try await addParticipant(gameId: game.id, userId: newGame.createdBy)
         
-        // 3. Create a group chat for the game
-        try await createGroupChatForGame(game: game, creatorId: newGame.createdBy)
+        // REMOVED: Group chat creation disabled (messaging removed)
+        // try await createGroupChatForGame(game: game, creatorId: newGame.createdBy)
         
         // 4. Refresh games list (pass creator's userId to preserve private game visibility)
         await fetchGames(currentUserId: newGame.createdBy)
         
         return game
     }
+    */
     
+    // REMOVED: Group chat functions disabled (messaging removed)
+    /*
     /// Creates a group chat for a game and adds the creator as the first member
     private func createGroupChatForGame(game: Game, creatorId: UUID) async throws {
         // Create group chat with game venue name as the chat name
@@ -129,6 +140,7 @@ class GameService: ObservableObject {
             .eq("user_id", value: userId.uuidString)
             .execute()
     }
+    */
     
     /// Adds a participant to a game without triggering a full refresh
     private func addParticipant(gameId: UUID, userId: UUID) async throws {
@@ -178,10 +190,10 @@ class GameService: ObservableObject {
             .insert(["game_id": gameId.uuidString, "user_id": userId.uuidString])
             .execute()
         
-        // Add user to the game's group chat
-        if let groupChat = try? await getGroupChatForGame(gameId: gameId) {
-            try? await addMemberToGroupChat(groupChatId: groupChat.id, userId: userId)
-        }
+        // REMOVED: Group chat member addition disabled (messaging removed)
+        // if let groupChat = try? await getGroupChatForGame(gameId: gameId) {
+        //     try? await addMemberToGroupChat(groupChatId: groupChat.id, userId: userId)
+        // }
         
         await fetchGames(currentUserId: userId)
     }
@@ -194,16 +206,18 @@ class GameService: ObservableObject {
             .eq("user_id", value: userId.uuidString)
             .execute()
         
-        // Remove user from the game's group chat
-        if let groupChat = try? await getGroupChatForGame(gameId: gameId) {
-            try? await removeMemberFromGroupChat(groupChatId: groupChat.id, userId: userId)
-        }
+        // REMOVED: Group chat member removal disabled (messaging removed)
+        // if let groupChat = try? await getGroupChatForGame(gameId: gameId) {
+        //     try? await removeMemberFromGroupChat(groupChatId: groupChat.id, userId: userId)
+        // }
         
         await fetchGames(currentUserId: userId)
     }
     
-    // MARK: - Game Management (Creator Only)
+    // MARK: - Class Management (Disabled for Mobile - Web Only)
+    // Update and delete functions disabled - instructors manage via web app
     
+    /*
     func updateGame(gameId: UUID, updates: GameUpdate, userId: UUID) async throws {
         print("📝 [GameService] Updating game \(gameId)")
         print("   Updates: \(updates)")
@@ -234,6 +248,7 @@ class GameService: ObservableObject {
         // Notify other views to refresh
         NotificationCenter.default.post(name: .gameDeleted, object: nil)
     }
+    */
     
     func fetchUserCreatedGames(userId: UUID) async throws -> [Game] {
         var fetchedGames: [Game] = try await supabase
@@ -258,7 +273,7 @@ class GameService: ObservableObject {
         return fetchedGames
     }
     
-    // MARK: - My Games (Active & History)
+    // MARK: - My Classes (Active & History)
     
     /// Fetches all active games the user is participating in (hosting or attending)
     /// Active games are games with game_date >= today

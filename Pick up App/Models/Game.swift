@@ -1,12 +1,15 @@
 //
 //  Game.swift
-//  PickleballApp
+//  Pick Up Yoga
+//
+//  Renamed from Game to support yoga class sessions
+//  All references to "game" maintained for database compatibility
 //
 
 import Foundation
 import SwiftUI
 
-// Skill level enum for games
+// Class level enum for yoga sessions
 enum SkillLevel: String, Codable, CaseIterable, Sendable {
     case beginner = "beginner"
     case intermediate = "intermediate"
@@ -57,23 +60,23 @@ struct Game: Codable, Identifiable, Hashable, Sendable {
     let id: UUID
     let createdBy: UUID
     let instructorId: UUID? // Set when created via web app by an instructor
-    let sport: String
-    let venueName: String
-    let address: String
-    let gameDate: Date
-    let startTime: String
-    let maxPlayers: Int
-    let costCents: Int
-    let description: String?
-    let imageUrl: String?
-    let isPrivate: Bool
-    let skillLevel: SkillLevel?
-    let customTitle: String?
+    let sport: String // Always "yoga" for this app
+    let venueName: String // Studio name
+    let address: String // Studio address
+    let gameDate: Date // Class date
+    let startTime: String // Class start time
+    let maxPlayers: Int // Max participants for the class
+    let costCents: Int // Class cost
+    let description: String? // Class description
+    let imageUrl: String? // Class or instructor image
+    let isPrivate: Bool // Private class
+    let skillLevel: SkillLevel? // Class level
+    let customTitle: String? // Custom class title (e.g., "Vinyasa Flow", "Hot Yoga")
     let latitude: Double?
     let longitude: Double?
     let createdAt: Date
     
-    // Computed property for RSVP count (will be populated separately)
+    // Computed property for RSVP count (participants)
     var rsvpCount: Int = 0
     
     // Distance from user (populated by geocoding)
@@ -83,8 +86,8 @@ struct Game: Codable, Identifiable, Hashable, Sendable {
         costCents == 0
     }
     
-    /// Returns true if this session was created via the web app (by an instructor)
-    /// Web-managed sessions should not be editable from mobile to preserve instructor features
+    /// Returns true if this class was created via the web app (by an instructor)
+    /// Web-managed classes should not be editable from mobile
     var isWebManaged: Bool {
         instructorId != nil
     }
@@ -127,7 +130,7 @@ struct Game: Codable, Identifiable, Hashable, Sendable {
         return address
     }
     
-    /// Returns true if the game has already started (date + start time is in the past)
+    /// Returns true if the class has already started (date + start time is in the past)
     var hasPassed: Bool {
         // Parse start time (format: "HH:mm:ss")
         let timeFormatter = DateFormatter()
@@ -141,7 +144,7 @@ struct Game: Codable, Identifiable, Hashable, Sendable {
         let calendar = Calendar.current
         let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: timeDate)
         
-        // Combine game date with start time
+        // Combine class date with start time
         var gameDateComponents = calendar.dateComponents([.year, .month, .day], from: gameDate)
         gameDateComponents.hour = timeComponents.hour
         gameDateComponents.minute = timeComponents.minute
@@ -181,7 +184,7 @@ struct Game: Codable, Identifiable, Hashable, Sendable {
         id = try container.decode(UUID.self, forKey: .id)
         createdBy = try container.decode(UUID.self, forKey: .createdBy)
         instructorId = try container.decodeIfPresent(UUID.self, forKey: .instructorId)
-        sport = try container.decodeIfPresent(String.self, forKey: .sport) ?? "pickleball"
+        sport = try container.decodeIfPresent(String.self, forKey: .sport) ?? "yoga" // Default to yoga
         venueName = try container.decode(String.self, forKey: .venueName)
         address = try container.decode(String.self, forKey: .address)
         
@@ -231,10 +234,10 @@ struct Game: Codable, Identifiable, Hashable, Sendable {
     }
 }
 
-// For creating new games
+// For creating new classes (instructors only via web)
 struct NewGame: Encodable, Sendable {
     let createdBy: UUID
-    let sport: String  // Added explicit sport field
+    let sport: String  // Always "yoga"
     let venueName: String
     let address: String
     let gameDate: String
@@ -268,7 +271,7 @@ struct NewGame: Encodable, Sendable {
     }
 }
 
-// For updating existing games
+// For updating existing classes (instructors only via web)
 struct GameUpdate: Encodable, Sendable {
     var venueName: String?
     var address: String?

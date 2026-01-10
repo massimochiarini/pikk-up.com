@@ -10,8 +10,8 @@ struct ActivityCard: View {
     var onTap: (() -> Void)? = nil
     
     // Updated color palette using brand blue
-    private var textDark: Color { AppTheme.textPrimary }                   // Dark gray/black for title
-    private var textSubtle: Color { AppTheme.textPrimary.opacity(0.5) }    // Less opaque for subtitle
+    private var textDark: Color { Color.white }                            // White for title in dark mode
+    private var textSubtle: Color { Color.white.opacity(0.7) }             // 70% white for subtitle
     private let iconColor = AppTheme.brandBlue                             // Blue for icon
     private let borderColor = AppTheme.brandBlue.opacity(0.2)
     
@@ -177,12 +177,12 @@ struct EmptyStateCard: View {
             VStack(spacing: 16) {
                 ZStack {
                     Circle()
-                        .fill(AppTheme.neonGreen.opacity(0.15))
+                        .fill(AppTheme.brandBlue.opacity(0.15))
                         .frame(width: 80, height: 80)
                     
                     Image(systemName: icon)
                         .font(.system(size: 32, weight: .bold))
-                        .foregroundColor(AppTheme.neonGreenDark)
+                        .foregroundColor(AppTheme.brandBlue)
                 }
                 
                 VStack(spacing: 8) {
@@ -200,12 +200,12 @@ struct EmptyStateCard: View {
                     Button(action: onButtonTap) {
                         Text(buttonText)
                             .font(.system(size: 15, weight: .bold))
-                            .foregroundColor(AppTheme.onPrimary)
+                            .foregroundColor(.white)
                             .padding(.horizontal, 24)
                             .padding(.vertical, 12)
-                            .background(AppTheme.neonGreen)
+                            .background(AppTheme.brandBlue)
                             .cornerRadius(AppTheme.cornerRadiusPill)
-                            .shadow(color: AppTheme.neonGlow, radius: 6, x: 0, y: 3)
+                            .shadow(color: AppTheme.brandBlue.opacity(0.3), radius: 6, x: 0, y: 3)
                     }
                     .padding(.top, 8)
                 }
@@ -223,12 +223,7 @@ struct EmptyStateCard: View {
             )
             
             ActivityCard(
-                activity: ActivityItem.playersLookingActivity(count: 3),
-                onTap: {}
-            )
-            
-            ActivityCard(
-                activity: ActivityItem.joinedGameActivity(gameName: "Pickleball at Flamingo Park", gameId: UUID()),
+                activity: ActivityItem.joinedGameActivity(gameName: "Yoga at Zen Studio", gameId: UUID()),
                 onTap: {}
             )
             

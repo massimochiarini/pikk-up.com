@@ -7,12 +7,12 @@
     --primary-color: #D3FD00;
     --primary-dark: #B8E000;
     --accent-color: #4A9EBF;
-    --background-color: #000000;
-    --text-color: #FFFFFF;
+    --background-color: #FFFFFF;
+    --text-color: #000000;
   }
 
   body {
-    @apply bg-black text-white;
+    @apply bg-white text-black;
     font-feature-settings: "kern" 1, "liga" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -25,55 +25,55 @@
 
   /* Custom Selection */
   ::selection {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
+    background-color: rgba(0, 0, 0, 0.1);
+    color: black;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-white text-black font-light py-4 px-8 rounded-full transition-all duration-300 tracking-wide;
+    @apply bg-black text-white font-semibold py-4 px-8 rounded-full transition-all duration-300 tracking-wide;
   }
   
   .btn-primary:hover {
-    @apply scale-105 shadow-2xl;
+    @apply scale-105 shadow-2xl bg-gray-800;
   }
   
   .btn-secondary {
-    @apply bg-transparent border border-white/30 text-white hover:bg-white/10 font-light py-4 px-8 rounded-full transition-all duration-300 tracking-wide;
+    @apply bg-transparent border border-black/30 text-black hover:bg-black/10 font-semibold py-4 px-8 rounded-full transition-all duration-300 tracking-wide;
   }
   
   .btn-outline {
-    @apply border border-gray-700 text-white hover:border-gray-500 hover:bg-gray-900 font-light py-3 px-6 rounded-full transition-all duration-300 tracking-wide;
+    @apply border-2 border-gray-300 text-black hover:border-black hover:bg-gray-50 font-semibold py-3 px-6 rounded-full transition-all duration-300 tracking-wide;
   }
   
   .input-field {
-    @apply w-full px-6 py-4 bg-white/5 border border-gray-800 rounded-2xl outline-none transition-all duration-300 text-white placeholder-gray-500;
+    @apply w-full px-6 py-4 bg-white border-2 border-gray-300 rounded-2xl outline-none transition-all duration-300 text-black placeholder-gray-400;
   }
   
   .input-field:focus {
-    @apply border-white/30 bg-white/10;
+    @apply border-black bg-white;
   }
 
-  /* Modal input overrides for white backgrounds */
+  /* Modal input overrides */
   .modal-inputs .input-field {
-    @apply bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400;
+    @apply bg-white border-gray-300 text-black placeholder-gray-400;
   }
 
   .modal-inputs .input-field:focus {
-    @apply border-gray-400 bg-white;
+    @apply border-black bg-white;
   }
 
   .modal-inputs select.input-field option {
-    @apply text-gray-900 bg-white;
+    @apply text-black bg-white;
   }
   
   .card {
-    @apply bg-gray-900 rounded-2xl border border-gray-800 p-8;
+    @apply bg-white rounded-2xl border-2 border-gray-200 p-8 shadow-md;
   }
   
   .glass-card {
-    @apply bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-8;
+    @apply bg-white/95 backdrop-blur-xl rounded-2xl border-2 border-gray-200 p-8 shadow-lg;
   }
 }
 
@@ -126,22 +126,22 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #111;
+  background: #f5f5f5;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
+  background: #d0d0d0;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #444;
+  background: #b0b0b0;
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #333 #111;
+  scrollbar-color: #d0d0d0 #f5f5f5;
 }
 
 /* Smooth Image Loading */
@@ -178,7 +178,7 @@ img {
 
 .hover-lift:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
 /* Backdrop blur for modals */
@@ -189,5 +189,5 @@ img {
 
 /* Smooth gradient backgrounds */
 .gradient-radial {
-  background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0) 70%);
+  background: radial-gradient(circle at center, rgba(0,0,0,0.05) 0%, rgba(255,255,255,0) 70%);
 }

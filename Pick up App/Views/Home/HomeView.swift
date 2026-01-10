@@ -10,13 +10,11 @@ import CoreLocation
 struct HomeView: View {
     @EnvironmentObject var authService: AuthService
     @StateObject private var feedService = FeedService()
-    @StateObject private var messageService = MessageService()
     @StateObject private var gameService = GameService()
     @ObservedObject private var locationManager = LocationManager.shared
     
     @State private var showSettings = false
     @State private var showAddFriends = false
-    @State private var selectedPost: PostWithProfile?
     @State private var selectedGame: Game?
     @State private var selectedProfile: Profile?
     
@@ -71,10 +69,6 @@ struct HomeView: View {
                 try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
             }
             
-            // Set sport preference from profile
-            // Default to "both" so users see all sessions (yoga and pickleball)
-            feedService.sportPreference = authService.currentProfile?.sportPreference ?? "both"
-            
             await feedService.fetchFeed(currentUserId: authService.currentUser?.id)
             // TODO: Enable conversations when the table is created in Supabase
             // if let userId = authService.currentUser?.id {
@@ -97,16 +91,6 @@ struct HomeView: View {
                 }
             }
         }
-        .onChange(of: authService.currentProfile?.sportPreference) { oldPreference, newPreference in
-            // Refresh feed when sport preference changes
-            if oldPreference != newPreference {
-                feedService.sportPreference = newPreference ?? "both"
-                print("🔄 [HomeView] Sport preference changed from \(oldPreference ?? "nil") to \(newPreference ?? "nil")")
-                Task {
-                    await feedService.refresh(currentUserId: authService.currentUser?.id)
-                }
-            }
-        }
     }
     
     // MARK: - Header
@@ -121,7 +105,7 @@ struct HomeView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "mappin.circle.fill")
                         .font(.system(size: 14))
-                        .foregroundColor(.gray)
+                        .foregroundColor(AppTheme.textSecondary)
                     Text("In Miami FL")
                         .font(.system(size: 17, weight: .medium))
                         .foregroundColor(AppTheme.textSecondary)
@@ -135,12 +119,12 @@ struct HomeView: View {
                 Button(action: { showAddFriends = true }) {
                     ZStack {
                         Circle()
-                            .fill(AppTheme.divider)
+                            .fill(AppTheme.cardBackground)
                             .frame(width: 44, height: 44)
                         
                         Image(systemName: "person.badge.plus")
                             .font(.system(size: 20))
-                            .foregroundColor(AppTheme.textSecondary)
+                            .foregroundColor(AppTheme.textPrimary)
                     }
                 }
                 
@@ -148,12 +132,12 @@ struct HomeView: View {
                 Button(action: { showSettings = true }) {
                     ZStack {
                         Circle()
-                            .fill(AppTheme.divider)
+                            .fill(AppTheme.cardBackground)
                             .frame(width: 44, height: 44)
                         
                         Image(systemName: "gearshape.fill")
                             .font(.system(size: 20))
-                            .foregroundColor(AppTheme.textSecondary)
+                            .foregroundColor(AppTheme.textPrimary)
                     }
                 }
             }
@@ -176,19 +160,6 @@ struct HomeView: View {
     @ViewBuilder
     private func feedItemView(_ item: FeedItem) -> some View {
         switch item.type {
-        case .playerPost(let post):
-            PlayerLookingCard(
-                post: post,
-                connectionContext: item.connectionContext,
-                onMessageTapped: {
-                    startConversation(with: post)
-                },
-                onProfileTapped: {
-                    selectedProfile = post.profiles
-                },
-                distanceText: "Nearby"
-            )
-            
         case .game(let game):
             GameCardNew(
                 game: game,
@@ -222,7 +193,7 @@ struct HomeView: View {
     
     private var loadingCard: some View {
         RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
-            .fill(AppTheme.divider)
+            .fill(AppTheme.cardBackground)
             .frame(height: 180)
             .shimmering()
     }
@@ -231,42 +202,23 @@ struct HomeView: View {
     
     private var emptyFeedView: some View {
         VStack(spacing: 16) {
-            Image(systemName: "sportscourt")
+            Image(systemName: "figure.mind.and.body")
                 .font(.system(size: 48))
                 .foregroundColor(AppTheme.textTertiary)
             
-            Text("No games are scheduled")
+            Text("No classes are scheduled")
                 .font(.system(size: 17, weight: .medium))
-                .foregroundColor(AppTheme.textSecondary)
+                .foregroundColor(AppTheme.textPrimary)
             
             Text("Pull to refresh or check back soon.")
                 .font(.system(size: 14))
-                .foregroundColor(AppTheme.textTertiary)
+                .foregroundColor(AppTheme.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 80)
     }
     
-    // MARK: - Actions
-    
-    private func startConversation(with post: PostWithProfile) {
-        guard let currentUserId = authService.currentUser?.id,
-              let profile = post.profiles else { return }
-        
-        Task {
-            do {
-                _ = try await messageService.startConversation(
-                    with: post.userId,
-                    currentUserId: currentUserId,
-                    contextType: .post,
-                    contextId: post.id
-                )
-                // Navigate to conversation
-            } catch {
-                print("Error starting conversation: \(error)")
-            }
-        }
-    }
+    // MARK: - Actions removed (no player posts)
 }
 
 // MARK: - Shimmer Effect
@@ -280,9 +232,9 @@ struct ShimmerModifier: ViewModifier {
                 GeometryReader { geometry in
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0),
-                            Color.white.opacity(0.5),
-                            Color.white.opacity(0)
+                            Color.black.opacity(0),
+                            Color.black.opacity(0.1),
+                            Color.black.opacity(0)
                         ],
                         startPoint: .leading,
                         endPoint: .trailing

@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
@@ -11,16 +11,27 @@ export default function ProfilePage() {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
 
-  const [firstName, setFirstName] = useState(profile?.first_name || '')
-  const [lastName, setLastName] = useState(profile?.last_name || '')
-  const [username, setUsername] = useState(profile?.username || '')
-  const [bio, setBio] = useState(profile?.bio || '')
-  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [username, setUsername] = useState('')
+  const [bio, setBio] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
   
   const [loading, setLoading] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+
+  // Initialize form fields when profile loads
+  useEffect(() => {
+    if (profile) {
+      setFirstName(profile.first_name || '')
+      setLastName(profile.last_name || '')
+      setUsername(profile.username || '')
+      setBio(profile.bio || '')
+      setAvatarUrl(profile.avatar_url || '')
+    }
+  }, [profile])
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -161,30 +172,30 @@ export default function ProfilePage() {
 
   if (!user || !profile) {
     return (
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-white">
         <Navbar />
         <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-light tracking-wide text-white mb-2">
+          <h1 className="text-3xl font-bold text-black mb-2">
             My Profile
           </h1>
-          <p className="text-gray-400">
+          <p className="text-gray-600">
             Manage your personal information
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-8 shadow-2xl">
+        <div className="bg-gray-50 rounded-2xl p-8 shadow-lg border-2 border-gray-200">
           {/* Avatar */}
           <div className="flex flex-col items-center mb-8">
             <div className="relative group">
@@ -192,10 +203,10 @@ export default function ProfilePage() {
                 <img 
                   src={avatarUrl} 
                   alt="Profile" 
-                  className="w-32 h-32 rounded-full object-cover border-4 border-gray-100 shadow-lg"
+                  className="w-32 h-32 rounded-full object-cover border-4 border-gray-300 shadow-xl"
                 />
               ) : (
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-white font-bold text-5xl border-4 border-gray-100 shadow-lg">
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-black font-bold text-5xl border-4 border-gray-300 shadow-xl">
                   {profile.first_name[0]}
                 </div>
               )}
@@ -259,21 +270,21 @@ export default function ProfilePage() {
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-black placeholder-gray-400 focus:border-gray-400 focus:bg-gray-50 outline-none transition-all disabled:opacity-60"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100"
                   disabled={!editing}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Last Name
                 </label>
                 <input
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-black placeholder-gray-400 focus:border-gray-400 focus:bg-gray-50 outline-none transition-all disabled:opacity-60"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100"
                   disabled={!editing}
                   required
                 />
@@ -281,27 +292,27 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Username
               </label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-black placeholder-gray-400 focus:border-gray-400 focus:bg-gray-50 outline-none transition-all disabled:opacity-60"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100"
                 disabled={!editing}
                 placeholder="@username"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Bio
               </label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-black placeholder-gray-400 focus:border-gray-400 focus:bg-gray-50 outline-none transition-all disabled:opacity-60 resize-none"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100 resize-none"
                 rows={4}
                 disabled={!editing}
                 placeholder="Tell others about yourself..."
@@ -309,13 +320,13 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email
               </label>
               <input
                 type="email"
                 value={user.email}
-                className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-black placeholder-gray-400 outline-none opacity-60"
+                className="w-full px-4 py-3 bg-gray-100 border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 outline-none cursor-not-allowed"
                 disabled
               />
               <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
@@ -328,7 +339,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-black font-medium rounded-full hover:bg-gray-50 transition-all disabled:opacity-50"
+                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-full hover:bg-gray-50 transition-all disabled:opacity-50"
                     disabled={loading}
                   >
                     Cancel
@@ -336,7 +347,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 px-6 py-3 bg-black text-white font-medium rounded-full hover:bg-gray-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-6 py-3 bg-black text-white font-semibold rounded-full hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                   >
                     {loading ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -345,7 +356,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setEditing(true)}
-                  className="w-full px-6 py-3 bg-black text-white font-medium rounded-full hover:bg-gray-900 transition-all"
+                  className="w-full px-6 py-3 bg-black text-white font-semibold rounded-full hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl"
                 >
                   Edit Profile
                 </button>
@@ -354,7 +365,7 @@ export default function ProfilePage() {
           </form>
 
           {/* Stats */}
-          <div className="border-t border-gray-200 mt-8 pt-6">
+          <div className="border-t-2 border-gray-200 mt-8 pt-6">
             <h3 className="font-semibold text-black mb-4">Account Info</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">

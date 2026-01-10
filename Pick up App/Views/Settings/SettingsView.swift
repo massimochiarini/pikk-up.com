@@ -24,10 +24,6 @@ struct SettingsView: View {
     @State private var showHelpFAQ = false
     @State private var showContactUs = false
     
-    // Sport preferences
-    @State private var isPickleballSelected = true
-    @State private var isYogaSelected = false
-    
     var body: some View {
         NavigationView {
             List {
@@ -95,31 +91,6 @@ struct SettingsView: View {
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
-                }
-                
-                // Sports Section
-                Section {
-                    SportFilterRow(
-                        sport: "Pickleball",
-                        subtitle: "Games created on mobile",
-                        icon: "sportscourt",
-                        isSelected: isPickleballSelected,
-                        onToggle: { togglePickleball() }
-                    )
-                    
-                    SportFilterRow(
-                        sport: "Yoga",
-                        subtitle: "Sessions created on web",
-                        icon: "figure.mind.and.body",
-                        isSelected: isYogaSelected,
-                        onToggle: { toggleYoga() }
-                    )
-                } header: {
-                    Text("Sports")
-                } footer: {
-                    Text("Choose which types of activities to show in your feed. Changes take effect immediately.")
-                        .font(.system(size: 13))
-                        .foregroundColor(AppTheme.textTertiary)
                 }
                 
                 // Support Section
@@ -250,7 +221,6 @@ struct SettingsView: View {
             }
             .task {
                 await notificationService.checkNotificationStatus()
-                loadSportPreferences()
             }
             .sheet(isPresented: $showEditProfile) {
                 EditProfileView()
@@ -306,75 +276,6 @@ struct SettingsView: View {
         //     UIApplication.shared.open(appStoreUrl)
         // }
     }
-    
-    // MARK: - Sport Preference Actions
-    
-    private func togglePickleball() {
-        isPickleballSelected.toggle()
-        updateSportPreference()
-    }
-    
-    private func toggleYoga() {
-        isYogaSelected.toggle()
-        updateSportPreference()
-    }
-    
-    private func updateSportPreference() {
-        guard let userId = authService.currentUser?.id else { return }
-        
-        let preference: String
-        if isPickleballSelected && isYogaSelected {
-            preference = "both"
-        } else if isPickleballSelected {
-            preference = "pickleball"
-        } else if isYogaSelected {
-            preference = "yoga"
-        } else {
-            // Neither selected - user wants to see no games (or we could default to "both")
-            // For now, allow this state
-            preference = "none"
-        }
-        
-        Task { @MainActor in
-            do {
-                let profileService = ProfileService()
-                let update = ProfileUpdate(sportPreference: preference)
-                try await profileService.updateProfile(userId: userId, updates: update)
-                
-                // Refresh the current profile
-                await authService.refreshProfile()
-                
-                print("✅ Sport preference updated to: \(preference)")
-            } catch {
-                print("❌ Error updating sport preference: \(error)")
-                errorMessage = "Failed to update sport preference"
-                showErrorAlert = true
-            }
-        }
-    }
-    
-    private func loadSportPreferences() {
-        guard let profile = authService.currentProfile else { return }
-        
-        switch profile.sportPreference {
-        case "pickleball":
-            isPickleballSelected = true
-            isYogaSelected = false
-        case "yoga":
-            isPickleballSelected = false
-            isYogaSelected = true
-        case "both":
-            isPickleballSelected = true
-            isYogaSelected = true
-        case "none":
-            isPickleballSelected = false
-            isYogaSelected = false
-        default:
-            // Default to "both" for new users
-            isPickleballSelected = true
-            isYogaSelected = true
-        }
-    }
 }
 
 // MARK: - Settings Row
@@ -408,54 +309,6 @@ struct SettingsRow: View {
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(AppTheme.textTertiary)
         }
-    }
-}
-
-// MARK: - Sport Filter Row
-
-struct SportFilterRow: View {
-    let sport: String
-    let subtitle: String?
-    let icon: String
-    let isSelected: Bool
-    let onToggle: () -> Void
-    
-    var body: some View {
-        Button(action: onToggle) {
-            HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.system(size: 18))
-                    .foregroundColor(isSelected ? AppTheme.neonGreen : AppTheme.textTertiary)
-                    .frame(width: 28)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(sport)
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(AppTheme.textPrimary)
-                    
-                    if let subtitle = subtitle {
-                        Text(subtitle)
-                            .font(.system(size: 13))
-                            .foregroundColor(AppTheme.textTertiary)
-                    }
-                }
-                
-                Spacer()
-                
-                ZStack {
-                    Circle()
-                        .stroke(isSelected ? AppTheme.neonGreen : AppTheme.textTertiary, lineWidth: 2)
-                        .frame(width: 24, height: 24)
-                    
-                    if isSelected {
-                        Circle()
-                            .fill(AppTheme.neonGreen)
-                            .frame(width: 14, height: 14)
-                    }
-                }
-            }
-        }
-        .buttonStyle(PlainButtonStyle())
     }
 }
 

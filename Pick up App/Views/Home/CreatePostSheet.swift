@@ -8,26 +8,22 @@ import Auth
 
 enum CreateMode: String, CaseIterable {
     case lookingToPlay = "looking"
-    case createGame = "game"
     
     var title: String {
         switch self {
         case .lookingToPlay: return "I want to play"
-        case .createGame: return "Create a game"
         }
     }
     
     var subtitle: String {
         switch self {
         case .lookingToPlay: return "Find someone to play with 1-on-1"
-        case .createGame: return "Organize a match and invite others"
         }
     }
     
     var icon: String {
         switch self {
         case .lookingToPlay: return "person.wave.2.fill"
-        case .createGame: return "calendar.badge.plus"
         }
     }
 }
@@ -72,11 +68,8 @@ struct CreatePostSheet: View {
                 
                 if selectedMode == nil {
                     modeSelectionView
-                } else if selectedMode == .lookingToPlay {
-                    lookingToPlayForm
                 } else {
-                    // Redirect to existing CreateGameView
-                    CreateGameView()
+                    lookingToPlayForm
                 }
             }
             .navigationBarTitleDisplayMode(.inline)

@@ -12,22 +12,16 @@ struct OtherProfileView: View {
     
     let profile: Profile
     
-    @StateObject private var profileService = ProfileService()
-    @StateObject private var messageService = MessageService()
     @StateObject private var connectionService = ConnectionService()
     @StateObject private var gameService = GameService()
-    @StateObject private var postService = PostService()
     @StateObject private var safetyService = SafetyService()
     
-    @State private var stats: ProfileStats?
     @State private var connectionType: ConnectionType?
     @State private var userGames: [Game] = []
     @State private var myGames: [Game] = []  // Games I created or joined for inviting
     @State private var selectedSegment = 0
     @State private var isLoadingAction = false
     @State private var showInviteSheet = false
-    @State private var navigateToConversation = false
-    @State private var conversationToNavigate: Conversation?
     @State private var showInviteSentAlert = false
     @State private var invitedGameName = ""
     @State private var showReportView = false
@@ -47,10 +41,6 @@ struct OtherProfileView: View {
                     connectionBadge(connection)
                         .padding(.top, 12)
                 }
-                
-                // Stats row
-                statsRow
-                    .padding(.top, 20)
                 
                 // Action buttons
                 actionButtons
@@ -112,27 +102,13 @@ struct OtherProfileView: View {
                  "You won't see content from \(profile.firstName) and they won't be able to message you.")
         }
         .sheet(isPresented: $showInviteSheet) {
-            InviteToGameSheet(
-                inviteeProfile: profile,
-                games: myGames,
-                messageService: messageService,
-                onInviteSent: { gameName in
-                    invitedGameName = gameName
-                    showInviteSentAlert = true
-                }
-            )
-            .environmentObject(authService)
+            Text("Invite feature removed - messaging has been disabled")
+                .padding()
         }
-        .alert("Invite Sent! 🎉", isPresented: $showInviteSentAlert) {
+        .alert("Notice", isPresented: $showInviteSentAlert) {
             Button("OK", role: .cancel) { }
         } message: {
-            Text("\(profile.firstName) will receive your invite to \(invitedGameName) in their messages. They can accept or decline from there!")
-        }
-        .navigationDestination(isPresented: $navigateToConversation) {
-            if let conversation = conversationToNavigate {
-                ConversationView(conversation: conversation, otherProfile: profile)
-                    .environmentObject(authService)
-            }
+            Text("Messaging feature has been removed from the app.")
         }
         .task {
             await loadProfileData()
@@ -195,52 +171,14 @@ struct OtherProfileView: View {
         .cornerRadius(AppTheme.cornerRadiusPill)
     }
     
-    // MARK: - Stats Row
-    
-    private var statsRow: some View {
-        HStack(spacing: 0) {
-            StatItem(value: stats?.gamesPlayed ?? 0, label: "Games")
-            
-            Divider()
-                .frame(height: 40)
-            
-            StatItem(value: profile.sports.count, label: "Sports")
-            
-            Divider()
-                .frame(height: 40)
-            
-            StatItem(value: stats?.connectionsCount ?? 0, label: "Connections")
-        }
-        .padding(.horizontal, 24)
-    }
-    
     // MARK: - Action Buttons
     
     private var actionButtons: some View {
         HStack(spacing: 12) {
-            // Message button - navigates to conversation
-            Button(action: startConversation) {
-                HStack {
-                    if isLoadingAction {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.textPrimary))
-                            .scaleEffect(0.8)
-                    } else {
-                        Image(systemName: "message.fill")
-                        Text("Message")
-                    }
-                }
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(AppTheme.textPrimary)
-                .frame(maxWidth: .infinity)
-                .frame(height: 44)
-                .background(AppTheme.divider)
-                .cornerRadius(AppTheme.cornerRadiusMedium)
-            }
-            .disabled(isLoadingAction)
-            
-            // Invite to game button
-            Button(action: { showInviteSheet = true }) {
+            // Invite to game button (messaging removed)
+            Button(action: { 
+                // Messaging has been removed
+            }) {
                 HStack {
                     Image(systemName: "person.badge.plus")
                     Text("Invite")
@@ -252,6 +190,8 @@ struct OtherProfileView: View {
                 .background(AppTheme.divider)
                 .cornerRadius(AppTheme.cornerRadiusMedium)
             }
+            .disabled(true)
+            .opacity(0.5)
         }
     }
     
@@ -321,11 +261,6 @@ struct OtherProfileView: View {
     // MARK: - Actions
     
     private func loadProfileData() async {
-        // Load stats
-        if let profileStats = try? await profileService.fetchProfileStats(userId: profile.id) {
-            stats = profileStats
-        }
-        
         // Check connection
         if let currentUserId = authService.currentUser?.id {
             // Load blocked users
@@ -352,6 +287,8 @@ struct OtherProfileView: View {
         await postService.fetchUserPosts(userId: profile.id)
     }
     
+    // REMOVED: Message feature disabled
+    /*
     private func startConversation() {
         guard let currentUserId = authService.currentUser?.id else { return }
         
@@ -379,6 +316,7 @@ struct OtherProfileView: View {
             }
         }
     }
+    */
     
     private func handleBlockAction() {
         guard let currentUserId = authService.currentUser?.id else { return }
@@ -400,6 +338,8 @@ struct OtherProfileView: View {
 
 // MARK: - Invite to Game Sheet
 
+// REMOVED: Message feature disabled - InviteToGameSheet uses messaging
+/*
 struct InviteToGameSheet: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var authService: AuthService
@@ -511,24 +451,31 @@ struct InviteToGameSheet: View {
                     contextId: game.id
                 )
                 
-                // Send invite message with game details
-                let inviteMessage = """
-                🏓 Game Invite!
-                
-                I'd like to invite you to play at \(game.venueName)!
-                
-                📅 \(game.formattedDate)
-                🕐 \(game.formattedTime)
-                📍 \(game.address ?? "See game details")
-                
-                Reply "I'm in!" to accept or let me know if you can't make it!
-                """
-                
-                try await messageService.sendMessage(
-                    conversationId: conversation.id,
-                    senderId: currentUserId,
-                    content: inviteMessage
+                // Send invite message as structured payload for in-chat actions
+                let payload = GameInvitePayload(
+                    gameId: game.id,
+                    gameName: game.venueName,
+                    address: game.address,
+                    formattedDate: game.formattedDate,
+                    formattedTime: game.formattedTime,
+                    inviterId: currentUserId
                 )
+                
+                if let content = payload.jsonString {
+                    try await messageService.sendMessage(
+                        conversationId: conversation.id,
+                        senderId: currentUserId,
+                        content: content
+                    )
+                } else {
+                    // Fallback to plain text if encoding fails
+                    let fallback = "🏓 Invite to \(game.venueName) on \(game.formattedDate) at \(game.formattedTime) - \(game.address)"
+                    try await messageService.sendMessage(
+                        conversationId: conversation.id,
+                        senderId: currentUserId,
+                        content: fallback
+                    )
+                }
                 
                 let gameName = game.venueName
                 
@@ -592,6 +539,7 @@ struct GameInviteRow: View {
         .buttonStyle(PlainButtonStyle())
     }
 }
+*/
 
 #Preview {
     let sampleProfile = Profile(

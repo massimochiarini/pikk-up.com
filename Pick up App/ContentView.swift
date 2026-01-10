@@ -25,6 +25,7 @@ struct ContentView: View {
                 MainTabView()
             }
         }
+        .preferredColorScheme(.light)
         .animation(.easeInOut(duration: 0.3), value: authService.isAuthenticated)
         .animation(.easeInOut(duration: 0.3), value: authService.hasCompletedOnboarding)
     }
@@ -32,27 +33,25 @@ struct ContentView: View {
 
 struct MainTabView: View {
     @EnvironmentObject var authService: AuthService
-    @StateObject private var messageService = MessageService()
     @State private var selectedTab: AppTab = .home
     
     init() {
-        // Configure tab bar appearance for unselected items
+        // Configure tab bar appearance for light mode
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(Color(hex: "FEFEFE"))
+        appearance.backgroundColor = UIColor.white
         
-        // Unselected tab items - using 1D1C1D with lower opacity
-        let unselectedColor = UIColor(Color(hex: "1D1C1D")).withAlphaComponent(0.4)
+        // Icons/text black; dim unselected slightly
+        let unselectedColor = UIColor.black.withAlphaComponent(0.5)
+        let selectedColor = UIColor.black
         appearance.stackedLayoutAppearance.normal.iconColor = unselectedColor
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: unselectedColor]
-        
-        // Selected tab items - 1D1C1D
-        let selectedColor = UIColor(Color(hex: "1D1C1D"))
         appearance.stackedLayoutAppearance.selected.iconColor = selectedColor
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: selectedColor]
         
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
+        UITabBar.appearance().unselectedItemTintColor = unselectedColor
     }
     
     var body: some View {
@@ -61,29 +60,17 @@ struct MainTabView: View {
                 HomeView()
             }
             
-            Tab("My Games", systemImage: "sportscourt.fill", value: .myGames) {
+            Tab("My Classes", systemImage: "calendar.badge.clock", value: .myGames) {
                 MyGamesView()
             }
-            
-            Tab("Messages", systemImage: "bubble.left.and.bubble.right.fill", value: .messages) {
-                MessagesView()
-            }
-            .badge(messageService.unreadCount > 0 ? messageService.unreadCount : 0)
         }
-        .tint(Color(hex: "1D1C1D"))
-        // TODO: Enable conversations when the table is created in Supabase
-        // .task {
-        //     if let userId = authService.currentUser?.id {
-        //         await messageService.fetchConversations(userId: userId)
-        //     }
-        // }
+        .tint(.black)
     }
 }
 
 enum AppTab: Hashable {
     case home
     case myGames
-    case messages
 }
 
 struct LoadingView: View {
@@ -108,17 +95,17 @@ struct LoadingView: View {
                         .fill(AppTheme.neonGreen.opacity(0.3))
                         .frame(width: 100, height: 100)
                     
-                    Image(systemName: "figure.run")
+                    Image(systemName: "figure.mind.and.body")
                         .font(.system(size: 50, weight: .bold))
                         .foregroundColor(AppTheme.neonGreenDark)
                 }
                 
                 VStack(spacing: 8) {
-                    Text("Sports App")
+                    Text("Pick Up Yoga")
                         .font(.system(size: 28, weight: .black))
-                        .foregroundColor(AppTheme.navy)
+                        .foregroundColor(AppTheme.textPrimary)
                     
-                    Text("Finding your next game...")
+                    Text("Finding your next class...")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(AppTheme.textSecondary)
                 }

@@ -13,7 +13,7 @@ enum TabItem: Int, CaseIterable {
     var icon: String {
         switch self {
         case .home: return "house.fill"
-        case .myGames: return "sportscourt.fill"
+        case .myGames: return "calendar.badge.clock"
         case .messages: return "bubble.left.and.bubble.right.fill"
         }
     }
@@ -21,7 +21,7 @@ enum TabItem: Int, CaseIterable {
     var iconOutline: String {
         switch self {
         case .home: return "house"
-        case .myGames: return "sportscourt"
+        case .myGames: return "calendar.badge.clock"
         case .messages: return "bubble.left.and.bubble.right"
         }
     }
@@ -29,7 +29,7 @@ enum TabItem: Int, CaseIterable {
     var title: String {
         switch self {
         case .home: return "Home"
-        case .myGames: return "My Games"
+        case .myGames: return "My Classes"
         case .messages: return "Messages"
         }
     }

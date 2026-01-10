@@ -14,6 +14,7 @@ export default function MyClassesPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming')
   const [rsvpCounts, setRsvpCounts] = useState<Map<string, number>>(new Map())
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null)
 
   useEffect(() => {
     if (user) {
@@ -120,14 +121,26 @@ export default function MyClassesPage() {
     return <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Scheduled</span>
   }
 
+  // Copy booking link
+  const handleCopyBookingLink = async (sessionId: string) => {
+    const bookingUrl = `${window.location.origin}/book/${sessionId}`
+    try {
+      await navigator.clipboard.writeText(bookingUrl)
+      setCopiedLinkId(sessionId)
+      setTimeout(() => setCopiedLinkId(null), 2000)
+    } catch (error) {
+      console.error('Failed to copy:', error)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-navy mb-2">
+          <h1 className="text-3xl font-bold text-black mb-2">
             My Classes Dashboard
           </h1>
           <p className="text-gray-600">
@@ -138,8 +151,8 @@ export default function MyClassesPage() {
         {/* Stats Summary */}
         {!loading && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="text-sm text-gray-600 mb-1">Revenue</div>
+            <div className="bg-gray-50 rounded-xl shadow-md border-2 border-gray-200 p-6">
+              <div className="text-sm text-gray-600 mb-1 font-semibold">Revenue</div>
               <div className="text-3xl font-bold text-green-600">
                 ${upcomingClasses.reduce((total, session) => {
                   // Calculate revenue from attendees (excluding host)
@@ -149,27 +162,27 @@ export default function MyClassesPage() {
                 }, 0).toFixed(0)}
               </div>
             </div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="text-sm text-gray-600 mb-1">Students Taught</div>
+            <div className="bg-gray-50 rounded-xl shadow-md border-2 border-gray-200 p-6">
+              <div className="text-sm text-gray-600 mb-1 font-semibold">Students Taught</div>
               <div className="text-3xl font-bold text-purple-600">
                 {pastClasses.reduce((total, session) => total + getRsvpCount(session.id), 0)}
               </div>
             </div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="text-sm text-gray-600 mb-1">Total Classes</div>
-              <div className="text-3xl font-bold text-navy">{upcomingClasses.length + pastClasses.length}</div>
+            <div className="bg-gray-50 rounded-xl shadow-md border-2 border-gray-200 p-6">
+              <div className="text-sm text-gray-600 mb-1 font-semibold">Total Classes</div>
+              <div className="text-3xl font-bold text-black">{upcomingClasses.length + pastClasses.length}</div>
             </div>
           </div>
         )}
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-200">
+        <div className="flex gap-2 mb-6 border-b-2 border-gray-200">
           <button
             onClick={() => setActiveTab('upcoming')}
             className={`px-6 py-3 font-semibold transition-all rounded-lg ${
               activeTab === 'upcoming'
-                ? 'bg-neon-green text-black'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-black text-white'
+                : 'text-gray-500 hover:text-black hover:bg-gray-50'
             }`}
           >
             Upcoming ({upcomingClasses.length})
@@ -178,8 +191,8 @@ export default function MyClassesPage() {
             onClick={() => setActiveTab('past')}
             className={`px-6 py-3 font-semibold transition-all rounded-lg ${
               activeTab === 'past'
-                ? 'bg-neon-green text-black'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-black text-white'
+                : 'text-gray-500 hover:text-black hover:bg-gray-50'
             }`}
           >
             Past Sessions ({pastClasses.length})
@@ -189,7 +202,7 @@ export default function MyClassesPage() {
         {/* Content */}
         {loading ? (
           <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neon-green"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
           </div>
         ) : (
           <>
@@ -215,12 +228,12 @@ export default function MyClassesPage() {
                       const formattedDate = format(sessionDate, 'EEEE, MMM d, yyyy')
                       
                       return (
-                        <div key={session.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+                        <div key={session.id} className="bg-gray-50 rounded-xl shadow-md border-2 border-gray-200 p-6 hover:shadow-lg transition-shadow">
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center space-x-3">
                               <div className="text-4xl">🧘</div>
                               <div>
-                                <h3 className="font-bold text-lg text-navy capitalize">
+                                <h3 className="font-bold text-lg text-black capitalize">
                                   {session.sport} Class
                                 </h3>
                                 <p className="text-sm text-gray-600">{session.venue_name}</p>
@@ -271,6 +284,12 @@ export default function MyClassesPage() {
                             >
                               View Details
                             </Link>
+                            <button
+                              onClick={() => handleCopyBookingLink(session.id)}
+                              className="btn-primary flex-1 text-center"
+                            >
+                              {copiedLinkId === session.id ? '✓ Copied!' : '📎 Copy Booking Link'}
+                            </button>
                           </div>
                         </div>
                       )
@@ -299,12 +318,12 @@ export default function MyClassesPage() {
                       const formattedDate = format(sessionDate, 'EEEE, MMM d, yyyy')
                       
                       return (
-                        <div key={session.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow opacity-90">
+                        <div key={session.id} className="bg-gray-50 rounded-xl shadow-md border-2 border-gray-200 p-6 hover:shadow-lg transition-shadow opacity-90">
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center space-x-3">
                               <div className="text-4xl grayscale">🧘</div>
                               <div>
-                                <h3 className="font-bold text-lg text-navy capitalize">
+                                <h3 className="font-bold text-lg text-black capitalize">
                                   {session.sport} Class
                                 </h3>
                                 <p className="text-sm text-gray-600">{session.venue_name}</p>

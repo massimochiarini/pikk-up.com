@@ -15,7 +15,7 @@ struct WelcomeView: View {
     
     var body: some View {
         ZStack {
-            // Light background
+            // Black background like web app
             AppTheme.background
                 .ignoresSafeArea()
             
@@ -24,27 +24,27 @@ struct WelcomeView: View {
                 
                 // App Icon / Branding
                 VStack(spacing: 24) {
-                    // App icon with glow effect
+                    // App icon with neon glow effect
                     ZStack {
                         Circle()
-                            .fill(AppTheme.neonGreen.opacity(0.15))
+                            .fill(AppTheme.neonGreen.opacity(0.1))
                             .frame(width: 140, height: 140)
-                            .shadow(color: AppTheme.neonGlow, radius: 20, x: 0, y: 0)
+                            .blur(radius: 30)
                         
                         Circle()
-                            .fill(AppTheme.neonGreen.opacity(0.3))
+                            .fill(AppTheme.cardBackground)
                             .frame(width: 110, height: 110)
                         
                         Image(systemName: "figure.pickleball")
                             .font(.system(size: 50, weight: .bold))
-                            .foregroundColor(AppTheme.neonGreenDark)
+                            .foregroundColor(AppTheme.neonGreen)
                     }
                     
                     // App name
                     VStack(spacing: 8) {
                         Text("Pick Up")
                             .font(.system(size: 42, weight: .black))
-                            .foregroundColor(AppTheme.navy)
+                            .foregroundColor(.white)
                         
                         Text("Find Activities Near You")
                             .font(.system(size: 17, weight: .medium))
@@ -78,7 +78,7 @@ struct WelcomeView: View {
                             .frame(height: 56)
                             .background(AppTheme.neonGreen)
                             .cornerRadius(16)
-                            .shadow(color: AppTheme.neonGlow, radius: 8, x: 0, y: 4)
+                            .shadow(color: AppTheme.neonGlow, radius: 12, x: 0, y: 4)
                     }
                     
                     // Login Button (Secondary)
@@ -88,7 +88,7 @@ struct WelcomeView: View {
                         Text("Already have an account? ")
                             .foregroundColor(AppTheme.textSecondary)
                         + Text("Log in")
-                            .foregroundColor(AppTheme.navy)
+                            .foregroundColor(.white)
                             .fontWeight(.bold)
                     }
                     .font(.subheadline)
@@ -120,12 +120,12 @@ struct FeatureRow: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 22, weight: .semibold))
-                .foregroundColor(AppTheme.neonGreenDark)
+                .foregroundColor(AppTheme.neonGreen)
                 .frame(width: 32)
             
             Text(text)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(AppTheme.textPrimary)
+                .foregroundColor(.white)
             
             Spacer()
         }

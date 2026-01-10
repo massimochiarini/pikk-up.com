@@ -13,11 +13,11 @@ export function Navbar() {
   const isActive = (path: string) => pathname === path
 
   return (
-    <nav className="bg-black/95 backdrop-blur-sm border-b border-gray-900 sticky top-0 z-50">
+    <nav className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/home" className="text-2xl font-light tracking-wider text-white hover:opacity-80 transition-opacity">
+          <Link href="/home" className="text-2xl font-semibold tracking-wide text-black hover:opacity-70 transition-opacity">
             Pick Up
           </Link>
 
@@ -25,34 +25,36 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-2">
             <Link
               href="/home"
-              className={`px-5 py-2 rounded-full font-light tracking-wide transition-all duration-300 ${
+              className={`px-5 py-2 rounded-full font-semibold tracking-wide transition-all duration-300 ${
                 isActive('/home')
-                  ? 'bg-white text-black'
-                  : 'text-gray-400 hover:text-white hover:bg-white/10'
+                  ? 'bg-black text-white'
+                  : 'text-gray-600 hover:text-black hover:bg-gray-100'
               }`}
             >
               Home
             </Link>
             <Link
               href="/my-games"
-              className={`px-5 py-2 rounded-full font-light tracking-wide transition-all duration-300 ${
+              className={`px-5 py-2 rounded-full font-semibold tracking-wide transition-all duration-300 ${
                 isActive('/my-games')
-                  ? 'bg-white text-black'
-                  : 'text-gray-400 hover:text-white hover:bg-white/10'
+                  ? 'bg-black text-white'
+                  : 'text-gray-600 hover:text-black hover:bg-gray-100'
               }`}
             >
               My Classes
             </Link>
-            <Link
-              href="/messages"
-              className={`px-5 py-2 rounded-full font-light tracking-wide transition-all duration-300 ${
-                isActive('/messages')
-                  ? 'bg-white text-black'
-                  : 'text-gray-400 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              Messages
-            </Link>
+            {profile?.is_instructor && (
+              <Link
+                href="/text-blast"
+                className={`px-5 py-2 rounded-full font-semibold tracking-wide transition-all duration-300 ${
+                  isActive('/text-blast')
+                    ? 'bg-black text-white'
+                    : 'text-gray-600 hover:text-black hover:bg-gray-100'
+                }`}
+              >
+                Text Blast
+              </Link>
+            )}
           </div>
 
           {/* User Menu */}
@@ -63,32 +65,32 @@ export function Navbar() {
                    <img 
                      src={profile.avatar_url} 
                      alt="Profile" 
-                     className="w-10 h-10 rounded-full object-cover border-2 border-gray-700 hover:border-gray-500 transition-colors"
+                     className="w-10 h-10 rounded-full object-cover border-2 border-gray-300 hover:border-black transition-colors"
                    />
                  ) : (
-                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-white font-light border-2 border-gray-700 hover:border-gray-500 transition-colors">
+                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-black font-semibold border-2 border-gray-300 hover:border-black transition-colors">
                      {profile?.first_name?.[0] || 'U'}
                    </div>
                  )}
               </button>
               
               {/* Dropdown */}
-              <div className="absolute right-0 mt-2 w-48 bg-gray-900 backdrop-blur-xl rounded-xl border border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all shadow-2xl">
+              <div className="absolute right-0 mt-2 w-48 bg-white backdrop-blur-xl rounded-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all shadow-xl">
                 <Link
                   href="/profile"
-                  className="block px-4 py-3 hover:bg-white/5 text-white font-light border-b border-gray-800 transition-colors"
+                  className="block px-4 py-3 hover:bg-gray-50 text-black font-semibold border-b border-gray-200 transition-colors"
                 >
                   View Profile
                 </Link>
                 <Link
                   href="/settings"
-                  className="block px-4 py-3 hover:bg-white/5 text-white font-light border-b border-gray-800 transition-colors"
+                  className="block px-4 py-3 hover:bg-gray-50 text-black font-semibold border-b border-gray-200 transition-colors"
                 >
                   Settings
                 </Link>
                 <button
                   onClick={signOut}
-                  className="block w-full text-left px-4 py-3 hover:bg-white/5 text-red-400 font-light transition-colors"
+                  className="block w-full text-left px-4 py-3 hover:bg-gray-50 text-red-600 font-semibold transition-colors"
                 >
                   Sign Out
                 </button>
@@ -98,34 +100,36 @@ export function Navbar() {
         </div>
 
         {/* Mobile Navigation */}
-        <div className="md:hidden flex justify-around py-3 border-t border-gray-900">
+        <div className="md:hidden flex justify-around py-3 border-t border-gray-200">
           <Link
             href="/home"
             className={`flex flex-col items-center px-3 py-1 rounded-lg transition-colors ${
-              isActive('/home') ? 'text-white' : 'text-gray-500'
+              isActive('/home') ? 'text-black' : 'text-gray-400'
             }`}
           >
             <span className="text-xl mb-1">🏠</span>
-            <span className="text-xs font-light tracking-wide">Home</span>
+            <span className="text-xs font-semibold tracking-wide">Home</span>
           </Link>
           <Link
             href="/my-games"
             className={`flex flex-col items-center px-3 py-1 rounded-lg transition-colors ${
-              isActive('/my-games') ? 'text-white' : 'text-gray-500'
+              isActive('/my-games') ? 'text-black' : 'text-gray-400'
             }`}
           >
             <span className="text-xl mb-1">📚</span>
-            <span className="text-xs font-light tracking-wide">Classes</span>
+            <span className="text-xs font-semibold tracking-wide">Classes</span>
           </Link>
-          <Link
-            href="/messages"
-            className={`flex flex-col items-center px-3 py-1 rounded-lg transition-colors ${
-              isActive('/messages') ? 'text-white' : 'text-gray-500'
-            }`}
-          >
-            <span className="text-xl mb-1">💬</span>
-            <span className="text-xs font-light tracking-wide">Messages</span>
-          </Link>
+          {profile?.is_instructor && (
+            <Link
+              href="/text-blast"
+              className={`flex flex-col items-center px-3 py-1 rounded-lg transition-colors ${
+                isActive('/text-blast') ? 'text-black' : 'text-gray-400'
+              }`}
+            >
+              <span className="text-xl mb-1">📱</span>
+              <span className="text-xs font-semibold tracking-wide">Text Blast</span>
+            </Link>
+          )}
         </div>
       </div>
     </nav>

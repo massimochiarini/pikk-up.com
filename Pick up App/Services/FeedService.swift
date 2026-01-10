@@ -1,6 +1,8 @@
 //
 //  FeedService.swift
-//  Sports App 1
+//  Pick Up Yoga
+//
+//  Service for fetching yoga class feed
 //
 
 import Foundation
@@ -17,9 +19,6 @@ class FeedService: ObservableObject {
     private let supabase = SupabaseManager.shared.client
     private let locationManager = LocationManager.shared
     
-    // Sport preference for filtering
-    var sportPreference: String?
-    
     // MARK: - Fetch Feed
     
     func fetchFeed(currentUserId: UUID?) async {
@@ -29,22 +28,15 @@ class FeedService: ObservableObject {
         do {
             var items: [FeedItem] = []
             
-            // Fetch active posts (if posts table exists)
-            let posts = try await fetchPosts(currentUserId: currentUserId)
-            items.append(contentsOf: posts)
-            
-            // Fetch upcoming games - this is the main content
+            // Fetch upcoming yoga classes - this is the main content
             let games = try await fetchGames(currentUserId: currentUserId)
             items.append(contentsOf: games)
             
-            // Count games happening today only
+            // Count classes happening today only
             let todayGamesCount = countGamesToday(from: games)
             
             // Add activity cards
-            let activities = generateActivityItems(
-                postsCount: posts.count,
-                gamesCount: todayGamesCount
-            )
+            let activities = generateActivityItems(gamesCount: todayGamesCount)
             items.append(contentsOf: activities)
             
             // Separate items by type for proper ordering
@@ -53,21 +45,14 @@ class FeedService: ObservableObject {
                 return false
             }
             
-            // Games are already sorted by time then proximity from fetchGames
+            // Classes are already sorted by time then proximity from fetchGames
             let gameItems = items.filter { item in
                 if case .game = item.type { return true }
                 return false
             }
             
-            // Posts sorted by timestamp (newest first)
-            var postItems = items.filter { item in
-                if case .playerPost = item.type { return true }
-                return false
-            }
-            postItems.sort { $0.timestamp > $1.timestamp }
-            
-            // Final order: activity cards first, then games (sorted by time/proximity), then posts
-            feedItems = activityItems + gameItems + postItems
+            // Final order: activity cards first, then classes (sorted by time/proximity)
+            feedItems = activityItems + gameItems
             
         } catch {
             print("❌ [FeedService] Error loading feed: \(error)")
@@ -77,48 +62,13 @@ class FeedService: ObservableObject {
         isLoading = false
     }
     
-    // MARK: - Fetch Posts
-    
-    private func fetchPosts(currentUserId: UUID?) async throws -> [FeedItem] {
-        // Try to fetch posts, but don't fail if the table doesn't exist or is empty
-        do {
-            let posts: [PostWithProfile] = try await supabase
-                .from("posts")
-                .select("*, profiles(*)")
-                .eq("is_active", value: true)
-                .order("created_at", ascending: false)
-                .limit(20)
-                .execute()
-                .value
-            
-            // Filter expired posts and convert to feed items
-            return posts
-                .filter { post in
-                    if let expiresAt = post.expiresAt {
-                        return expiresAt > Date()
-                    }
-                    return true
-                }
-                .compactMap { post -> FeedItem? in
-                    // Don't show user's own posts in feed
-                    if let userId = currentUserId, post.userId == userId {
-                        return nil
-                    }
-                    return FeedItem(post: post, connectionContext: nil)
-                }
-        } catch {
-            print("⚠️ [FeedService] Could not fetch posts: \(error.localizedDescription)")
-            return []
-        }
-    }
-    
     // MARK: - Fetch Games
     
     private func fetchGames(currentUserId: UUID?) async throws -> [FeedItem] {
         let todayString = DateFormatter.supabaseDateFormatter.string(from: Date())
         
         print("🎮 [FeedService] Fetching games with date >= \(todayString)")
-        print("🎮 [FeedService] Sport preference: \(sportPreference ?? "none")")
+        print("🎮 [FeedService] Only showing web-managed games (instructor_id != nil)")
         
         // Fetch ALL upcoming games from the database
         var allGames: [Game] = try await supabase
@@ -133,9 +83,8 @@ class FeedService: ObservableObject {
         
         print("🎮 [FeedService] Raw games fetched from database: \(allGames.count)")
         
-        // Filter out private games that don't belong to the current user
+        // Only show web-managed games (games created via the web app with instructor_id set)
         // Also filter out games that have already passed (start time is in the past)
-        // Also filter by sport preference if set
         var filteredGames = allGames.filter { game in
             // Filter out games that have already started
             if game.hasPassed {
@@ -143,36 +92,12 @@ class FeedService: ObservableObject {
                 return false
             }
             
-            // Show if game is not private, or if user is the creator
-            let shouldShow = !game.isPrivate || game.createdBy == currentUserId
-            if !shouldShow {
-                print("🎮 [FeedService] Filtering out private game: \(game.id)")
+            // Only show web-managed games (instructor_id must be set)
+            if game.instructorId == nil {
+                print("🎮 [FeedService] Filtering out non-web-managed game: \(game.venueName)")
                 return false
             }
             
-            // Filter by sport preference
-            if let preference = sportPreference {
-                // Special case: "none" means show no games
-                if preference == "none" {
-                    print("🎮 [FeedService] Filtering out all games (preference is 'none')")
-                    return false
-                }
-                
-                // "both" means show all games
-                if preference == "both" {
-                    return true
-                }
-                
-                // Otherwise filter by specific sport
-                let gameSport = game.sport.lowercased()
-                let shouldShowSport = gameSport == preference.lowercased()
-                if !shouldShowSport {
-                    print("🎮 [FeedService] Filtering out \(gameSport) game due to preference: \(preference)")
-                }
-                return shouldShowSport
-            }
-            
-            // No preference set, show all games
             return true
         }
         
@@ -295,16 +220,10 @@ class FeedService: ObservableObject {
     
     // MARK: - Generate Activity Items
     
-    private func generateActivityItems(postsCount: Int, gamesCount: Int) -> [FeedItem] {
+    private func generateActivityItems(gamesCount: Int) -> [FeedItem] {
         var activities: [FeedItem] = []
         
-        // Add "players looking" card if there are posts
-        if postsCount > 0 {
-            let activity = ActivityItem.playersLookingActivity(count: postsCount)
-            activities.append(FeedItem(activity: activity))
-        }
-        
-        // Add "nearby games" card if there are games
+        // Add "nearby classes" card if there are classes
         if gamesCount > 0 {
             let activity = ActivityItem.nearbyGamesActivity(count: gamesCount)
             activities.append(FeedItem(activity: activity))
@@ -320,15 +239,6 @@ class FeedService: ObservableObject {
     }
     
     // MARK: - Filter by Type
-    
-    func filterByPosts() -> [FeedItem] {
-        return feedItems.filter { item in
-            if case .playerPost = item.type {
-                return true
-            }
-            return false
-        }
-    }
     
     func filterByGames() -> [FeedItem] {
         return feedItems.filter { item in

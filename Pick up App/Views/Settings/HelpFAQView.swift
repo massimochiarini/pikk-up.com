@@ -16,7 +16,7 @@ struct HelpFAQView: View {
         ),
         (
             question: "How do I join a game?",
-            answer: "Browse games on the Home feed or search by location and sport. Tap on a game card to see details, then tap 'Join Game' to RSVP. The game organizer will be notified, and you'll see the game in your 'My Games' tab."
+            answer: "Browse games on the Home feed or search by location and sport. Tap on a game card to see details, then tap 'Join Game' to RSVP. The game organizer will be notified, and you'll see the game in your 'My Classes' tab."
         ),
         (
             question: "What do the RSVP statuses mean?",
@@ -32,7 +32,7 @@ struct HelpFAQView: View {
         ),
         (
             question: "Can I edit or cancel a game I created?",
-            answer: "Yes! Go to 'My Games' tab, tap on your game, then tap the menu icon. You can edit game details or cancel the game. If you cancel, all participants will be notified automatically."
+            answer: "Yes! Go to 'My Classes' tab, tap on your game, then tap the menu icon. You can edit game details or cancel the game. If you cancel, all participants will be notified automatically."
         ),
         (
             question: "How do I add friends and build connections?",

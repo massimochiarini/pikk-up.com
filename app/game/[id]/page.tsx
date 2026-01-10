@@ -16,6 +16,7 @@ export default function GameDetailPage() {
   const [game, setGame] = useState<Game | null>(null)
   const [creator, setCreator] = useState<Profile | null>(null)
   const [attendees, setAttendees] = useState<Profile[]>([])
+  const [guestAttendees, setGuestAttendees] = useState<RSVP[]>([])
   const [userRsvp, setUserRsvp] = useState<RSVP | null>(null)
   const [loading, setLoading] = useState(true)
   const [rsvpLoading, setRsvpLoading] = useState(false)
@@ -23,6 +24,7 @@ export default function GameDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [claimLoading, setClaimLoading] = useState(false)
   const [claimError, setClaimError] = useState('')
+  const [copySuccess, setCopySuccess] = useState(false)
 
   useEffect(() => {
     if (gameId) {
@@ -60,10 +62,17 @@ export default function GameDetailPage() {
         .eq('game_id', gameId)
 
       if (rsvpsData) {
-        const profilesData = rsvpsData
+        // Separate user RSVPs and guest RSVPs
+        const userRsvps = rsvpsData
+          .filter(rsvp => rsvp.user_id !== null)
           .map(rsvp => (rsvp as any).profiles)
           .filter(Boolean)
-        setAttendees(profilesData)
+        
+        const guestRsvps = rsvpsData
+          .filter(rsvp => rsvp.user_id === null)
+        
+        setAttendees(userRsvps)
+        setGuestAttendees(guestRsvps)
       }
 
       // Check user's RSVP status
@@ -222,6 +231,17 @@ export default function GameDetailPage() {
     }
   }
 
+  const handleCopyBookingLink = async () => {
+    const bookingUrl = `${window.location.origin}/book/${gameId}`
+    try {
+      await navigator.clipboard.writeText(bookingUrl)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 2000)
+    } catch (error) {
+      console.error('Failed to copy:', error)
+    }
+  }
+
   const handleDeleteGame = async () => {
     if (!user || !game || game.created_by !== user.id) return
 
@@ -303,7 +323,7 @@ export default function GameDetailPage() {
     return `${displayHour}:${minutes} ${period}`
   }
   
-  const currentPlayers = attendees.length
+  const currentPlayers = attendees.length + guestAttendees.length
   const spotsLeft = game.max_players - currentPlayers
   const isUserGoing = userRsvp !== null
   const isUserInstructor = user && game.instructor_id === user.id
@@ -412,13 +432,34 @@ export default function GameDetailPage() {
               )}
 
               {isUserInstructor ? (
-                <button
-                  onClick={handleUnclaimSession}
-                  disabled={claimLoading}
-                  className="w-full py-3 rounded-lg font-semibold bg-gray-800 hover:bg-gray-700 text-white transition-colors disabled:opacity-50"
-                >
-                  {claimLoading ? 'Releasing...' : 'Release Session'}
-                </button>
+                <>
+                  <button
+                    onClick={handleUnclaimSession}
+                    disabled={claimLoading}
+                    className="w-full py-3 rounded-lg font-semibold bg-gray-800 hover:bg-gray-700 text-white transition-colors disabled:opacity-50 mb-4"
+                  >
+                    {claimLoading ? 'Releasing...' : 'Release Session'}
+                  </button>
+
+                  {/* Booking Link Section */}
+                  <div className="bg-neon-green/10 border border-neon-green/20 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-neon-green text-sm">📎 Public Booking Link</h4>
+                      <button
+                        onClick={handleCopyBookingLink}
+                        className="text-xs bg-neon-green hover:bg-neon-green/90 text-black px-3 py-1.5 rounded-md font-semibold transition-colors"
+                      >
+                        {copySuccess ? '✓ Copied!' : 'Copy Link'}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-400 mb-2">
+                      Share this link with clients so they can RSVP without downloading the app
+                    </p>
+                    <div className="bg-black/40 rounded px-3 py-2 text-xs text-gray-300 font-mono break-all">
+                      {typeof window !== 'undefined' ? `${window.location.origin}/book/${gameId}` : '...'}
+                    </div>
+                  </div>
+                </>
               ) : isSessionAvailable ? (
                 <button
                   onClick={handleClaimSession}
@@ -435,7 +476,7 @@ export default function GameDetailPage() {
 
               <p className="text-xs text-gray-500 mt-2">
                 {isUserInstructor 
-                  ? 'Release this session to make it available for other instructors'
+                  ? 'Share the booking link with your clients to allow them to register'
                   : isSessionAvailable
                   ? 'Claim this session to teach it. One instructor per session.'
                   : 'This session has been claimed by another instructor'}
@@ -505,12 +546,13 @@ export default function GameDetailPage() {
           )}
 
           {/* Attendees */}
-          {attendees.length > 0 && (
+          {(attendees.length > 0 || guestAttendees.length > 0) && (
             <div className="border-t border-gray-800 pt-6">
               <h3 className="font-semibold text-white mb-3">
-                Who's going ({attendees.length})
+                Who's going ({currentPlayers})
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {/* User attendees */}
                 {attendees.map((attendee) => (
                   <div key={attendee.id} className="flex items-center space-x-2">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-blue to-neon-green flex items-center justify-center text-white font-bold text-sm">
@@ -518,6 +560,17 @@ export default function GameDetailPage() {
                     </div>
                     <div className="text-sm font-medium text-white truncate">
                       {attendee.first_name} {attendee.last_name[0]}.
+                    </div>
+                  </div>
+                ))}
+                {/* Guest attendees */}
+                {guestAttendees.map((guest) => (
+                  <div key={guest.id} className="flex items-center space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
+                      {guest.guest_first_name?.[0] || '?'}
+                    </div>
+                    <div className="text-sm font-medium text-white truncate">
+                      {guest.guest_first_name} {guest.guest_last_name?.[0]}.
                     </div>
                   </div>
                 ))}

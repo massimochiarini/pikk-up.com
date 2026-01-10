@@ -5,11 +5,10 @@
 
 import SwiftUI
 import Auth
+import Supabase
 
 struct ProfileView: View {
     @EnvironmentObject var authService: AuthService
-    @StateObject private var gameService = GameService()
-    @StateObject private var postService = PostService()
     
     @State private var pastSessions: [Game] = []
     @State private var showEditProfile = false
@@ -111,25 +110,6 @@ struct ProfileView: View {
         .padding(.top, 20)
     }
     
-    // MARK: - Stats Row
-    
-    private var statsRow: some View {
-        HStack(spacing: 0) {
-            StatItem(value: stats?.gamesPlayed ?? 0, label: "Games")
-            
-            Divider()
-                .frame(height: 40)
-            
-            StatItem(value: authService.currentProfile?.sports.count ?? 0, label: "Sports")
-            
-            Divider()
-                .frame(height: 40)
-            
-            StatItem(value: stats?.connectionsCount ?? 0, label: "Connections")
-        }
-        .padding(.horizontal, 24)
-    }
-    
     // MARK: - Action Buttons
     
     private var actionButtons: some View {
@@ -202,11 +182,6 @@ struct ProfileView: View {
     private func loadProfileData() async {
         guard let userId = authService.currentUser?.id else { return }
         
-        // Load stats
-        if let profileStats = try? await profileService.fetchProfileStats(userId: userId) {
-            stats = profileStats
-        }
-        
         // Load past sessions (games user attended via RSVP)
         await fetchPastSessions(userId: userId)
     }
@@ -262,26 +237,8 @@ struct ProfileView: View {
     }
 }
 
-// MARK: - Supporting Views
-
-struct StatItem: View {
-    let value: Int
-    let label: String
-    
-    var body: some View {
-        VStack(spacing: 4) {
-            Text("\(value)")
-                .font(.system(size: 20, weight: .bold))
-                .foregroundColor(AppTheme.textPrimary)
-            
-            Text(label)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(AppTheme.textSecondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-}
-
+// REMOVED: Posts feature disabled
+/*
 struct PostMiniCard: View {
     let post: PostWithProfile
     
@@ -311,6 +268,7 @@ struct PostMiniCard: View {
         }
     }
 }
+*/
 
 // MARK: - Profile Settings Sheet (Legacy - kept for backwards compatibility)
 

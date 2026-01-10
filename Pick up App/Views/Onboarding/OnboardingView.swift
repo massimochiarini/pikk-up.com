@@ -22,7 +22,7 @@ enum OnboardingStep: Int, CaseIterable {
     
     var subtitle: String {
         switch self {
-        case .photo: return "Help others recognize you on the court"
+        case .photo: return "Help others recognize you in class"
         case .username: return "This is how people will find you"
         case .bio: return "Share a bit about yourself (optional)"
         }
@@ -406,12 +406,12 @@ struct OnboardingView: View {
     }
     
     private let bioSuggestions = [
-        "🎾 Tennis lover",
-        "🏸 Pickleball addict",
-        "Always down to play",
-        "Beginner friendly",
-        "Competitive player",
-        "Weekend warrior"
+        "🧘 Yoga enthusiast",
+        "🌟 New to yoga",
+        "Love morning classes",
+        "Flexibility goals",
+        "Mind & body balance",
+        "Regular practitioner"
     ]
     
     // MARK: - Actions
@@ -475,11 +475,11 @@ struct OnboardingView: View {
                     _ = try await profileService.uploadAvatar(userId: userId, image: image)
                 }
                 
-                // Update profile (default to pickleball as favorite sport)
+                // Update profile (yoga is the only sport)
                 let update = ProfileUpdate(
                     username: username.isEmpty ? nil : username.lowercased(),
                     bio: bio.isEmpty ? nil : bio,
-                    favoriteSports: ["pickleball"],
+                    favoriteSports: ["yoga"],
                     onboardingCompleted: true
                 )
                 

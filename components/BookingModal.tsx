@@ -198,11 +198,11 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-navy">Claim Time Slot</h2>
+            <h2 className="text-2xl font-bold text-black">Claim Time Slot</h2>
             <button
               onClick={handleClose}
               disabled={loading}
-              className="text-gray-400 hover:text-gray-600 text-2xl disabled:opacity-50"
+              className="text-gray-400 hover:text-gray-700 text-2xl disabled:opacity-50"
             >
               ×
             </button>
@@ -210,7 +210,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Date & Time Display */}
-            <div className="bg-gradient-to-br from-neon-green to-sky-blue rounded-lg p-4 text-navy">
+            <div className="bg-gradient-to-br from-black to-gray-800 rounded-lg p-4 text-white">
               <div className="font-semibold text-lg mb-1">
                 {formatDate(selectedDate)}
               </div>
@@ -224,7 +224,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
 
             {/* Cover Photo Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-black mb-2">
                 Cover Photo (Optional)
               </label>
               
@@ -233,7 +233,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
                   <img 
                     src={coverImagePreview} 
                     alt="Cover preview" 
-                    className="w-full h-48 object-cover rounded-lg"
+                    className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
                   />
                   <button
                     type="button"
@@ -248,7 +248,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
               ) : (
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-neon-green transition-colors"
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-black transition-colors"
                 >
                   <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -269,7 +269,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
 
             {/* Event Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-black mb-2">
                 Event Name *
               </label>
               <input
@@ -284,7 +284,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
 
             {/* Skill Level */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-black mb-2">
                 Skill Level
               </label>
               <select
@@ -301,7 +301,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
 
             {/* Cost */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-black mb-2">
                 Class Cost
               </label>
               <div className="relative">
@@ -323,7 +323,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-black mb-2">
                 Class Description (Optional)
               </label>
               <textarea
@@ -337,7 +337,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-black mb-2">
                 Location
               </label>
               <input
@@ -353,7 +353,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
               
               {/* Coordinate display */}
               {(latitude && longitude) && (
-                <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                <div className="mt-2 text-xs text-gray-600 bg-gray-100 p-2 rounded">
                   📍 Coordinates: {latitude.toFixed(6)}, {longitude.toFixed(6)}
                 </div>
               )}
@@ -365,7 +365,7 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
                 type="button"
                 onClick={handleClose}
                 disabled={loading}
-                className="flex-1 border border-gray-300 text-gray-600 hover:border-gray-400 hover:bg-gray-50 font-medium py-3 px-6 rounded-full transition-all duration-300 disabled:opacity-50"
+                className="flex-1 border-2 border-gray-300 text-gray-700 hover:border-black hover:bg-gray-50 font-semibold py-3 px-6 rounded-full transition-all duration-300 disabled:opacity-50"
               >
                 Cancel
               </button>

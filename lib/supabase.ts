@@ -53,7 +53,11 @@ export type Message = {
 export type RSVP = {
   id: string
   game_id: string
-  user_id: string
+  user_id: string | null
+  guest_first_name?: string
+  guest_last_name?: string
+  guest_email?: string
+  guest_phone?: string
   created_at: string
 }
 

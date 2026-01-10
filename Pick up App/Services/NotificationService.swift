@@ -140,6 +140,14 @@ class NotificationService: NSObject, ObservableObject {
                         userInfo: ["groupChatId": groupChatId]
                     )
                 }
+            case "yoga_session":
+                if let gameId = userInfo["game_id"] as? String {
+                    NotificationCenter.default.post(
+                        name: .navigateToGame,
+                        object: nil,
+                        userInfo: ["gameId": gameId]
+                    )
+                }
             default:
                 break
             }
@@ -168,4 +176,5 @@ struct DeviceToken: Encodable {
 extension Notification.Name {
     static let navigateToConversation = Notification.Name("navigateToConversation")
     static let navigateToGroupChat = Notification.Name("navigateToGroupChat")
+    static let navigateToGame = Notification.Name("navigateToGame")
 }

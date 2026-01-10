@@ -215,8 +215,8 @@ export default function HomePage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-pulse text-white text-xl tracking-wider">Loading...</div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-pulse text-black text-xl tracking-wider font-semibold">Loading...</div>
       </div>
     )
   }
@@ -228,7 +228,7 @@ export default function HomePage() {
   })
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-black">
       <Navbar />
 
       {/* Week Schedule - Calendar Grid */}
@@ -236,15 +236,15 @@ export default function HomePage() {
         <div className="container mx-auto max-w-7xl">
           <div className="mb-12 flex items-center justify-between">
             <div>
-              <h2 className="text-4xl font-light tracking-wide mb-3">This Week</h2>
-              <p className="text-gray-400 text-lg font-light">
+              <h2 className="text-4xl font-semibold tracking-wide mb-3">This Week</h2>
+              <p className="text-gray-600 text-lg font-normal">
                 {format(currentWeekStart, 'MMM d')} - {format(addDays(currentWeekStart, 6), 'MMM d, yyyy')}
               </p>
             </div>
             <div className="flex gap-4">
               <button
                 onClick={goToPreviousWeek}
-                className="p-3 rounded-full border border-gray-700 hover:border-gray-500 hover:bg-gray-900 transition-all"
+                className="p-3 rounded-full border-2 border-gray-300 hover:border-black hover:bg-gray-50 transition-all"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -252,7 +252,7 @@ export default function HomePage() {
               </button>
               <button
                 onClick={goToNextWeek}
-                className="p-3 rounded-full border border-gray-700 hover:border-gray-500 hover:bg-gray-900 transition-all"
+                className="p-3 rounded-full border-2 border-gray-300 hover:border-black hover:bg-gray-50 transition-all"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -263,33 +263,33 @@ export default function HomePage() {
 
           {gamesLoading ? (
             <div className="flex justify-center items-center py-32">
-              <div className="animate-pulse text-gray-500 text-xl tracking-wider">Loading schedule...</div>
+              <div className="animate-pulse text-gray-500 text-xl tracking-wider font-semibold">Loading schedule...</div>
             </div>
           ) : (
-            <div className="bg-gray-900/50 rounded-2xl overflow-hidden border border-gray-800">
+            <div className="bg-white rounded-2xl overflow-hidden border-2 border-gray-200 shadow-lg">
               {/* Calendar Grid */}
               <div className="overflow-x-auto">
                 <div className="min-w-[900px]">
                   {/* Header Row - Days of Week */}
-                  <div className="grid grid-cols-8 border-b border-gray-800">
-                    <div className="p-4 text-gray-500 font-light text-sm">Time</div>
+                  <div className="grid grid-cols-8 border-b-2 border-gray-200">
+                    <div className="p-4 text-gray-500 font-semibold text-sm">Time</div>
                     {weekDays.map((day) => {
                       const dateStr = format(day, 'yyyy-MM-dd')
                       const isToday = isSameDay(day, new Date())
                       return (
                         <div 
                           key={dateStr} 
-                          className={`p-4 text-center border-l border-gray-800 ${
-                            isToday ? 'bg-gray-800/50' : ''
+                          className={`p-4 text-center border-l-2 border-gray-200 ${
+                            isToday ? 'bg-gray-100' : ''
                           }`}
                         >
-                          <div className={`text-sm font-light mb-1 ${
-                            isToday ? 'text-white' : 'text-gray-400'
+                          <div className={`text-sm font-semibold mb-1 ${
+                            isToday ? 'text-black' : 'text-gray-600'
                           }`}>
                             {format(day, 'EEE')}
                           </div>
                           <div className={`text-lg ${
-                            isToday ? 'text-white font-medium' : 'text-gray-300'
+                            isToday ? 'text-black font-bold' : 'text-gray-700'
                           }`}>
                             {format(day, 'd')}
                           </div>
@@ -300,11 +300,11 @@ export default function HomePage() {
 
                   {/* Time Slot Rows */}
                   {TIME_SLOTS.map((slot) => (
-                    <div key={slot.time} className="grid grid-cols-8 border-b border-gray-800 last:border-b-0">
+                    <div key={slot.time} className="grid grid-cols-8 border-b-2 border-gray-200 last:border-b-0">
                       {/* Time Label */}
                       <div className="p-4 flex items-center">
                         <div>
-                          <div className="text-white font-light">{slot.display}</div>
+                          <div className="text-black font-semibold">{slot.display}</div>
                           <div className="text-xs text-gray-500">{slot.duration}</div>
                         </div>
                       </div>
@@ -323,8 +323,8 @@ export default function HomePage() {
                         return (
                           <div 
                             key={`${dateStr}-${slot.time}`}
-                            className={`p-2 border-l border-gray-800 ${
-                              isToday ? 'bg-gray-800/30' : ''
+                            className={`p-2 border-l-2 border-gray-200 ${
+                              isToday ? 'bg-gray-50' : ''
                             }`}
                           >
                             <TimeSlotCard
@@ -346,19 +346,19 @@ export default function HomePage() {
               </div>
 
               {/* Legend */}
-              <div className="px-6 py-4 bg-gray-900/80 border-t border-gray-800">
+              <div className="px-6 py-4 bg-gray-50 border-t-2 border-gray-200">
                 <div className="flex items-center justify-center gap-8 text-sm">
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded bg-green-500/20 border-2 border-green-500"></div>
-                    <span className="text-gray-400 font-light">Available</span>
+                    <span className="text-gray-600 font-semibold">Available</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded bg-red-500/20 border-2 border-red-500"></div>
-                    <span className="text-gray-400 font-light">Claimed</span>
+                    <span className="text-gray-600 font-semibold">Claimed</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded bg-gray-500/20 border-2 border-gray-500"></div>
-                    <span className="text-gray-400 font-light">Past</span>
+                    <span className="text-gray-600 font-semibold">Past</span>
                   </div>
                 </div>
               </div>
@@ -368,17 +368,17 @@ export default function HomePage() {
       </section>
 
       {/* Filter Categories */}
-      <section className="py-12 px-6 border-t border-gray-900">
+      <section className="py-12 px-6 border-t-2 border-gray-200">
         <div className="container mx-auto max-w-7xl">
           <div className="flex items-center justify-center gap-12">
             {CATEGORIES.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`text-2xl font-light tracking-wider transition-all duration-300 ${
+                className={`text-2xl font-semibold tracking-wider transition-all duration-300 ${
                   selectedCategory === category
-                    ? 'text-white'
-                    : 'text-gray-400 hover:text-white'
+                    ? 'text-black'
+                    : 'text-gray-400 hover:text-black'
                 }`}
               >
                 {category}

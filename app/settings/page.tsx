@@ -37,12 +37,12 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-navy mb-2">
+          <h1 className="text-3xl font-bold text-black mb-2">
             Settings
           </h1>
           <p className="text-gray-600">
@@ -50,164 +50,174 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* Account Section */}
-          <div className="card">
-            <h2 className="text-xl font-bold text-navy mb-4">Account</h2>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                <div>
-                  <div className="font-medium text-gray-900">Email</div>
-                  <div className="text-sm text-gray-500">{user?.email}</div>
+          <div className="bg-gray-50 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl border-2 border-gray-200">
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-black mb-5">Account</h2>
+              
+              <div className="space-y-1">
+                <div className="flex items-center justify-between py-4 px-4 rounded-lg hover:bg-white transition-colors">
+                  <div>
+                    <div className="font-semibold text-black">Email</div>
+                    <div className="text-sm text-gray-600 mt-1">{user?.email}</div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                <div>
-                  <div className="font-medium text-gray-900">Edit Profile</div>
-                  <div className="text-sm text-gray-500">Update your personal information</div>
+                <div className="flex items-center justify-between py-4 px-4 rounded-lg hover:bg-white transition-colors cursor-pointer group"
+                     onClick={() => router.push('/profile')}>
+                  <div>
+                    <div className="font-semibold text-black">Edit Profile</div>
+                    <div className="text-sm text-gray-600 mt-1">Update your personal information</div>
+                  </div>
+                  <button
+                    className="text-sky-blue font-semibold text-lg group-hover:translate-x-1 transition-transform"
+                  >
+                    →
+                  </button>
                 </div>
-                <button
-                  onClick={() => router.push('/profile')}
-                  className="text-sky-blue font-semibold hover:underline"
-                >
-                  Edit →
-                </button>
-              </div>
 
-              <div className="pt-3">
-                <button
-                  onClick={signOut}
-                  className="btn-outline w-full"
-                >
-                  Sign Out
-                </button>
+                <div className="pt-2 px-4">
+                  <button
+                    onClick={signOut}
+                    className="w-full bg-black text-white font-semibold py-3.5 px-6 rounded-lg hover:bg-gray-800 transition-all duration-200 hover:shadow-lg"
+                  >
+                    Sign Out
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Support Section */}
-          <div className="card">
-            <h2 className="text-xl font-bold text-navy mb-4">Support</h2>
-            
-            <div className="space-y-4">
-              <a
-                href="mailto:massimochiarini25@gmail.com?subject=Pickup App Support"
-                className="flex items-center justify-between py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors"
-              >
-                <div>
-                  <div className="font-medium text-gray-900">Contact Us</div>
-                  <div className="text-sm text-gray-500">Get help with your account</div>
-                </div>
-                <span>→</span>
-              </a>
+          <div className="bg-gray-50 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl border-2 border-gray-200">
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-black mb-5">Support</h2>
+              
+              <div className="space-y-1">
+                <a
+                  href="mailto:massimochiarini25@gmail.com?subject=Pickup App Support"
+                  className="flex items-center justify-between py-4 px-4 rounded-lg hover:bg-white transition-all duration-200 group cursor-pointer"
+                >
+                  <div>
+                    <div className="font-semibold text-black">Contact Us</div>
+                    <div className="text-sm text-gray-600 mt-1">Get help with your account</div>
+                  </div>
+                  <span className="text-gray-400 text-lg group-hover:translate-x-1 group-hover:text-black transition-all">→</span>
+                </a>
 
-              <a
-                href="https://yourwebsite.com/help"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors"
-              >
-                <div>
-                  <div className="font-medium text-gray-900">Help & FAQ</div>
-                  <div className="text-sm text-gray-500">Find answers to common questions</div>
-                </div>
-                <span>→</span>
-              </a>
+                <a
+                  href="https://yourwebsite.com/help"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between py-4 px-4 rounded-lg hover:bg-white transition-all duration-200 group cursor-pointer"
+                >
+                  <div>
+                    <div className="font-semibold text-black">Help & FAQ</div>
+                    <div className="text-sm text-gray-600 mt-1">Find answers to common questions</div>
+                  </div>
+                  <span className="text-gray-400 text-lg group-hover:translate-x-1 group-hover:text-black transition-all">→</span>
+                </a>
+              </div>
             </div>
           </div>
 
           {/* Legal Section */}
-          <div className="card">
-            <h2 className="text-xl font-bold text-navy mb-4">Legal</h2>
-            
-            <div className="space-y-4">
-              <a
-                href="/legal/privacy"
-                className="flex items-center justify-between py-3 border-b border-gray-100 hover:bg-gray-50 -mx-6 px-6 transition-colors"
-              >
-                <div>
-                  <div className="font-medium text-gray-900">Privacy Policy</div>
-                  <div className="text-sm text-gray-500">How we handle your data</div>
-                </div>
-                <span>→</span>
-              </a>
+          <div className="bg-gray-50 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl border-2 border-gray-200">
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-black mb-5">Legal</h2>
+              
+              <div className="space-y-1">
+                <a
+                  href="/legal/privacy"
+                  className="flex items-center justify-between py-4 px-4 rounded-lg hover:bg-white transition-all duration-200 group cursor-pointer"
+                >
+                  <div>
+                    <div className="font-semibold text-black">Privacy Policy</div>
+                    <div className="text-sm text-gray-600 mt-1">How we handle your data</div>
+                  </div>
+                  <span className="text-gray-400 text-lg group-hover:translate-x-1 group-hover:text-black transition-all">→</span>
+                </a>
 
-              <a
-                href="/legal/terms"
-                className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-6 px-6 transition-colors"
-              >
-                <div>
-                  <div className="font-medium text-gray-900">Terms of Service</div>
-                  <div className="text-sm text-gray-500">Rules and guidelines</div>
-                </div>
-                <span>→</span>
-              </a>
+                <a
+                  href="/legal/terms"
+                  className="flex items-center justify-between py-4 px-4 rounded-lg hover:bg-white transition-all duration-200 group cursor-pointer"
+                >
+                  <div>
+                    <div className="font-semibold text-black">Terms of Service</div>
+                    <div className="text-sm text-gray-600 mt-1">Rules and guidelines</div>
+                  </div>
+                  <span className="text-gray-400 text-lg group-hover:translate-x-1 group-hover:text-black transition-all">→</span>
+                </a>
+              </div>
             </div>
           </div>
 
           {/* Danger Zone */}
-          <div className="card border-red-200">
-            <h2 className="text-xl font-bold text-red-700 mb-4">Danger Zone</h2>
-            
-            <div>
-              <div className="mb-4">
-                <div className="font-medium text-gray-900 mb-1">Delete Account</div>
-                <div className="text-sm text-gray-600">
-                  Permanently delete your account and all associated data. This action cannot be undone.
-                </div>
-              </div>
-
-              {!showDeleteConfirm ? (
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-                >
-                  Delete My Account
-                </button>
-              ) : (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-800 font-semibold mb-4">
-                    ⚠️ Are you absolutely sure?
-                  </p>
-                  <p className="text-sm text-red-700 mb-4">
-                    This will permanently delete your account, all your games, messages, and profile data. 
-                    This action cannot be undone.
-                  </p>
-                  
-                  {deleteError && (
-                    <div className="bg-red-100 border border-red-300 text-red-800 px-3 py-2 rounded mb-4 text-sm">
-                      {deleteError}
-                    </div>
-                  )}
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => {
-                        setShowDeleteConfirm(false)
-                        setDeleteError('')
-                      }}
-                      className="btn-outline flex-1"
-                      disabled={deleteLoading}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleDeleteAccount}
-                      disabled={deleteLoading}
-                      className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {deleteLoading ? 'Deleting...' : 'Yes, Delete My Account'}
-                    </button>
+          <div className="bg-gray-50 rounded-xl shadow-md overflow-hidden border-2 border-red-200 transition-all duration-300 hover:shadow-xl">
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-red-600 mb-5">Danger Zone</h2>
+              
+              <div>
+                <div className="mb-4 px-4">
+                  <div className="font-semibold text-black mb-2">Delete Account</div>
+                  <div className="text-sm text-gray-600">
+                    Permanently delete your account and all associated data. This action cannot be undone.
                   </div>
                 </div>
-              )}
+
+                {!showDeleteConfirm ? (
+                  <div className="px-4">
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3.5 px-6 rounded-lg transition-all duration-200 hover:shadow-lg"
+                    >
+                      Delete My Account
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-5 mx-4">
+                    <p className="text-red-800 font-semibold mb-3 text-base">
+                      ⚠️ Are you absolutely sure?
+                    </p>
+                    <p className="text-sm text-red-700 mb-5 leading-relaxed">
+                      This will permanently delete your account, all your games, messages, and profile data. 
+                      This action cannot be undone.
+                    </p>
+                    
+                    {deleteError && (
+                      <div className="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded-lg mb-4 text-sm">
+                        {deleteError}
+                      </div>
+                    )}
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          setShowDeleteConfirm(false)
+                          setDeleteError('')
+                        }}
+                        className="flex-1 bg-white border-2 border-gray-300 text-black font-semibold py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                        disabled={deleteLoading}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleDeleteAccount}
+                        disabled={deleteLoading}
+                        className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {deleteLoading ? 'Deleting...' : 'Yes, Delete My Account'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* App Version */}
-          <div className="text-center text-sm text-gray-500">
+          <div className="text-center text-sm text-gray-500 pb-4">
             Pickup Web v1.0.0
           </div>
         </div>

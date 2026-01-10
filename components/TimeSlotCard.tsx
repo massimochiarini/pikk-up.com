@@ -25,13 +25,13 @@ export function TimeSlotCard({
 }: TimeSlotCardProps) {
   const getCardStyles = () => {
     if (isPast) {
-      return 'bg-gray-800/30 border-gray-700 opacity-40 cursor-not-allowed'
+      return 'bg-gray-200 border-gray-300 opacity-50 cursor-not-allowed'
     }
     if (isAvailable) {
-      return 'bg-green-500/10 border-green-500 hover:bg-green-500/20 hover:shadow-lg hover:shadow-green-500/20 cursor-pointer transform hover:scale-105 transition-all duration-300'
+      return 'bg-green-50 border-green-500 hover:bg-green-100 hover:shadow-lg cursor-pointer transform hover:scale-105 transition-all duration-300'
     }
     // Claimed
-    return 'bg-red-500/10 border-red-500 cursor-default hover:bg-red-500/20 transition-all duration-300'
+    return 'bg-red-50 border-red-500 cursor-default hover:bg-red-100 transition-all duration-300'
   }
 
   const handleClick = () => {
@@ -47,38 +47,38 @@ export function TimeSlotCard({
     >
       {/* Status/Content */}
       {isPast ? (
-        <div className="text-center text-gray-600 text-xs font-light">
+        <div className="text-center text-gray-500 text-xs font-semibold">
           Past
         </div>
       ) : isAvailable ? (
         <div className="text-center">
-          <div className="text-green-400 font-medium text-sm mb-1">
+          <div className="text-green-600 font-semibold text-sm mb-1">
             Available
           </div>
-          <div className="text-green-500/70 text-xs font-light">
+          <div className="text-green-600/70 text-xs font-medium">
             Click to claim
           </div>
         </div>
       ) : session ? (
         <div className="text-center">
           {session.custom_title && (
-            <div className="text-red-400 text-sm font-medium mb-1 line-clamp-2">
+            <div className="text-red-600 text-sm font-semibold mb-1 line-clamp-2">
               {session.custom_title}
             </div>
           )}
           {instructorName && (
-            <div className="text-red-300/70 text-xs font-light">
+            <div className="text-red-500 text-xs font-medium">
               w/ {instructorName}
             </div>
           )}
           {!session.custom_title && !instructorName && (
-            <div className="text-red-400 text-xs font-light">
+            <div className="text-red-600 text-xs font-semibold">
               Claimed
             </div>
           )}
         </div>
       ) : (
-        <div className="text-center text-gray-600 text-xs font-light">
+        <div className="text-center text-gray-500 text-xs font-semibold">
           Unavailable
         </div>
       )}

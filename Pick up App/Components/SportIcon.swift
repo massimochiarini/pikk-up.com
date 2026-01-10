@@ -161,13 +161,13 @@ struct SportSelectionItem: View {
         HStack(spacing: 16) {
             SportIcon(sport: .tennis, size: 32)
             SportIcon(sport: .pickleball, size: 32, showBackground: true)
-            SportIcon(sport: .basketball, size: 32)
+            SportIcon(sport: .yoga, size: 32)
         }
         
         HStack(spacing: 12) {
             SportBadge(sport: .tennis, style: .filled)
             SportBadge(sport: .pickleball, style: .outlined)
-            SportBadge(sport: .padel, style: .subtle)
+            SportBadge(sport: .yoga, style: .subtle)
         }
         
         SportSelectionGrid(selectedSports: .constant([.tennis, .pickleball]))

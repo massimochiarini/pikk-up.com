@@ -1,13 +1,14 @@
 //
 //  FeedItem.swift
-//  Sports App 1
+//  Pick Up Yoga
+//
+//  Feed item types for yoga class feed
 //
 
 import Foundation
 
 enum FeedItemType: Sendable {
-    case playerPost(PostWithProfile)
-    case game(Game)
+    case game(Game) // Yoga class
     case activity(ActivityItem)
 }
 
@@ -18,13 +19,6 @@ struct FeedItem: Identifiable, Sendable, Hashable {
     let connectionContext: ConnectionContext?
     
     var sortDate: Date { timestamp }
-    
-    init(post: PostWithProfile, connectionContext: ConnectionContext? = nil) {
-        self.id = "post-\(post.id.uuidString)"
-        self.type = .playerPost(post)
-        self.timestamp = post.createdAt
-        self.connectionContext = connectionContext
-    }
     
     init(game: Game, connectionContext: ConnectionContext? = nil) {
         self.id = "game-\(game.id.uuidString)"
@@ -58,9 +52,9 @@ struct ConnectionContext: Sendable, Hashable {
         switch type {
         case .playedTogether:
             if let name = userName {
-                return "You've played with \(name) before"
+                return "You've attended \(name)'s class before"
             }
-            return "Played together before"
+            return "Attended before"
         case .friend:
             if let name = userName {
                 return "\(name) is your friend"
@@ -85,18 +79,16 @@ struct ActivityItem: Identifiable, Sendable, Hashable {
     let relatedId: UUID?
     
     enum ActivityType: Sendable, Hashable {
-        case joinedGame
-        case nearbyGames(count: Int)
-        case playersLooking(count: Int)
+        case joinedGame // Joined a class
+        case nearbyGames(count: Int) // Nearby classes
         case newConnection
-        case gameReminder
+        case gameReminder // Class reminder
     }
     
     var icon: String {
         switch activityType {
         case .joinedGame: return "checkmark.circle.fill"
         case .nearbyGames: return "mappin.circle.fill"
-        case .playersLooking: return "person.2.wave.2.fill"
         case .newConnection: return "person.badge.plus"
         case .gameReminder: return "bell.fill"
         }
@@ -114,25 +106,13 @@ struct ActivityItem: Identifiable, Sendable, Hashable {
 // Helper to generate activity items
 extension ActivityItem {
     static func nearbyGamesActivity(count: Int) -> ActivityItem {
-        let gameWord = count == 1 ? "game" : "games"
+        let classWord = count == 1 ? "class" : "classes"
         let checkWord = count == 1 ? "Check it out!" : "Check them out!"
         return ActivityItem(
             id: "nearby-games-\(Date().timeIntervalSince1970)",
             activityType: .nearbyGames(count: count),
-            title: "\(count) \(gameWord) happening nearby today",
+            title: "\(count) \(classWord) happening nearby today",
             subtitle: checkWord,
-            timestamp: Date(),
-            relatedId: nil
-        )
-    }
-    
-    static func playersLookingActivity(count: Int) -> ActivityItem {
-        let playerWord = count == 1 ? "player" : "players"
-        return ActivityItem(
-            id: "players-looking-\(Date().timeIntervalSince1970)",
-            activityType: .playersLooking(count: count),
-            title: "\(count) \(playerWord) looking to play right now",
-            subtitle: "Who's in?",
             timestamp: Date(),
             relatedId: nil
         )
@@ -143,7 +123,7 @@ extension ActivityItem {
             id: "joined-\(gameId.uuidString)",
             activityType: .joinedGame,
             title: "You joined \(gameName)",
-            subtitle: "Get ready to play!",
+            subtitle: "See you in class!",
             timestamp: Date(),
             relatedId: gameId
         )
