@@ -3,12 +3,20 @@
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import { useEffect, useState } from 'react'
-import { supabase, type Game, type Profile } from '@/lib/supabase'
+import { supabase, type Game } from '@/lib/supabase'
 import { format, parseISO, isFuture } from 'date-fns'
+
+type ParticipantProfile = {
+  id: string
+  first_name: string
+  last_name: string
+  email: string | null
+  phone: string | null
+}
 
 type GameWithParticipants = {
   game: Game
-  participants: Profile[]
+  participants: ParticipantProfile[]
   participantCount: number
 }
 
@@ -62,9 +70,9 @@ export default function TextBlastPage() {
 
           if (participantsError) throw participantsError
 
-          const participantProfiles = participants
-            ?.map(p => p.profiles)
-            .filter(Boolean) as Profile[] || []
+          const participantProfiles: ParticipantProfile[] = participants
+            ?.map(p => p.profiles as ParticipantProfile)
+            .filter(Boolean) || []
 
           return {
             game,
