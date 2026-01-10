@@ -212,7 +212,7 @@ export default function HomePage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-white overflow-y-auto flex items-center justify-center">
         <div className="animate-pulse text-black text-xl tracking-wider font-semibold">Loading...</div>
       </div>
     )

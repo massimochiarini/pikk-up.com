@@ -348,10 +348,10 @@ export default function GameDetailPage() {
   const { title: eventTitle, description: eventDescription } = parseEventDetails(game.description)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-y-auto">
       <Navbar />
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-8 max-w-4xl pb-20">
         <button
           onClick={() => router.back()}
           className="text-gray-600 hover:text-black mb-6 flex items-center gap-2 font-medium transition-colors"
