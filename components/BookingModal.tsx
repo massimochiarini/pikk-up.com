@@ -245,10 +245,10 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
               </button>
               <button
                 type="submit"
-                disabled={loading || uploadingImage}
+                disabled={loading}
                 className="btn-primary flex-1 disabled:opacity-50"
               >
-                {uploadingImage ? 'Uploading...' : loading ? 'Claiming...' : 'Claim Session'}
+                {loading ? 'Claiming...' : 'Claim Session'}
               </button>
             </div>
           </form>
