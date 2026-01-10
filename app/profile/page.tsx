@@ -185,10 +185,10 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-y-auto">
       <Navbar />
 
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 py-8 max-w-2xl pb-20">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-black mb-2">
             My Profile
@@ -273,9 +273,10 @@ export default function ProfilePage() {
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   disabled={!editing}
                   required
+                  readOnly={!editing}
                 />
               </div>
 
@@ -287,9 +288,10 @@ export default function ProfilePage() {
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   disabled={!editing}
                   required
+                  readOnly={!editing}
                 />
               </div>
             </div>
@@ -302,8 +304,9 @@ export default function ProfilePage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 disabled={!editing}
+                readOnly={!editing}
                 placeholder="@username"
               />
             </div>
@@ -318,8 +321,9 @@ export default function ProfilePage() {
                   type="text"
                   value={instagram}
                   onChange={(e) => setInstagram(e.target.value.replace('@', ''))}
-                  className="w-full pl-8 pr-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100"
+                  className="w-full pl-8 pr-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   disabled={!editing}
+                  readOnly={!editing}
                   placeholder="instagram_handle"
                 />
               </div>
@@ -333,9 +337,10 @@ export default function ProfilePage() {
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100 resize-none"
+                className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
                 rows={4}
                 disabled={!editing}
+                readOnly={!editing}
                 placeholder="Tell others about yourself..."
               />
             </div>

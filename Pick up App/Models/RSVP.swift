@@ -8,7 +8,7 @@ import Foundation
 struct RSVP: Codable, Identifiable, Sendable {
     let id: UUID
     let gameId: UUID
-    let userId: UUID
+    let userId: UUID?  // ✨ FIXED: Now optional to support guest RSVPs
     let createdAt: Date
     
     enum CodingKeys: String, CodingKey {
@@ -21,7 +21,7 @@ struct RSVP: Codable, Identifiable, Sendable {
 
 struct NewRSVP: Encodable, Sendable {
     let gameId: UUID
-    let userId: UUID
+    let userId: UUID?  // ✨ FIXED: Now optional to support guest RSVPs
     
     enum CodingKeys: String, CodingKey {
         case gameId = "game_id"
@@ -33,7 +33,7 @@ struct NewRSVP: Encodable, Sendable {
 struct RSVPWithProfile: Codable, Identifiable, Sendable {
     let id: UUID
     let gameId: UUID
-    let userId: UUID
+    let userId: UUID?  // ✨ FIXED: Now optional to support guest RSVPs
     let createdAt: Date
     let profiles: Profile?
     

@@ -22,8 +22,8 @@ struct GameCardNew: View {
     
     // Gray color palette - using AppTheme textPrimary with opacity
     private var textDark: Color { AppTheme.textPrimary }
-    private var textMedium: Color { AppTheme.textPrimary.opacity(0.65) }
-    private var textLight: Color { AppTheme.textPrimary.opacity(0.45) }
+    private var textMedium: Color { AppTheme.textPrimary.opacity(0.85) }  // ✅ Darker for better readability
+    private var textLight: Color { AppTheme.textPrimary.opacity(0.65) }   // ✅ Darker for better readability
     private var borderColor: Color { AppTheme.textPrimary.opacity(0.15) }
     private var badgeBg: Color { AppTheme.textPrimary.opacity(0.06) }
     
