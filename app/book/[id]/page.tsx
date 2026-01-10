@@ -103,7 +103,7 @@ export default function PublicBookingPage() {
       }
 
       // Create guest RSVP
-      const { error: rsvpError } = await supabase
+      const { data: rsvpData, error: rsvpError } = await supabase
         .from('rsvps')
         .insert({
           game_id: gameId,
@@ -113,8 +113,31 @@ export default function PublicBookingPage() {
           guest_email: email.toLowerCase().trim(),
           created_at: new Date().toISOString(),
         })
+        .select()
+        .single()
 
       if (rsvpError) throw rsvpError
+
+      // Send confirmation email
+      try {
+        await supabase.functions.invoke('send-booking-confirmation', {
+          body: {
+            to: email.toLowerCase().trim(),
+            guestName: `${firstName.trim()} ${lastName.trim()}`,
+            sessionTitle: game.description?.split('\n\n')[0] || game.sport,
+            sessionDate: format(parseISO(game.game_date), 'EEEE, MMM d, yyyy'),
+            sessionTime: formatTime(game.start_time),
+            venueName: game.venue_name,
+            venueAddress: game.address || '',
+            instructorName: instructor ? `${instructor.first_name} ${instructor.last_name}` : '',
+            cost: game.cost_cents,
+            bookingId: rsvpData.id,
+          }
+        })
+      } catch (emailError) {
+        // Log email error but don't fail the booking
+        console.error('Failed to send confirmation email:', emailError)
+      }
 
       // Success!
       setBookingState('success')

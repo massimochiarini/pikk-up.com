@@ -18,13 +18,9 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
   const [skillLevel, setSkillLevel] = useState('')
   const [cost, setCost] = useState<string>('0')
   const [loading, setLoading] = useState(false)
-  const [uploadingImage, setUploadingImage] = useState(false)
-  const [coverImage, setCoverImage] = useState<File | null>(null)
-  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null)
   const [latitude, setLatitude] = useState<number | null>(null)
   const [longitude, setLongitude] = useState<number | null>(null)
   const [locationAddress, setLocationAddress] = useState('2500 South Miami Avenue')
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   if (!isOpen) return null
 
@@ -41,68 +37,6 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
       return format(parseISO(date), 'EEEE, MMMM d, yyyy')
     } catch {
       return date
-    }
-  }
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert('Image must be less than 5MB')
-        return
-      }
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file')
-        return
-      }
-      setCoverImage(file)
-      
-      // Create preview
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setCoverImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleRemoveImage = () => {
-    setCoverImage(null)
-    setCoverImagePreview(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }
-
-  const uploadCoverImage = async (userId: string): Promise<string | null> => {
-    if (!coverImage) return null
-
-    setUploadingImage(true)
-    try {
-      const fileExt = coverImage.name.split('.').pop()
-      const fileName = `${userId}/${Date.now()}.${fileExt}`
-      
-      const { data, error } = await supabase.storage
-        .from('game-images')
-        .upload(fileName, coverImage, {
-          cacheControl: '3600',
-          upsert: false
-        })
-
-      if (error) throw error
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('game-images')
-        .getPublicUrl(fileName)
-
-      return publicUrl
-    } catch (error) {
-      console.error('Error uploading image:', error)
-      alert('Failed to upload cover image. Please try again.')
-      return null
-    } finally {
-      setUploadingImage(false)
     }
   }
 
@@ -133,17 +67,6 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      // Upload cover image if present
-      let imageUrl: string | null = null
-      if (coverImage) {
-        imageUrl = await uploadCoverImage(user.id)
-        if (!imageUrl && coverImage) {
-          // Image upload failed
-          setLoading(false)
-          return
-        }
-      }
-
       // Get coordinates if not manually set
       let finalLat = latitude
       let finalLng = longitude
@@ -158,15 +81,13 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
       // Convert dollars to cents
       const costCents = Math.round(parseFloat(cost || '0') * 100)
 
-      await onClaim(eventName, description, skillLevel, imageUrl, finalLat, finalLng, costCents)
+      await onClaim(eventName, description, skillLevel, null, finalLat, finalLng, costCents)
       
       // Reset form
       setEventName('')
       setDescription('')
       setSkillLevel('')
       setCost('0')
-      setCoverImage(null)
-      setCoverImagePreview(null)
       setLatitude(null)
       setLongitude(null)
     } catch (error) {
@@ -179,13 +100,11 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
   }
 
   const handleClose = () => {
-    if (!loading && !uploadingImage) {
+    if (!loading) {
       setEventName('')
       setDescription('')
       setSkillLevel('')
       setCost('0')
-      setCoverImage(null)
-      setCoverImagePreview(null)
       setLatitude(null)
       setLongitude(null)
       onClose()
@@ -220,51 +139,6 @@ export function BookingModal({ isOpen, onClose, selectedDate, selectedTime, onCl
               <div className="text-sm mt-1 opacity-90">
                 Duration: 1.5 hours
               </div>
-            </div>
-
-            {/* Cover Photo Upload */}
-            <div>
-              <label className="block text-sm font-semibold text-black mb-2">
-                Cover Photo (Optional)
-              </label>
-              
-              {coverImagePreview ? (
-                <div className="relative">
-                  <img 
-                    src={coverImagePreview} 
-                    alt="Cover preview" 
-                    className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRemoveImage}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              ) : (
-                <div 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-black transition-colors"
-                >
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <p className="mt-2 text-sm text-gray-600">Click to upload cover photo</p>
-                  <p className="text-xs text-gray-500 mt-1">Max 5MB</p>
-                </div>
-              )}
-              
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageSelect}
-                className="hidden"
-              />
             </div>
 
             {/* Event Name */}

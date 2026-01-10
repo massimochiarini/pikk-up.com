@@ -68,7 +68,6 @@ class FeedService: ObservableObject {
         let todayString = DateFormatter.supabaseDateFormatter.string(from: Date())
         
         print("🎮 [FeedService] Fetching games with date >= \(todayString)")
-        print("🎮 [FeedService] Only showing web-managed games (instructor_id != nil)")
         
         // Fetch ALL upcoming games from the database
         var allGames: [Game] = try await supabase
@@ -83,18 +82,11 @@ class FeedService: ObservableObject {
         
         print("🎮 [FeedService] Raw games fetched from database: \(allGames.count)")
         
-        // Only show web-managed games (games created via the web app with instructor_id set)
-        // Also filter out games that have already passed (start time is in the past)
+        // Filter out games that have already passed (start time is in the past)
         var filteredGames = allGames.filter { game in
             // Filter out games that have already started
             if game.hasPassed {
                 print("🎮 [FeedService] Filtering out past game: \(game.venueName) at \(game.formattedTime)")
-                return false
-            }
-            
-            // Only show web-managed games (instructor_id must be set)
-            if game.instructorId == nil {
-                print("🎮 [FeedService] Filtering out non-web-managed game: \(game.venueName)")
                 return false
             }
             

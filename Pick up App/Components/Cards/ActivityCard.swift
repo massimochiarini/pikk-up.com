@@ -242,10 +242,10 @@ struct EmptyStateCard: View {
             ) {}
             
             EmptyStateCard(
-                icon: "sportscourt.fill",
-                title: "No games yet",
-                subtitle: "Be the first to create a game in your area!",
-                buttonText: "Create Game",
+                icon: "figure.mind.and.body",
+                title: "No classes yet",
+                subtitle: "Be the first to create a class in your area!",
+                buttonText: "Create Class",
                 onButtonTap: {}
             )
         }

@@ -428,13 +428,13 @@ struct EmptyMyGamesView: View {
                     .fill(AppTheme.divider)
                     .frame(width: 100, height: 100)
                 
-                Image(systemName: "sportscourt.fill")
+                Image(systemName: "figure.mind.and.body")
                     .font(.system(size: 44))
                     .foregroundColor(AppTheme.textTertiary)
             }
             
             VStack(spacing: 8) {
-                Text("No games yet")
+                Text("No classes yet")
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(AppTheme.textPrimary)
                 
