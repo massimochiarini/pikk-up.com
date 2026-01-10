@@ -68,6 +68,7 @@ class FeedService: ObservableObject {
         let todayString = DateFormatter.supabaseDateFormatter.string(from: Date())
         
         print("🎮 [FeedService] Fetching games with date >= \(todayString)")
+        print("🎮 [FeedService] Current date/time: \(Date())")
         
         // Fetch ALL upcoming games from the database
         var allGames: [Game] = try await supabase
@@ -81,6 +82,11 @@ class FeedService: ObservableObject {
             .value
         
         print("🎮 [FeedService] Raw games fetched from database: \(allGames.count)")
+        
+        // Log each game fetched
+        for (index, game) in allGames.enumerated() {
+            print("   Game \(index + 1): \(game.venueName) - \(game.gameDate) \(game.startTime) - hasPassed: \(game.hasPassed)")
+        }
         
         // Filter out games that have already passed (start time is in the past)
         var filteredGames = allGames.filter { game in

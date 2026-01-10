@@ -2,10 +2,9 @@
 //  Theme.swift
 //  Sports App 1
 //
-//  Brand colors inspired by modern sports tech aesthetic
-//  - Neon green for energy and action
-//  - Deep navy for confidence and trust
-//  - Clean, vibrant, playful yet professional
+//  Brand colors for yoga app aesthetic
+//  - Sophisticated grays and blacks for calm and focus
+//  - Clean, minimal, zen aesthetic
 //
 
 import SwiftUI
@@ -14,28 +13,28 @@ struct AppTheme {
     // MARK: - Primary Brand Colors (Light Theme)
     static let background = Color.white                  // White background
     static let cardBackground = Color(hex: "F5F5F5")     // Light gray for cards
-    static let neonGreen = Color(hex: "D3FD00")          // Keep accent for CTAs
-    static let neonGreenDark = Color(hex: "B8E000")      // Darker neon
+    static let neonGreen = Color(hex: "1F2937")          // Dark gray (was neon green)
+    static let neonGreenDark = Color(hex: "111827")      // Darker gray (was darker neon)
     
     // MARK: - Text Colors (Dark on light)
     static let textPrimary = Color.black                             // Black primary text
     static let textSecondary = Color.black.opacity(0.6)              // 60% black
     static let textTertiary = Color.black.opacity(0.4)               // 40% black
-    static let textOnNeon = Color(hex: "1D1C1D")                     // Dark on neon
+    static let textOnNeon = Color.white                              // White on dark gray
     
     // MARK: - Legacy Navy (keep for compatibility but rarely used)
     static let navy = Color(hex: "0F1B2E")
     static let navyLight = Color(hex: "1A2B4A")
     
     // MARK: - Accent Colors
-    static let skyBlue = Color(hex: "4A9EBF")
-    static let skyBlueLight = Color(hex: "7BB8D0")
-    static let brandBlue = Color(hex: "0013F7")
+    static let skyBlue = Color(hex: "6B7280")            // Medium gray
+    static let skyBlueLight = Color(hex: "9CA3AF")       // Light gray
+    static let brandBlue = Color(hex: "374151")          // Dark gray
     
     // MARK: - Action Colors
-    static let primary = neonGreen
-    static let primaryDark = neonGreenDark
-    static let onPrimary = Color(hex: "1D1C1D")          // Dark text on neon
+    static let primary = neonGreen                       // Dark gray
+    static let primaryDark = neonGreenDark              // Darker gray
+    static let onPrimary = Color.white                   // White text on dark
     
     // MARK: - Legacy aliases
     static let teal = neonGreen

@@ -30,7 +30,7 @@ export default function CreateGamePage() {
         .from('games')
         .insert({
           created_by: user.id,
-          sport: 'pickleball',
+          sport: 'yoga',
           venue_name: 'Pick Up Studio',
           address: '2500 South Miami Avenue',
           game_date: date,
