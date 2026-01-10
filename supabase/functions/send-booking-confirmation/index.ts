@@ -220,7 +220,7 @@ Questions? Contact your instructor through the Pick Up app.
         'Authorization': `Bearer ${RESEND_API_KEY}`
       },
       body: JSON.stringify({
-        from: 'Pick Up <bookings@pickupapp.io>',
+        from: 'Pick Up <onboarding@resend.dev>',
         to: [to],
         subject: `✓ Confirmed: ${sessionTitle} - ${sessionDate}`,
         html: emailHtml,

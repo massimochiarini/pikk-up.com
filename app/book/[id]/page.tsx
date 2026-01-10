@@ -120,7 +120,11 @@ export default function PublicBookingPage() {
 
       // Send confirmation email
       try {
-        console.log('Attempting to send email to:', email)
+        console.log('📧 Attempting to send confirmation email...')
+        console.log('   To:', email)
+        console.log('   Guest:', `${firstName.trim()} ${lastName.trim()}`)
+        console.log('   Session:', game.description?.split('\n\n')[0] || game.sport)
+        
         const { data: emailData, error: emailError } = await supabase.functions.invoke('send-booking-confirmation', {
           body: {
             to: email.toLowerCase().trim(),
@@ -137,13 +141,23 @@ export default function PublicBookingPage() {
         })
         
         if (emailError) {
-          console.error('Email function error:', emailError)
+          console.error('❌ Email function error:', emailError)
+          console.error('   This usually means:')
+          console.error('   1. Function not deployed (run: supabase functions deploy send-booking-confirmation)')
+          console.error('   2. RESEND_API_KEY not set (run: supabase secrets set RESEND_API_KEY=...)')
+          console.error('   3. Email domain not verified in Resend')
+          console.error('')
+          console.error('   See: EMAIL_FIX_START_HERE.md for complete fix')
         } else {
-          console.log('Email sent successfully:', emailData)
+          console.log('✅ Email sent successfully!')
+          console.log('   Message ID:', emailData?.messageId || emailData)
+          console.log('   Check your inbox (and spam folder)')
         }
       } catch (emailError) {
         // Log email error but don't fail the booking
-        console.error('Failed to send confirmation email:', emailError)
+        console.error('❌ Exception sending confirmation email:', emailError)
+        console.error('   Booking still succeeded, but email failed.')
+        console.error('   See: EMAIL_FIX_START_HERE.md for fix')
       }
 
       // Success!
