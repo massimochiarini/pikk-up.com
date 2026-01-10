@@ -11,12 +11,15 @@ export type Profile = {
   first_name: string
   last_name: string
   username?: string
+  email?: string
+  phone?: string
   bio?: string
   avatar_url?: string
   favorite_sports?: string[]
   location_lat?: number
   location_lng?: number
   sport_preference?: 'pickleball' | 'yoga' | 'both'
+  is_instructor?: boolean
   created_at: string
 }
 
