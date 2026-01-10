@@ -57,7 +57,7 @@ export default function TextBlastPage() {
             .from('participants')
             .select(`
               user_id,
-              profiles (
+              profiles!inner (
                 id,
                 first_name,
                 last_name,
@@ -70,9 +70,18 @@ export default function TextBlastPage() {
 
           if (participantsError) throw participantsError
 
-          const participantProfiles: ParticipantProfile[] = participants
-            ?.map(p => p.profiles as ParticipantProfile)
-            .filter(Boolean) || []
+          const participantProfiles: ParticipantProfile[] = (participants || [])
+            .map((p: any) => {
+              const profile = p.profiles
+              return {
+                id: profile.id,
+                first_name: profile.first_name,
+                last_name: profile.last_name,
+                email: profile.email || null,
+                phone: profile.phone || null
+              }
+            })
+            .filter(Boolean)
 
           return {
             game,
