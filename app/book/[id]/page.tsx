@@ -296,8 +296,16 @@ export default function PublicBookingPage() {
                       <div className="font-semibold text-gray-900">
                         {instructor.first_name} {instructor.last_name}
                       </div>
-                      {instructor.username && (
-                        <div className="text-gray-500 text-sm">@{instructor.username}</div>
+                      {instructor.instagram && (
+                        <a 
+                          href={`https://instagram.com/${instructor.instagram.replace('@', '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sky-blue text-sm hover:underline flex items-center gap-1"
+                        >
+                          <span>📷</span>
+                          @{instructor.instagram.replace('@', '')}
+                        </a>
                       )}
                     </div>
                   </div>
