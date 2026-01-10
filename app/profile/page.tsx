@@ -14,6 +14,7 @@ export default function ProfilePage() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [username, setUsername] = useState('')
+  const [instagram, setInstagram] = useState('')
   const [bio, setBio] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
   
@@ -28,6 +29,7 @@ export default function ProfilePage() {
       setFirstName(profile.first_name || '')
       setLastName(profile.last_name || '')
       setUsername(profile.username || '')
+      setInstagram(profile.instagram || '')
       setBio(profile.bio || '')
       setAvatarUrl(profile.avatar_url || '')
     }
@@ -143,6 +145,7 @@ export default function ProfilePage() {
           first_name: firstName,
           last_name: lastName,
           username: username || null,
+          instagram: instagram || null,
           bio: bio || null,
         })
         .eq('id', user.id)
@@ -303,6 +306,24 @@ export default function ProfilePage() {
                 disabled={!editing}
                 placeholder="@username"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Instagram
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">@</span>
+                <input
+                  type="text"
+                  value={instagram}
+                  onChange={(e) => setInstagram(e.target.value.replace('@', ''))}
+                  className="w-full pl-8 pr-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-black placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-20 outline-none transition-all disabled:opacity-60 disabled:bg-gray-100"
+                  disabled={!editing}
+                  placeholder="instagram_handle"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Your Instagram handle (without @)</p>
             </div>
 
             <div>

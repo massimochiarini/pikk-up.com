@@ -13,6 +13,7 @@ export type Profile = {
   username?: string
   email?: string
   phone?: string
+  instagram?: string
   bio?: string
   avatar_url?: string
   favorite_sports?: string[]

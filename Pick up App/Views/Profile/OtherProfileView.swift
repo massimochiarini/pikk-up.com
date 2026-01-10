@@ -28,7 +28,7 @@ struct OtherProfileView: View {
     @State private var showBlockConfirmation = false
     @State private var isUserBlocked = false
     
-    private let segments = ["Games", "Posts"]
+    // Removed segments - only showing Games for studio booking platform
     
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -47,11 +47,15 @@ struct OtherProfileView: View {
                     .padding(.top, 20)
                     .padding(.horizontal, 24)
                 
-                // Segment control
-                segmentControl
+                // Title for games section
+                Text("Classes")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(AppTheme.textPrimary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 24)
+                    .padding(.horizontal, 24)
                 
-                // Content grid
+                // Content grid (games only)
                 contentGrid
                     .padding(.top, 16)
                 
@@ -195,28 +199,6 @@ struct OtherProfileView: View {
         }
     }
     
-    // MARK: - Segment Control
-    
-    private var segmentControl: some View {
-        HStack(spacing: 0) {
-            ForEach(0..<segments.count, id: \.self) { index in
-                Button(action: { selectedSegment = index }) {
-                    VStack(spacing: 8) {
-                        Text(segments[index])
-                            .font(.system(size: 14, weight: selectedSegment == index ? .semibold : .medium))
-                            .foregroundColor(selectedSegment == index ? AppTheme.teal : AppTheme.textSecondary)
-                        
-                        Rectangle()
-                            .fill(selectedSegment == index ? AppTheme.teal : Color.clear)
-                            .frame(height: 2)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-            }
-        }
-        .padding(.horizontal, 24)
-    }
-    
     // MARK: - Content Grid
     
     private var contentGrid: some View {
@@ -224,27 +206,12 @@ struct OtherProfileView: View {
             columns: [GridItem(.flexible()), GridItem(.flexible())],
             spacing: 12
         ) {
-            switch selectedSegment {
-            case 0:
-                ForEach(userGames) { game in
-                    GameCardMini(game: game, onTap: {})
-                }
-                
-                if userGames.isEmpty {
-                    emptyGridPlaceholder(message: "No games yet")
-                }
-                
-            case 1:
-                ForEach(postService.userPosts) { post in
-                    PostMiniCard(post: post)
-                }
-                
-                if postService.userPosts.isEmpty {
-                    emptyGridPlaceholder(message: "No posts yet")
-                }
-                
-            default:
-                EmptyView()
+            ForEach(userGames) { game in
+                GameCardMini(game: game, onTap: {})
+            }
+            
+            if userGames.isEmpty {
+                emptyGridPlaceholder(message: "No classes yet")
             }
         }
         .padding(.horizontal, 20)
@@ -282,9 +249,6 @@ struct OtherProfileView: View {
         if let games = try? await gameService.fetchUserCreatedGames(userId: profile.id) {
             userGames = games
         }
-        
-        // Load posts
-        await postService.fetchUserPosts(userId: profile.id)
     }
     
     // REMOVED: Message feature disabled

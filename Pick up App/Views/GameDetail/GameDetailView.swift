@@ -10,7 +10,6 @@ import Auth
 struct GameDetailView: View {
     @EnvironmentObject var authService: AuthService
     @StateObject private var gameService = GameService()
-    @StateObject private var messageService = MessageService()
     @Environment(\.dismiss) var dismiss
     
     let game: Game
@@ -19,14 +18,11 @@ struct GameDetailView: View {
     @State private var isLoading = true
     @State private var hasRSVPed = false
     @State private var isProcessing = false
-    @State private var showEditSheet = false
     @State private var shouldDismissAfterDelete = false
     @State private var venueCoordinate: CLLocationCoordinate2D?
     @State private var lookAroundScene: MKLookAroundScene?
     @State private var venueSnapshots: [UIImage] = []
     @State private var isLoadingPhotos = true
-    @State private var groupChat: GroupChat?
-    @State private var chatMembers: [GroupChatMemberWithProfile] = []
     @State private var showMapsActionSheet = false
     
     var isCreator: Bool {
@@ -66,12 +62,6 @@ struct GameDetailView: View {
                     Divider()
                         .padding(.vertical, 8)
                     
-                    // Chat Section
-                    chatSection
-                    
-                    Divider()
-                        .padding(.vertical, 8)
-                    
                     // Map Section
                     mapSection
                     
@@ -99,12 +89,6 @@ struct GameDetailView: View {
                 )
             }
         }
-        .sheet(isPresented: $showEditSheet) {
-            CreateGameView(existingGame: game, onGameDeleted: {
-                shouldDismissAfterDelete = true
-            })
-            .environmentObject(gameService)
-        }
         .confirmationDialog("Open in Maps", isPresented: $showMapsActionSheet, titleVisibility: .visible) {
             Button("Apple Maps") {
                 openInAppleMaps()
@@ -116,15 +100,9 @@ struct GameDetailView: View {
             
             Button("Cancel", role: .cancel) { }
         }
-        .onChange(of: showEditSheet) { _, isShowing in
-            if !isShowing && shouldDismissAfterDelete {
-                dismiss()
-            }
-        }
         .task {
             await loadGameDetails()
             await geocodeAddress()
-            await loadGroupChat()
         }
     }
     
@@ -257,27 +235,13 @@ struct GameDetailView: View {
             
             // Action buttons row
             HStack(spacing: 10) {
-                // Join/Leave/Manage button (now first)
-                if isCreator && !game.isWebManaged {
-                    // Mobile-created games can be edited
-                    Button(action: { showEditSheet = true }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "gearshape.fill")
-                            Text("Manage")
-                        }
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(AppTheme.textPrimary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(AppTheme.primary)
-                        .cornerRadius(20)
-                    }
-                } else if isCreator && game.isWebManaged {
-                    // Web-managed sessions show info instead
+                // Join/Leave button for students, info for instructors
+                if isCreator {
+                    // Instructors see web-managed info
                     HStack(spacing: 6) {
                         Image(systemName: "globe")
                             .font(.system(size: 12))
-                        Text("Managed on web")
+                        Text("Manage on web")
                             .font(.system(size: 13, weight: .medium))
                     }
                     .foregroundColor(AppTheme.textTertiary)
@@ -426,89 +390,6 @@ struct GameDetailView: View {
         }
     }
     
-    // MARK: - Chat Section
-    private var chatSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Game Chat")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                
-                Spacer()
-                
-                if groupChat != nil {
-                    NavigationLink(destination: gameChatDestination) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "bubble.left.fill")
-                            Text("Open Chat")
-                        }
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(AppTheme.textPrimary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(AppTheme.background)
-                        .cornerRadius(20)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(AppTheme.textPrimary.opacity(0.2), lineWidth: 1)
-                        )
-                    }
-                }
-            }
-            
-            // Chat preview
-            if groupChat != nil {
-                VStack(spacing: 0) {
-                    if messageService.groupMessages.isEmpty {
-                        // Empty state
-                        VStack(spacing: 12) {
-                            Image(systemName: "bubble.left.and.bubble.right")
-                                .font(.system(size: 32))
-                                .foregroundColor(AppTheme.textPrimary.opacity(0.3))
-                            
-                            Text("No messages yet")
-                                .font(.subheadline)
-                                .foregroundColor(AppTheme.textSecondary)
-                            
-                            Text("Be the first to say hello!")
-                                .font(.caption)
-                                .foregroundColor(AppTheme.textTertiary)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 32)
-                    } else {
-                        // Show last few messages
-                        ForEach(messageService.groupMessages.suffix(3)) { message in
-                            GameChatPreviewRow(
-                                message: message,
-                                isFromCurrentUser: message.senderId == authService.currentUser?.id,
-                                senderProfile: chatMembers.first(where: { $0.member.userId == message.senderId })?.profile
-                            )
-                        }
-                    }
-                }
-                .padding(12)
-                .background(AppTheme.textPrimary.opacity(0.04))
-                .cornerRadius(12)
-            } else {
-                // No chat yet
-                VStack(spacing: 12) {
-                    Image(systemName: "bubble.left.and.bubble.right")
-                        .font(.system(size: 32))
-                        .foregroundColor(AppTheme.textPrimary.opacity(0.3))
-                    
-                    Text("Chat will be available when players join")
-                        .font(.subheadline)
-                        .foregroundColor(AppTheme.textSecondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 32)
-                .background(AppTheme.textPrimary.opacity(0.04))
-                .cornerRadius(12)
-            }
-        }
-    }
-    
     // MARK: - Map Section
     private var mapSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -560,20 +441,6 @@ struct GameDetailView: View {
                     .font(.subheadline)
                     .foregroundColor(AppTheme.textSecondary)
             }
-        }
-    }
-    
-    @ViewBuilder
-    private var gameChatDestination: some View {
-        if let groupChat = groupChat {
-            GroupConversationView(
-                groupChat: GroupChatWithDetails(
-                    groupChat: groupChat,
-                    memberCount: chatMembers.count,
-                    game: game
-                )
-            )
-            .environmentObject(authService)
         }
     }
     
@@ -690,23 +557,6 @@ struct GameDetailView: View {
         }
     }
     
-    private func loadGroupChat() async {
-        do {
-            // Try to get existing group chat for this game
-            groupChat = try await messageService.getGroupChatForGame(gameId: game.id)
-            
-            if let groupChat = groupChat {
-                // Fetch messages for preview
-                await messageService.fetchGroupMessages(groupChatId: groupChat.id)
-                
-                // Fetch members for displaying names
-                chatMembers = try await messageService.getGroupChatMembers(groupChatId: groupChat.id)
-            }
-        } catch {
-            print("Error loading group chat: \(error)")
-        }
-    }
-    
     private func openInMaps() {
         showMapsActionSheet = true
     }
@@ -803,49 +653,6 @@ struct MapPin: Identifiable {
 }
 
 // MARK: - Chat Preview Row
-struct GameChatPreviewRow: View {
-    let message: GroupMessage
-    let isFromCurrentUser: Bool
-    let senderProfile: Profile?
-    
-    var body: some View {
-        HStack(alignment: .top, spacing: 8) {
-            // Avatar
-            AvatarView(
-                url: senderProfile?.avatarUrl,
-                initials: senderProfile?.initials ?? "?",
-                size: 28,
-                showBorder: false
-            )
-            
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(isFromCurrentUser ? "You" : (senderProfile?.firstName ?? "Unknown"))
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(AppTheme.textPrimary)
-                    
-                    Text(message.formattedTime)
-                        .font(.system(size: 11))
-                        .foregroundColor(AppTheme.textSecondary)
-                }
-                
-                Text(message.content)
-                    .font(.system(size: 14))
-                    .foregroundColor(AppTheme.textPrimary.opacity(0.8))
-                    .lineLimit(2)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(AppTheme.background)
-            .cornerRadius(16)
-            .shadow(color: AppTheme.textPrimary.opacity(0.06), radius: 4, x: 0, y: 2)
-            
-            Spacer()
-        }
-        .padding(.vertical, 4)
-    }
-}
-
 #Preview {
     NavigationStack {
         GameDetailView(
