@@ -183,19 +183,11 @@ struct HomeView: View {
     
     private var loadingView: some View {
         VStack(spacing: 16) {
-            ForEach(0..<3, id: \.self) { _ in
-                loadingCard
-            }
+            ProgressView()
+                .tint(AppTheme.textPrimary)
+                .padding(.top, 80)
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 8)
-    }
-    
-    private var loadingCard: some View {
-        RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
-            .fill(AppTheme.cardBackground)
-            .frame(height: 180)
-            .shimmering()
+        .frame(maxWidth: .infinity)
     }
     
     // MARK: - Empty Feed
@@ -219,43 +211,6 @@ struct HomeView: View {
     }
     
     // MARK: - Actions removed (no player posts)
-}
-
-// MARK: - Shimmer Effect
-
-struct ShimmerModifier: ViewModifier {
-    @State private var phase: CGFloat = 0
-    
-    func body(content: Content) -> some View {
-        content
-            .overlay(
-                GeometryReader { geometry in
-                    LinearGradient(
-                        colors: [
-                            Color.black.opacity(0),
-                            Color.black.opacity(0.1),
-                            Color.black.opacity(0)
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                    .frame(width: geometry.size.width * 2)
-                    .offset(x: -geometry.size.width + (geometry.size.width * 2 * phase))
-                }
-            )
-            .mask(content)
-            .onAppear {
-                withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
-                    phase = 1
-                }
-            }
-    }
-}
-
-extension View {
-    func shimmering() -> some View {
-        modifier(ShimmerModifier())
-    }
 }
 
 #Preview {

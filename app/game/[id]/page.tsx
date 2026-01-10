@@ -323,7 +323,9 @@ export default function GameDetailPage() {
     return `${displayHour}:${minutes} ${period}`
   }
   
-  const currentPlayers = attendees.length + guestAttendees.length
+  // Filter out instructor from attendees (instructor doesn't count as a participant)
+  const nonInstructorAttendees = attendees.filter(attendee => attendee.id !== game.instructor_id)
+  const currentPlayers = nonInstructorAttendees.length + guestAttendees.length
   const spotsLeft = game.max_players - currentPlayers
   const isUserGoing = userRsvp !== null
   const isUserInstructor = user && game.instructor_id === user.id
@@ -573,14 +575,14 @@ export default function GameDetailPage() {
           )}
 
           {/* Attendees */}
-          {(attendees.length > 0 || guestAttendees.length > 0) && (
+          {(nonInstructorAttendees.length > 0 || guestAttendees.length > 0) && (
             <div className="p-8">
               <h3 className="text-lg font-bold text-black mb-4">
                 Who's going ({currentPlayers})
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {/* User attendees */}
-                {attendees.map((attendee) => (
+                {/* User attendees (excluding instructor) */}
+                {nonInstructorAttendees.map((attendee) => (
                   <div key={attendee.id} className="flex items-center space-x-3 bg-gray-50 rounded-lg p-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white font-bold shadow-sm">
                       {attendee.first_name[0]}

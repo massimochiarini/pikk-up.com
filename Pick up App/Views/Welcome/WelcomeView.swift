@@ -35,7 +35,7 @@ struct WelcomeView: View {
                             .fill(AppTheme.cardBackground)
                             .frame(width: 110, height: 110)
                         
-                        Image(systemName: "figure.pickleball")
+                        Image(systemName: "figure.yoga")
                             .font(.system(size: 50, weight: .bold))
                             .foregroundColor(AppTheme.neonGreen)
                     }
@@ -44,11 +44,11 @@ struct WelcomeView: View {
                     VStack(spacing: 8) {
                         Text("Pick Up")
                             .font(.system(size: 42, weight: .black))
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                         
                         Text("Find Activities Near You")
                             .font(.system(size: 17, weight: .medium))
-                            .foregroundColor(AppTheme.textSecondary)
+                            .foregroundColor(.black)
                             .multilineTextAlignment(.center)
                     }
                 }
@@ -86,9 +86,9 @@ struct WelcomeView: View {
                         showLoginModal = true
                     }) {
                         Text("Already have an account? ")
-                            .foregroundColor(AppTheme.textSecondary)
+                            .foregroundColor(.black.opacity(0.6))
                         + Text("Log in")
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                             .fontWeight(.bold)
                     }
                     .font(.subheadline)
@@ -125,7 +125,7 @@ struct FeatureRow: View {
             
             Text(text)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.white)
+                .foregroundColor(.black)
             
             Spacer()
         }
