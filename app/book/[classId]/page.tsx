@@ -265,6 +265,12 @@ function PublicBookingContent() {
         console.error('SMS error:', smsError)
       }
 
+      // If user is not logged in, offer to create account
+      if (!user && bookingData) {
+        setBookingId(bookingData.id)
+        setShowAccountPrompt(true)
+      }
+
       setBookingState('success')
       // Reload booking count
       const { count } = await supabase
@@ -343,6 +349,61 @@ function PublicBookingContent() {
     return `$${(cents / 100).toFixed(0)}`
   }
 
+  const handleCreateAccount = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setCreatingAccount(true)
+    setErrorMessage('')
+
+    try {
+      // Create the user account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: accountEmail,
+        password: accountPassword,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+          },
+        },
+      })
+
+      if (authError) throw authError
+
+      if (authData.user) {
+        // Create profile via API route
+        const response = await fetch('/api/auth/create-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: authData.user.id,
+            email: accountEmail,
+            firstName,
+            lastName,
+            isInstructor: false,
+            phone: phone.replace(/\D/g, '') || null,
+          }),
+        })
+
+        if (response.ok && bookingId) {
+          // Associate the booking with the new user
+          await supabase
+            .from('bookings')
+            .update({ user_id: authData.user.id })
+            .eq('id', bookingId)
+        }
+
+        // Success! Hide the prompt
+        setShowAccountPrompt(false)
+        alert('Account created! You can now view and manage your bookings in "My Classes".')
+      }
+    } catch (error: any) {
+      console.error('Account creation error:', error)
+      setErrorMessage(error.message || 'Failed to create account')
+    } finally {
+      setCreatingAccount(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-cream via-sand-50 to-sage-50 flex items-center justify-center">
@@ -406,6 +467,68 @@ function PublicBookingContent() {
               📸 <strong>Pro tip:</strong> Screenshot this page to save your class details!
             </p>
           </div>
+
+          {/* Optional Account Creation */}
+          {showAccountPrompt && !user && (
+            <div className="bg-gradient-to-br from-sage-50 to-terracotta-50 rounded-2xl p-6 mb-6 border-2 border-sage-200">
+              <h3 className="font-bold text-charcoal mb-2 flex items-center gap-2">
+                ✨ Want to manage your bookings?
+              </h3>
+              <p className="text-sm text-sand-600 mb-4">
+                Create an account to view all your classes, cancel bookings, and get updates.
+              </p>
+              
+              <form onSubmit={handleCreateAccount} className="space-y-3">
+                {errorMessage && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">
+                    {errorMessage}
+                  </div>
+                )}
+                
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={accountEmail}
+                    onChange={(e) => setAccountEmail(e.target.value)}
+                    className="input-field"
+                    placeholder="your@email.com"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Password</label>
+                  <input
+                    type="password"
+                    value={accountPassword}
+                    onChange={(e) => setAccountPassword(e.target.value)}
+                    className="input-field"
+                    placeholder="Min. 6 characters"
+                    minLength={6}
+                    required
+                  />
+                </div>
+                
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={creatingAccount}
+                    className="btn-primary flex-1"
+                  >
+                    {creatingAccount ? 'Creating...' : 'Create Account'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAccountPrompt(false)}
+                    className="btn-secondary flex-1"
+                  >
+                    Maybe Later
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
 
           <Link href="/classes" className="btn-secondary">
             Browse More Classes
