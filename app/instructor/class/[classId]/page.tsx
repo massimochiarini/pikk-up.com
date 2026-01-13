@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
@@ -22,6 +22,8 @@ export default function InstructorClassDetailPage() {
   const [yogaClass, setYogaClass] = useState<ClassWithDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [copiedLink, setCopiedLink] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -29,33 +31,33 @@ export default function InstructorClassDetailPage() {
     }
   }, [user, authLoading, router])
 
-  const fetchClass = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('classes')
-      .select(`
-        *,
-        time_slot:time_slots(*),
-        bookings(*)
-      `)
-      .eq('id', classId)
-      .single()
-
-    if (!error && data) {
-      // Verify ownership
-      if (data.instructor_id !== user?.id) {
-        router.push('/instructor/my-classes')
-        return
-      }
-      setYogaClass(data as ClassWithDetails)
-    }
-    setLoading(false)
-  }, [classId, user?.id, router])
-
   useEffect(() => {
-    if (user && classId) {
-      fetchClass()
+    if (!user || !classId) return
+
+    const fetchClass = async () => {
+      const { data, error } = await supabase
+        .from('classes')
+        .select(`
+          *,
+          time_slot:time_slots(*),
+          bookings(*)
+        `)
+        .eq('id', classId)
+        .single()
+
+      if (!error && data) {
+        // Verify ownership
+        if (data.instructor_id !== user.id) {
+          router.push('/instructor/my-classes')
+          return
+        }
+        setYogaClass(data as ClassWithDetails)
+      }
+      setLoading(false)
     }
-  }, [user, classId, fetchClass])
+
+    fetchClass()
+  }, [user, classId, router])
 
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(':')
@@ -71,14 +73,43 @@ export default function InstructorClassDetailPage() {
   }
 
   const getBookingUrl = () => {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
-    return `${baseUrl}/book/${classId}`
+    // Hardcoded production URL to avoid preview deployment URLs
+    return `https://pikk-up-com.vercel.app/book/${classId}`
   }
 
   const copyBookingLink = () => {
     navigator.clipboard.writeText(getBookingUrl())
     setCopiedLink(true)
     setTimeout(() => setCopiedLink(false), 2000)
+  }
+
+  const handleDeleteClass = async () => {
+    if (!yogaClass) return
+    
+    setDeleting(true)
+    try {
+      // Delete the class
+      const { error } = await supabase
+        .from('classes')
+        .delete()
+        .eq('id', classId)
+
+      if (error) throw error
+
+      // Update time slot back to available
+      await supabase
+        .from('time_slots')
+        .update({ status: 'available' })
+        .eq('id', yogaClass.time_slot_id)
+
+      // Redirect to my classes
+      router.push('/instructor/my-classes')
+    } catch (error) {
+      console.error('Error deleting class:', error)
+      alert('Failed to delete class. Please try again.')
+      setDeleting(false)
+      setShowDeleteConfirm(false)
+    }
   }
 
   const getConfirmedBookings = (bookings: Booking[]) => {
@@ -93,8 +124,29 @@ export default function InstructorClassDetailPage() {
     )
   }
 
-  if (!user || !profile || !yogaClass) {
-    return null
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-sand-600 mb-4">Please sign in to view class details.</p>
+          <a href="/instructor/auth/login" className="btn-primary">Sign In</a>
+        </div>
+      </div>
+    )
+  }
+
+  if (!yogaClass) {
+    return (
+      <div className="min-h-screen bg-cream">
+        <Navbar />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <p className="text-sand-600 mb-4">Class not found or you don&apos;t have access.</p>
+            <a href="/instructor/my-classes" className="btn-primary">Back to My Classes</a>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const confirmedBookings = getConfirmedBookings(yogaClass.bookings)
@@ -142,6 +194,12 @@ export default function InstructorClassDetailPage() {
               >
                 {copiedLink ? '✓ Copied!' : '🔗 Copy Booking Link'}
               </button>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-medium text-sm transition-colors"
+              >
+                Delete
+              </button>
             </div>
           </div>
 
@@ -182,6 +240,44 @@ export default function InstructorClassDetailPage() {
           <div className="card mb-6">
             <h2 className="text-lg font-semibold text-charcoal mb-2">Description</h2>
             <p className="text-sand-700 whitespace-pre-wrap">{yogaClass.description}</p>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full p-6">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">⚠️</span>
+                </div>
+                <h2 className="text-xl font-bold text-charcoal mb-2">Delete Class?</h2>
+                <p className="text-sand-600">
+                  Are you sure you want to delete &quot;{yogaClass.title}&quot;? 
+                  {confirmedBookings.length > 0 && (
+                    <span className="block mt-2 text-red-600 font-medium">
+                      Warning: {confirmedBookings.length} student{confirmedBookings.length !== 1 ? 's have' : ' has'} already registered!
+                    </span>
+                  )}
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                  className="flex-1 btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteClass}
+                  disabled={deleting}
+                  className="flex-1 bg-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {deleting ? 'Deleting...' : 'Delete Class'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

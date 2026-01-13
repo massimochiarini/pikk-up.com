@@ -72,8 +72,11 @@ export function Navbar() {
                     {profile?.first_name?.[0] || user.email?.[0]?.toUpperCase() || 'U'}
                   </div>
                   <button
-                    onClick={signOut}
-                    className="text-sand-600 hover:text-sage-700 text-sm font-medium transition-colors"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      signOut().catch(console.error)
+                    }}
+                    className="text-sand-600 hover:text-sage-700 text-sm font-medium transition-colors hover:underline"
                   >
                     Sign Out
                   </button>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
@@ -34,26 +34,26 @@ export default function CreateClassPage() {
     }
   }, [user, authLoading, router])
 
-  const fetchTimeSlot = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('time_slots')
-      .select('*')
-      .eq('id', slotId)
-      .single()
-
-    if (error || !data) {
-      setError('Time slot not found')
-    } else {
-      setTimeSlot(data)
-    }
-    setLoading(false)
-  }, [slotId])
-
   useEffect(() => {
-    if (user && slotId) {
-      fetchTimeSlot()
+    if (!user || !slotId) return
+
+    const fetchTimeSlot = async () => {
+      const { data, error } = await supabase
+        .from('time_slots')
+        .select('*')
+        .eq('id', slotId)
+        .single()
+
+      if (error || !data) {
+        setError('Time slot not found')
+      } else {
+        setTimeSlot(data)
+      }
+      setLoading(false)
     }
-  }, [user, slotId, fetchTimeSlot])
+
+    fetchTimeSlot()
+  }, [user, slotId])
 
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(':')
@@ -101,8 +101,8 @@ export default function CreateClassPage() {
 
   const getBookingUrl = () => {
     if (!createdClassId) return ''
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-    return `${baseUrl}/book/${createdClassId}`
+    // Hardcoded production URL to avoid preview deployment URLs
+    return `https://pikk-up-com.vercel.app/book/${createdClassId}`
   }
 
   const copyBookingLink = () => {
@@ -117,8 +117,15 @@ export default function CreateClassPage() {
     )
   }
 
-  if (!user || !profile) {
-    return null
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-sand-600 mb-4">Please sign in to create a class.</p>
+          <a href="/instructor/auth/login" className="btn-primary">Sign In</a>
+        </div>
+      </div>
+    )
   }
 
   if (success && createdClassId) {

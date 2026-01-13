@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
@@ -27,28 +27,28 @@ export default function MyClassesPage() {
     }
   }, [user, authLoading, router])
 
-  const fetchClasses = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('classes')
-      .select(`
-        *,
-        time_slot:time_slots(*),
-        bookings(*)
-      `)
-      .eq('instructor_id', user!.id)
-      .order('created_at', { ascending: false })
-
-    if (!error && data) {
-      setClasses(data as ClassWithDetails[])
-    }
-    setLoading(false)
-  }, [user])
-
   useEffect(() => {
-    if (user) {
-      fetchClasses()
+    if (!user) return
+
+    const fetchClasses = async () => {
+      const { data, error } = await supabase
+        .from('classes')
+        .select(`
+          *,
+          time_slot:time_slots(*),
+          bookings(*)
+        `)
+        .eq('instructor_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (!error && data) {
+        setClasses(data as ClassWithDetails[])
+      }
+      setLoading(false)
     }
-  }, [user, fetchClasses])
+
+    fetchClasses()
+  }, [user])
 
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(':')
@@ -64,8 +64,8 @@ export default function MyClassesPage() {
   }
 
   const getBookingUrl = (classId: string) => {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
-    return `${baseUrl}/book/${classId}`
+    // Hardcoded production URL to avoid preview deployment URLs
+    return `https://pikk-up-com.vercel.app/book/${classId}`
   }
 
   const copyBookingLink = (classId: string) => {
@@ -86,8 +86,15 @@ export default function MyClassesPage() {
     )
   }
 
-  if (!user || !profile) {
-    return null
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-sand-600 mb-4">Please sign in to view your classes.</p>
+          <a href="/instructor/auth/login" className="btn-primary">Sign In</a>
+        </div>
+      </div>
+    )
   }
 
   const upcomingClasses = classes.filter(c => 

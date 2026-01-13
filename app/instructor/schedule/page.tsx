@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
@@ -24,29 +24,29 @@ export default function InstructorSchedulePage() {
     }
   }, [user, authLoading, router])
 
-  const fetchTimeSlots = useCallback(async () => {
-    setLoading(true)
-    const weekEnd = addDays(weekStart, 6)
-    
-    const { data, error } = await supabase
-      .from('time_slots')
-      .select('*')
-      .gte('date', format(weekStart, 'yyyy-MM-dd'))
-      .lte('date', format(weekEnd, 'yyyy-MM-dd'))
-      .order('date')
-      .order('start_time')
-
-    if (!error && data) {
-      setTimeSlots(data)
-    }
-    setLoading(false)
-  }, [weekStart])
-
   useEffect(() => {
-    if (user) {
-      fetchTimeSlots()
+    if (!user) return
+
+    const fetchTimeSlots = async () => {
+      setLoading(true)
+      const weekEnd = addDays(weekStart, 6)
+      
+      const { data, error } = await supabase
+        .from('time_slots')
+        .select('*')
+        .gte('date', format(weekStart, 'yyyy-MM-dd'))
+        .lte('date', format(weekEnd, 'yyyy-MM-dd'))
+        .order('date')
+        .order('start_time')
+
+      if (!error && data) {
+        setTimeSlots(data)
+      }
+      setLoading(false)
     }
-  }, [user, weekStart, fetchTimeSlots])
+
+    fetchTimeSlots()
+  }, [user, weekStart])
 
   const handleClaimSlot = async (slot: TimeSlot) => {
     if (slot.status !== 'available') return
@@ -91,7 +91,7 @@ export default function InstructorSchedulePage() {
     )
   }
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
@@ -99,8 +99,15 @@ export default function InstructorSchedulePage() {
     )
   }
 
-  if (!user || !profile) {
-    return null
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-sand-600 mb-4">Please sign in to view the schedule.</p>
+          <a href="/instructor/auth/login" className="btn-primary">Sign In</a>
+        </div>
+      </div>
+    )
   }
 
   const days = getDaysOfWeek()

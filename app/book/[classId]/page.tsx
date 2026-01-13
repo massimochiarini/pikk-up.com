@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
 import { format, parseISO } from 'date-fns'
@@ -29,74 +29,76 @@ function PublicBookingContent() {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
-  const fetchClassDetails = useCallback(async () => {
-    try {
-      setLoading(true)
-
-      // Fetch class first
-      const { data: classData, error: classError } = await supabase
-        .from('classes')
-        .select('*')
-        .eq('id', classId)
-        .single()
-
-      if (classError) {
-        console.error('Class fetch error:', classError)
-        throw classError
-      }
-
-      // Fetch time slot
-      const { data: timeSlotData, error: timeSlotError } = await supabase
-        .from('time_slots')
-        .select('*')
-        .eq('id', classData.time_slot_id)
-        .single()
-
-      if (timeSlotError) {
-        console.error('Time slot fetch error:', timeSlotError)
-        throw timeSlotError
-      }
-
-      // Fetch instructor profile
-      const { data: instructorData, error: instructorError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', classData.instructor_id)
-        .single()
-
-      if (instructorError) {
-        console.error('Instructor fetch error:', instructorError)
-        throw instructorError
-      }
-
-      setYogaClass({
-        ...classData,
-        time_slot: timeSlotData,
-        instructor: instructorData,
-      } as ClassWithDetails)
-
-      // Count bookings
-      const { count, error: countError } = await supabase
-        .from('bookings')
-        .select('*', { count: 'exact', head: true })
-        .eq('class_id', classId)
-        .eq('status', 'confirmed')
-
-      if (!countError) {
-        setBookingCount(count || 0)
-      }
-    } catch (error) {
-      console.error('Error fetching class details:', error)
-      setBookingState('error')
-      setErrorMessage('Unable to load class details. This link may be invalid.')
-    } finally {
-      setLoading(false)
-    }
-  }, [classId])
-
   useEffect(() => {
+    if (!classId) return
+
+    const fetchClassDetails = async () => {
+      try {
+        setLoading(true)
+
+        // Fetch class first
+        const { data: classData, error: classError } = await supabase
+          .from('classes')
+          .select('*')
+          .eq('id', classId)
+          .single()
+
+        if (classError) {
+          console.error('Class fetch error:', classError)
+          throw classError
+        }
+
+        // Fetch time slot
+        const { data: timeSlotData, error: timeSlotError } = await supabase
+          .from('time_slots')
+          .select('*')
+          .eq('id', classData.time_slot_id)
+          .single()
+
+        if (timeSlotError) {
+          console.error('Time slot fetch error:', timeSlotError)
+          throw timeSlotError
+        }
+
+        // Fetch instructor profile
+        const { data: instructorData, error: instructorError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', classData.instructor_id)
+          .single()
+
+        if (instructorError) {
+          console.error('Instructor fetch error:', instructorError)
+          throw instructorError
+        }
+
+        setYogaClass({
+          ...classData,
+          time_slot: timeSlotData,
+          instructor: instructorData,
+        } as ClassWithDetails)
+
+        // Count bookings
+        const { count, error: countError } = await supabase
+          .from('bookings')
+          .select('*', { count: 'exact', head: true })
+          .eq('class_id', classId)
+          .eq('status', 'confirmed')
+
+        if (!countError) {
+          setBookingCount(count || 0)
+        }
+      } catch (error) {
+        console.error('Error fetching class details:', error)
+        setBookingState('error')
+        setErrorMessage('Unable to load class details. This link may be invalid.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchClassDetails()
-  }, [fetchClassDetails])
+  }, [classId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -191,7 +193,13 @@ function PublicBookingContent() {
       }
 
       setBookingState('success')
-      await fetchClassDetails()
+      // Reload booking count
+      const { count } = await supabase
+        .from('bookings')
+        .select('*', { count: 'exact', head: true })
+        .eq('class_id', classId)
+        .eq('status', 'confirmed')
+      setBookingCount(count || 0)
     } catch (error: any) {
       throw error
     } finally {
