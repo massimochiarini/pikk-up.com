@@ -22,6 +22,7 @@ export default function SignupPage() {
 
     try {
       // Sign up the user
+      const phoneNormalized = phone.replace(/\D/g, '')
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -29,6 +30,7 @@ export default function SignupPage() {
           data: {
             first_name: firstName,
             last_name: lastName,
+            phone: phoneNormalized || null,
           },
         },
       })

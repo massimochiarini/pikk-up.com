@@ -1,5 +1,5 @@
--- Auto-create profile when a new user signs up
--- This ensures every user has a profile record, preventing foreign key errors
+-- Update the profile trigger to include phone numbers
+-- This migration updates the existing trigger function
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
@@ -20,9 +20,3 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Trigger the function every time a user is created
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
