@@ -14,7 +14,7 @@ type ClassWithDetails = YogaClass & {
 }
 
 export default function ClassesPage() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [classes, setClasses] = useState<ClassWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'my-classes'>('all')
@@ -81,29 +81,41 @@ export default function ClassesPage() {
     hasFetchedBookings.current = user.id
     
     try {
-      const { data, error } = await supabase
+      // Get bookings by user_id OR by phone number (for guest bookings)
+      let query = supabase
         .from('bookings')
         .select('class_id')
-        .eq('user_id', user.id)
         .eq('status', 'confirmed')
 
-      if (!error && data) {
-        setMyClassIds(new Set(data.map(b => b.class_id)))
+      // Build OR condition: match by user_id or phone number
+      if (profile?.phone) {
+        const { data, error } = await query.or(`user_id.eq.${user.id},guest_phone.eq.${profile.phone}`)
+        
+        if (!error && data) {
+          setMyClassIds(new Set(data.map(b => b.class_id)))
+        }
+      } else {
+        // If no phone, just match by user_id
+        const { data, error } = await query.eq('user_id', user.id)
+        
+        if (!error && data) {
+          setMyClassIds(new Set(data.map(b => b.class_id)))
+        }
       }
     } catch (error) {
       console.error('Error fetching my bookings:', error)
     }
-  }, [user])
+  }, [user, profile])
 
   useEffect(() => {
     fetchClasses()
   }, [fetchClasses])
 
   useEffect(() => {
-    if (user && filter === 'my-classes') {
+    if (user && profile && filter === 'my-classes') {
       fetchMyBookings()
     }
-  }, [user, filter, fetchMyBookings])
+  }, [user, profile, filter, fetchMyBookings])
 
   const handleCancelBooking = async (classId: string, e: React.MouseEvent) => {
     e.preventDefault()
@@ -114,14 +126,21 @@ export default function ClassesPage() {
     setCancelling(classId)
     
     try {
-      const { error } = await supabase
+      // Cancel booking by user_id OR phone number
+      let query = supabase
         .from('bookings')
         .update({ status: 'cancelled' })
         .eq('class_id', classId)
-        .eq('user_id', user.id)
         .eq('status', 'confirmed')
 
-      if (error) throw error
+      // Match by user_id or phone number
+      if (profile?.phone) {
+        const { error } = await query.or(`user_id.eq.${user.id},guest_phone.eq.${profile.phone}`)
+        if (error) throw error
+      } else {
+        const { error } = await query.eq('user_id', user.id)
+        if (error) throw error
+      }
 
       // Reset refs to allow refresh
       hasFetchedClasses.current = false
