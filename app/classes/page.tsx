@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/components/AuthProvider'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
@@ -21,19 +21,64 @@ export default function ClassesPage() {
   const [skillFilter, setSkillFilter] = useState<string>('all')
   const [myClassIds, setMyClassIds] = useState<Set<string>>(new Set())
   const [cancelling, setCancelling] = useState<string | null>(null)
+  
+  const hasFetchedClasses = useRef(false)
+  const hasFetchedBookings = useRef<string | null>(null)
 
-  useEffect(() => {
-    fetchClasses()
+  const fetchClasses = useCallback(async () => {
+    if (hasFetchedClasses.current) return
+    hasFetchedClasses.current = true
+    
+    try {
+      const { data, error } = await supabase
+        .from('classes')
+        .select(`
+          *,
+          time_slot:time_slots(*),
+          instructor:profiles!instructor_id(*)
+        `)
+        .eq('status', 'upcoming')
+
+      if (error) {
+        console.error('Error fetching classes:', error)
+        setLoading(false)
+        return
+      }
+
+      if (data) {
+        const today = format(new Date(), 'yyyy-MM-dd')
+        
+        const filteredData = data
+          .filter((c) => c.time_slot && c.time_slot.date >= today)
+          .sort((a, b) => {
+            const dateA = a.time_slot?.date + 'T' + a.time_slot?.start_time
+            const dateB = b.time_slot?.date + 'T' + b.time_slot?.start_time
+            return dateA.localeCompare(dateB)
+          })
+
+        const classesWithCounts = await Promise.all(
+          filteredData.map(async (c) => {
+            try {
+              const { data: count } = await supabase
+                .rpc('get_booking_count', { class_uuid: c.id })
+              return { ...c, booking_count: count || 0 }
+            } catch {
+              return { ...c, booking_count: 0 }
+            }
+          })
+        )
+        setClasses(classesWithCounts as ClassWithDetails[])
+      }
+    } catch (err) {
+      console.error('Error fetching classes:', err)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
-  useEffect(() => {
-    if (user && filter === 'my-classes') {
-      fetchMyBookings()
-    }
-  }, [user, filter])
-
-  const fetchMyBookings = async () => {
-    if (!user) return
+  const fetchMyBookings = useCallback(async () => {
+    if (!user || hasFetchedBookings.current === user.id) return
+    hasFetchedBookings.current = user.id
     
     try {
       const { data, error } = await supabase
@@ -48,7 +93,17 @@ export default function ClassesPage() {
     } catch (error) {
       console.error('Error fetching my bookings:', error)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    fetchClasses()
+  }, [fetchClasses])
+
+  useEffect(() => {
+    if (user && filter === 'my-classes') {
+      fetchMyBookings()
+    }
+  }, [user, filter, fetchMyBookings])
 
   const handleCancelBooking = async (classId: string, e: React.MouseEvent) => {
     e.preventDefault()
@@ -68,6 +123,10 @@ export default function ClassesPage() {
 
       if (error) throw error
 
+      // Reset refs to allow refresh
+      hasFetchedClasses.current = false
+      hasFetchedBookings.current = null
+      
       // Refresh data
       await fetchMyBookings()
       await fetchClasses()
@@ -78,66 +137,6 @@ export default function ClassesPage() {
       alert('Failed to cancel booking. Please try again.')
     } finally {
       setCancelling(null)
-    }
-  }
-
-  const fetchClasses = async () => {
-    try {
-    // Fetch upcoming classes with instructor and time slot info
-    const { data, error } = await supabase
-      .from('classes')
-      .select(`
-        *,
-        time_slot:time_slots(*),
-        instructor:profiles!instructor_id(*)
-      `)
-      .eq('status', 'upcoming')
-
-      if (error) {
-        console.error('Error fetching classes:', error)
-        setLoading(false)
-        return
-      }
-
-      if (data) {
-        const today = format(new Date(), 'yyyy-MM-dd')
-        
-        // Filter to only show future classes and sort by date
-        const filteredData = data
-          .filter((c) => c.time_slot && c.time_slot.date >= today)
-          .sort((a, b) => {
-            const dateA = a.time_slot?.date + 'T' + a.time_slot?.start_time
-            const dateB = b.time_slot?.date + 'T' + b.time_slot?.start_time
-            return dateA.localeCompare(dateB)
-          })
-
-        // For booking counts, use the RPC function instead of direct query
-        // This avoids RLS issues for anonymous users
-      const classesWithCounts = await Promise.all(
-          filteredData.map(async (c) => {
-            try {
-              const { data: count } = await supabase
-                .rpc('get_booking_count', { class_uuid: c.id })
-
-          return {
-            ...c,
-            booking_count: count || 0,
-              }
-            } catch {
-              // If count fails, default to 0
-              return {
-                ...c,
-                booking_count: 0,
-              }
-          }
-        })
-      )
-      setClasses(classesWithCounts as ClassWithDetails[])
-    }
-    } catch (err) {
-      console.error('Error fetching classes:', err)
-    } finally {
-    setLoading(false)
     }
   }
 
