@@ -122,11 +122,16 @@ export default function MyClassesPage() {
     )
   }
 
+  // Combine date and start_time to get the actual class datetime
+  const getClassDateTime = (slot: TimeSlot) => {
+    return parseISO(`${slot.date}T${slot.start_time}`)
+  }
+
   const upcomingClasses = classes.filter(c => 
-    c.time_slot && !isPast(parseISO(c.time_slot.date))
+    c.time_slot && !isPast(getClassDateTime(c.time_slot))
   )
   const pastClasses = classes.filter(c => 
-    c.time_slot && isPast(parseISO(c.time_slot.date))
+    c.time_slot && isPast(getClassDateTime(c.time_slot))
   )
 
   return (
