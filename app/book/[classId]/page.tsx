@@ -78,15 +78,16 @@ function PublicBookingContent() {
           instructor: instructorData,
         } as ClassWithDetails)
 
-        // Count bookings
-        const { count, error: countError } = await supabase
-          .from('bookings')
-          .select('*', { count: 'exact', head: true })
-          .eq('class_id', classId)
-          .eq('status', 'confirmed')
-
-        if (!countError) {
+        // Count bookings using RPC function (accessible to anonymous users)
+        try {
+          const { data: count } = await supabase
+            .rpc('get_booking_count', { class_uuid: classId })
+          
           setBookingCount(count || 0)
+        } catch (countError) {
+          console.error('Error counting bookings:', countError)
+          // Default to 0 if count fails
+          setBookingCount(0)
         }
       } catch (error) {
         console.error('Error fetching class details:', error)
