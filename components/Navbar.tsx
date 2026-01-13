@@ -40,9 +40,9 @@ export function Navbar() {
             
             {loading ? (
               <div className="w-8 h-8 rounded-full bg-sand-200 animate-pulse"></div>
-            ) : user && profile ? (
+            ) : user ? (
               <div className="flex items-center gap-4">
-                {isInstructor ? (
+                {isInstructor && profile?.is_instructor ? (
                   <>
                     <Link
                       href="/instructor/schedule"
@@ -69,7 +69,7 @@ export function Navbar() {
                 
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-white font-semibold text-sm">
-                    {profile.first_name?.[0] || 'U'}
+                    {profile?.first_name?.[0] || user.email?.[0]?.toUpperCase() || 'U'}
                   </div>
                   <button
                     onClick={signOut}

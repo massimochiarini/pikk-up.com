@@ -38,22 +38,32 @@ export default function InstructorSignupPage() {
       if (authError) throw authError
 
       if (authData.user) {
-        // Update profile as instructor
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            is_instructor: true,
+        // Create profile via API route (uses service role to bypass RLS)
+        const response = await fetch('/api/auth/create-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: authData.user.id,
+            email,
+            firstName,
+            lastName,
+            isInstructor: true,
             phone: phone.replace(/\D/g, '') || null,
             instagram: instagram || null,
             bio: bio || null,
-          })
-          .eq('id', authData.user.id)
+          }),
+        })
 
-        if (updateError) throw updateError
+        const result = await response.json()
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to create profile')
+        }
       }
 
       router.push('/instructor')
     } catch (err: any) {
+      console.error('Signup error:', err)
       setError(err.message || 'Failed to create account')
     } finally {
       setLoading(false)

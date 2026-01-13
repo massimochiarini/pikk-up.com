@@ -1,20 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import Link from 'next/link'
 
 export default function InstructorDashboardPage() {
   const { user, profile, loading } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/instructor/auth/login')
-    }
-  }, [user, loading, router])
 
   if (loading) {
     return (
@@ -24,8 +15,66 @@ export default function InstructorDashboardPage() {
     )
   }
 
+  // Not logged in - show landing page while redirecting
   if (!user || !profile) {
-    return null
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-4xl">🧘</span>
+            </div>
+            <h1 className="text-3xl font-bold text-charcoal mb-4">Instructor Portal</h1>
+            <p className="text-sand-600 mb-8">
+              Sign in to access your instructor dashboard and start teaching classes.
+            </p>
+            <div className="space-y-4">
+              <Link href="/instructor/auth/login" className="btn-primary w-full block text-center">
+                Sign In
+              </Link>
+              <Link href="/instructor/auth/signup" className="btn-secondary w-full block text-center">
+                Create Instructor Account
+              </Link>
+            </div>
+            <Link href="/" className="text-sand-500 hover:text-sage-600 text-sm mt-8 inline-block">
+              ← Back to home
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Logged in but not an instructor - show upgrade prompt
+  if (!profile.is_instructor) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
+          <div className="text-center max-w-lg">
+            <div className="w-20 h-20 bg-terracotta-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-4xl">✨</span>
+            </div>
+            <h1 className="text-3xl font-bold text-charcoal mb-4">Become an Instructor</h1>
+            <p className="text-sand-600 mb-4">
+              Hi {profile.first_name}! Your current account is set up for booking classes as a student.
+            </p>
+            <p className="text-sand-600 mb-8">
+              To teach classes at PikkUp, you'll need to create a separate instructor account with your teaching credentials.
+            </p>
+            <div className="space-y-4">
+              <Link href="/instructor/auth/signup" className="btn-primary w-full block text-center">
+                Create Instructor Account
+              </Link>
+              <Link href="/classes" className="btn-secondary w-full block text-center">
+                Continue Browsing Classes
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

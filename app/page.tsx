@@ -62,23 +62,6 @@ export default function LandingPage() {
                   Create Account
                 </Link>
               </div>
-              
-              <div className="flex items-center gap-8 pt-4">
-                <div>
-                  <div className="text-3xl font-bold text-sage-700">500+</div>
-                  <div className="text-sand-600 text-sm">Classes hosted</div>
-                </div>
-                <div className="w-px h-12 bg-sand-300"></div>
-                <div>
-                  <div className="text-3xl font-bold text-sage-700">50+</div>
-                  <div className="text-sand-600 text-sm">Instructors</div>
-                </div>
-                <div className="w-px h-12 bg-sand-300"></div>
-                <div>
-                  <div className="text-3xl font-bold text-sage-700">4.9</div>
-                  <div className="text-sand-600 text-sm">Average rating</div>
-                </div>
-              </div>
             </div>
             
             <div className="relative">

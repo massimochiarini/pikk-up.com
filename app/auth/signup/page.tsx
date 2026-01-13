@@ -36,17 +36,31 @@ export default function SignupPage() {
       if (authError) throw authError
 
       if (authData.user) {
-        // Update profile with phone if provided
-        if (phone) {
-          await supabase
-            .from('profiles')
-            .update({ phone: phone.replace(/\D/g, '') })
-            .eq('id', authData.user.id)
+        // Create profile via API route (uses service role to bypass RLS)
+        const response = await fetch('/api/auth/create-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: authData.user.id,
+            email,
+            firstName,
+            lastName,
+            isInstructor: false,
+            phone: phone.replace(/\D/g, '') || null,
+          }),
+        })
+
+        const result = await response.json()
+        
+        if (!response.ok) {
+          console.error('Profile creation failed:', result.error)
+          // Don't throw - user is created, they can try logging in
         }
       }
 
       router.push('/classes')
     } catch (err: any) {
+      console.error('Signup error:', err)
       setError(err.message || 'Failed to create account')
     } finally {
       setLoading(false)
