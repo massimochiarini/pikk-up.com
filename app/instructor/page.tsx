@@ -1,11 +1,32 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import Link from 'next/link'
 
 export default function InstructorDashboardPage() {
   const { user, profile, loading } = useAuth()
+  const [isPageVisible, setIsPageVisible] = useState(true)
+
+  // Handle tab visibility to prevent issues when switching tabs
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden)
+    }
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
+  // If page is hidden, just show loading to prevent loops
+  if (!isPageVisible) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+      </div>
+    )
+  }
 
   // Show loading spinner while auth is loading OR when we have a user but profile hasn't loaded yet
   if (loading || (user && !profile)) {
