@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { Navbar } from '@/components/Navbar'
+import { useAuth } from '@/components/AuthProvider'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
-import { format, parseISO, isToday, isTomorrow, addDays } from 'date-fns'
+import { format, parseISO, isToday, isTomorrow } from 'date-fns'
 import Link from 'next/link'
 
 type ClassWithDetails = YogaClass & {
@@ -13,14 +14,40 @@ type ClassWithDetails = YogaClass & {
 }
 
 export default function ClassesPage() {
+  const { user } = useAuth()
   const [classes, setClasses] = useState<ClassWithDetails[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'today' | 'week'>('all')
+  const [filter, setFilter] = useState<'all' | 'my-classes'>('all')
   const [skillFilter, setSkillFilter] = useState<string>('all')
+  const [myClassIds, setMyClassIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetchClasses()
   }, [])
+
+  useEffect(() => {
+    if (user && filter === 'my-classes') {
+      fetchMyBookings()
+    }
+  }, [user, filter])
+
+  const fetchMyBookings = async () => {
+    if (!user) return
+    
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('class_id')
+        .eq('user_id', user.id)
+        .eq('status', 'confirmed')
+
+      if (!error && data) {
+        setMyClassIds(new Set(data.map(b => b.class_id)))
+      }
+    } catch (error) {
+      console.error('Error fetching my bookings:', error)
+    }
+  }
 
   const fetchClasses = async () => {
     try {
@@ -105,12 +132,8 @@ export default function ClassesPage() {
   const filteredClasses = classes.filter((c) => {
     if (!c.time_slot) return false
     
-    const classDate = parseISO(c.time_slot.date)
-    const today = new Date()
-    
-    // Date filter
-    if (filter === 'today' && !isToday(classDate)) return false
-    if (filter === 'week' && classDate > addDays(today, 7)) return false
+    // My Classes filter - only show classes user is registered for
+    if (filter === 'my-classes' && !myClassIds.has(c.id)) return false
     
     // Skill filter
     if (skillFilter !== 'all' && c.skill_level !== skillFilter) return false
@@ -144,26 +167,18 @@ export default function ClassesPage() {
             >
               All Upcoming
             </button>
-            <button
-              onClick={() => setFilter('today')}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                filter === 'today'
-                  ? 'bg-sage-600 text-white'
-                  : 'bg-white text-sand-600 hover:bg-sand-100'
-              }`}
-            >
-              Today
-            </button>
-            <button
-              onClick={() => setFilter('week')}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                filter === 'week'
-                  ? 'bg-sage-600 text-white'
-                  : 'bg-white text-sand-600 hover:bg-sand-100'
-              }`}
-            >
-              This Week
-            </button>
+            {user && (
+              <button
+                onClick={() => setFilter('my-classes')}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  filter === 'my-classes'
+                    ? 'bg-sage-600 text-white'
+                    : 'bg-white text-sand-600 hover:bg-sand-100'
+                }`}
+              >
+                My Classes
+              </button>
+            )}
           </div>
           
           <select
@@ -190,7 +205,9 @@ export default function ClassesPage() {
             </div>
             <h3 className="text-xl font-semibold text-charcoal mb-2">No classes found</h3>
             <p className="text-sand-600">
-              {filter !== 'all' || skillFilter !== 'all'
+              {filter === 'my-classes'
+                ? 'You haven\'t registered for any classes yet. Browse all upcoming classes to book your first session!'
+                : filter !== 'all' || skillFilter !== 'all'
                 ? 'Try adjusting your filters to see more classes.'
                 : 'Check back soon for new yoga sessions!'}
             </p>
