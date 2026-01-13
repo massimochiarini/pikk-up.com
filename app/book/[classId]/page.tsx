@@ -28,6 +28,14 @@ function PublicBookingContent() {
   const [phone, setPhone] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [linkCopied, setLinkCopied] = useState(false)
+
+  const copyBookingLink = () => {
+    const url = window.location.href
+    navigator.clipboard.writeText(url)
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 2000)
+  }
 
   useEffect(() => {
     if (!classId) return
@@ -345,18 +353,26 @@ function PublicBookingContent() {
         <div className="grid md:grid-cols-2 gap-8">
           {/* Class Details */}
           <div className="card">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-sage-300 to-sage-400 rounded-2xl flex items-center justify-center">
-                <span className="text-3xl">🧘</span>
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-sage-300 to-sage-400 rounded-2xl flex items-center justify-center">
+                  <span className="text-3xl">🧘</span>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-charcoal">{yogaClass.title}</h1>
+                  {yogaClass.skill_level && yogaClass.skill_level !== 'all' && (
+                    <span className="inline-block mt-1 px-2 py-0.5 bg-sage-100 text-sage-700 text-xs font-medium rounded-full capitalize">
+                      {yogaClass.skill_level}
+                    </span>
+                  )}
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-charcoal">{yogaClass.title}</h1>
-                {yogaClass.skill_level && yogaClass.skill_level !== 'all' && (
-                  <span className="inline-block mt-1 px-2 py-0.5 bg-sage-100 text-sage-700 text-xs font-medium rounded-full capitalize">
-                    {yogaClass.skill_level}
-                  </span>
-                )}
-              </div>
+              <button
+                onClick={copyBookingLink}
+                className="flex-shrink-0 px-3 py-2 bg-sand-100 hover:bg-sand-200 text-sand-700 rounded-xl text-sm font-medium transition-colors flex items-center gap-2"
+              >
+                {linkCopied ? '✓ Copied!' : '🔗 Share'}
+              </button>
             </div>
 
             {/* Instructor */}
