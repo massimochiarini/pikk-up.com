@@ -50,26 +50,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
+    let isMounted = true
+
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      
-      if (session?.user) {
-        fetchProfile(session.user.id).then(setProfile)
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (!isMounted) return
+        
+        setSession(session)
+        setUser(session?.user ?? null)
+        
+        if (session?.user) {
+          const profileData = await fetchProfile(session.user.id)
+          if (isMounted) setProfile(profileData)
+        }
+      } catch (error) {
+        console.error('Auth init error:', error)
+      } finally {
+        if (isMounted) setLoading(false)
       }
-      setLoading(false)
-    })
+    }
+
+    initAuth()
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!isMounted) return
+        
         setSession(session)
         setUser(session?.user ?? null)
 
         if (session?.user) {
           const profileData = await fetchProfile(session.user.id)
-          setProfile(profileData)
+          if (isMounted) setProfile(profileData)
         } else {
           setProfile(null)
         }
@@ -77,7 +93,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signOut = async () => {
