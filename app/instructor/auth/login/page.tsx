@@ -16,7 +16,8 @@ export default function InstructorLoginPage() {
     setError('')
 
     try {
-      console.log('Attempting instructor login for:', email)
+      console.log('=== INSTRUCTOR LOGIN START ===')
+      console.log('1. Attempting login for:', email)
       
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
@@ -24,17 +25,23 @@ export default function InstructorLoginPage() {
       })
 
       if (signInError) {
-        console.error('Sign in error:', signInError)
+        console.error('2. ❌ Sign in FAILED:', signInError.message)
         throw signInError
       }
+
+      console.log('2. ✅ Sign in SUCCESS, user:', data.user?.email)
+      console.log('3. Session exists:', !!data.session)
 
       if (!data.user) {
         throw new Error('No user data returned')
       }
 
-      console.log('Sign in successful, checking profile...')
+      // Verify session is stored
+      const storedSession = localStorage.getItem('supabase-auth')
+      console.log('4. Session in localStorage:', storedSession ? 'YES' : 'NO')
 
       // Check if user is an instructor
+      console.log('5. Fetching profile for user ID:', data.user.id)
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('is_instructor')
@@ -42,24 +49,31 @@ export default function InstructorLoginPage() {
         .single()
 
       if (profileError) {
-        console.error('Profile fetch error:', profileError)
+        console.error('6. ❌ Profile fetch FAILED:', profileError.message)
+        console.error('   Full error:', profileError)
         await supabase.auth.signOut()
         throw new Error('Could not find your profile. Please try signing up again.')
       }
 
-      console.log('Profile found, is_instructor:', profile?.is_instructor)
+      console.log('6. ✅ Profile found, is_instructor:', profile?.is_instructor)
 
       if (!profile?.is_instructor) {
+        console.log('7. ❌ User is NOT an instructor, signing out')
         await supabase.auth.signOut()
         setError('This account is not registered as an instructor. Please sign up as an instructor first.')
         return
       }
 
-      // Navigate to instructor dashboard
-      console.log('Redirecting to instructor dashboard...')
+      // Final verification before redirect
+      const { data: finalSession } = await supabase.auth.getSession()
+      console.log('7. ✅ Final session check:', finalSession.session ? 'VALID' : 'NULL')
+      
+      console.log('8. Redirecting to /instructor...')
+      console.log('=== INSTRUCTOR LOGIN END ===')
+      
       window.location.href = '/instructor'
     } catch (err: any) {
-      console.error('Login error:', err)
+      console.error('LOGIN ERROR:', err)
       setError(err.message || 'Failed to sign in')
     } finally {
       setLoading(false)

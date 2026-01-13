@@ -33,22 +33,38 @@ export default function MyClassesPage() {
     let isCancelled = false
 
     const fetchClasses = async () => {
-      const { data, error } = await supabase
-        .from('classes')
-        .select(`
-          *,
-          time_slot:time_slots(*),
-          bookings(*)
-        `)
-        .eq('instructor_id', user.id)
-        .order('created_at', { ascending: false })
-
-      if (isCancelled) return
-
-      if (!error && data) {
-        setClasses(data as ClassWithDetails[])
+      try {
+        // Use direct REST API for reliability
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 10000)
+        
+        const response = await fetch(
+          `${supabaseUrl}/rest/v1/classes?select=*,time_slot:time_slots(*),bookings(*)&instructor_id=eq.${user.id}&order=created_at.desc`,
+          {
+            headers: {
+              'apikey': supabaseKey || '',
+              'Authorization': `Bearer ${supabaseKey}`,
+            },
+            signal: controller.signal,
+          }
+        )
+        
+        clearTimeout(timeoutId)
+        
+        if (isCancelled) return
+        
+        if (response.ok) {
+          const data = await response.json()
+          setClasses(data as ClassWithDetails[])
+        }
+      } catch (err) {
+        console.error('Error fetching classes:', err)
+      } finally {
+        if (!isCancelled) setLoading(false)
       }
-      setLoading(false)
     }
 
     fetchClasses()

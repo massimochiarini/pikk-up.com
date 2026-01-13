@@ -9,6 +9,16 @@ export default function InstructorDashboardPage() {
   const { user, profile, loading } = useAuth()
   const [showContent, setShowContent] = useState(false)
 
+  // Debug logging
+  useEffect(() => {
+    console.log('=== INSTRUCTOR PAGE STATE ===')
+    console.log('Loading:', loading)
+    console.log('User:', user?.email || 'null')
+    console.log('Profile:', profile ? `${profile.email} (instructor: ${profile.is_instructor})` : 'null')
+    console.log('localStorage supabase-auth:', localStorage.getItem('supabase-auth') ? 'EXISTS' : 'EMPTY')
+    console.log('=============================')
+  }, [loading, user, profile])
+
   // Add a timeout to prevent infinite loading
   useEffect(() => {
     const timer = setTimeout(() => {

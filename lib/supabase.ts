@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 // Log config issues (will show in browser console)
 if (typeof window !== 'undefined') {
@@ -10,34 +10,42 @@ if (typeof window !== 'undefined') {
   if (supabaseUrl && supabaseAnonKey) console.log('✅ Supabase config loaded')
 }
 
-// Custom storage that safely handles SSR
-const customStorage = {
-  getItem: (key: string) => {
-    if (typeof window === 'undefined') return null
-    return window.localStorage.getItem(key)
-  },
-  setItem: (key: string, value: string) => {
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(key, value)
-    }
-  },
-  removeItem: (key: string) => {
-    if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(key)
-    }
-  },
-}
-
-// Browser client for client components
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '', {
+// Browser client - using default localStorage (simpler, more reliable)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
-    storageKey: 'supabase-auth',
-    storage: customStorage,
     autoRefreshToken: true,
     detectSessionInUrl: true,
   },
 })
+
+// Helper for direct REST API calls (more reliable than supabase client in some cases)
+export async function supabaseRest<T>(
+  endpoint: string,
+  options?: { method?: string; body?: any }
+): Promise<{ data: T | null; error: string | null }> {
+  try {
+    const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
+      method: options?.method || 'GET',
+      headers: {
+        'apikey': supabaseAnonKey,
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
+      },
+      body: options?.body ? JSON.stringify(options.body) : undefined,
+    })
+    
+    if (!response.ok) {
+      return { data: null, error: response.statusText }
+    }
+    
+    const data = await response.json()
+    return { data, error: null }
+  } catch (err: any) {
+    return { data: null, error: err.message }
+  }
+}
 
 // Server-side client with service role for admin operations
 export const createServerClient = () => {

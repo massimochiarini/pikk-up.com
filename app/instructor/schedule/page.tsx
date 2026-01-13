@@ -9,11 +9,23 @@ import { format, addDays, startOfWeek, isSameDay } from 'date-fns'
 
 const TIME_SLOTS = ['07:00:00', '09:00:00', '11:00:00', '13:00:00', '17:00:00', '19:00:00']
 
+type ClassWithInstructor = {
+  id: string
+  time_slot_id: string
+  title: string
+  instructor: {
+    email: string
+    first_name: string
+    last_name: string
+  }
+}
+
 export default function InstructorSchedulePage() {
   const { user, profile, loading: authLoading } = useAuth()
   const router = useRouter()
   
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
+  const [classes, setClasses] = useState<ClassWithInstructor[]>([])
   const [loading, setLoading] = useState(true)
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 0 }))
   const [claiming, setClaiming] = useState<string | null>(null)
@@ -40,28 +52,57 @@ export default function InstructorSchedulePage() {
 
     let isCancelled = false
 
-    const fetchTimeSlots = async () => {
+    const fetchData = async () => {
       if (isCancelled) return
       
       setLoading(true)
       const weekEnd = addDays(weekStart, 6)
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
       
       try {
-        const { data, error } = await supabase
-          .from('time_slots')
-          .select('*')
-          .gte('date', format(weekStart, 'yyyy-MM-dd'))
-          .lte('date', format(weekEnd, 'yyyy-MM-dd'))
-          .order('date')
-          .order('start_time')
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 10000)
+        
+        // Fetch time slots and classes in parallel
+        const [slotsRes, classesRes] = await Promise.all([
+          fetch(
+            `${supabaseUrl}/rest/v1/time_slots?date=gte.${format(weekStart, 'yyyy-MM-dd')}&date=lte.${format(weekEnd, 'yyyy-MM-dd')}&order=date,start_time`,
+            {
+              headers: {
+                'apikey': supabaseKey || '',
+                'Authorization': `Bearer ${supabaseKey}`,
+              },
+              signal: controller.signal,
+            }
+          ),
+          fetch(
+            `${supabaseUrl}/rest/v1/classes?select=id,time_slot_id,title,instructor:profiles!instructor_id(email,first_name,last_name)`,
+            {
+              headers: {
+                'apikey': supabaseKey || '',
+                'Authorization': `Bearer ${supabaseKey}`,
+              },
+              signal: controller.signal,
+            }
+          )
+        ])
+        
+        clearTimeout(timeoutId)
 
         if (isCancelled) return
 
-        if (!error && data) {
-          setTimeSlots(data)
+        if (slotsRes.ok) {
+          const slotsData = await slotsRes.json()
+          setTimeSlots(slotsData)
+        }
+        
+        if (classesRes.ok) {
+          const classesData = await classesRes.json()
+          setClasses(classesData)
         }
       } catch (error) {
-        console.error('Error fetching time slots:', error)
+        console.error('Error fetching schedule data:', error)
       } finally {
         if (!isCancelled) {
           setLoading(false)
@@ -69,7 +110,7 @@ export default function InstructorSchedulePage() {
       }
     }
 
-    fetchTimeSlots()
+    fetchData()
 
     return () => {
       isCancelled = true
@@ -125,6 +166,10 @@ export default function InstructorSchedulePage() {
     return timeSlots.find(slot => 
       slot.date === format(date, 'yyyy-MM-dd') && slot.start_time === time
     )
+  }
+  
+  const getClassForSlot = (slotId: string) => {
+    return classes.find(c => c.time_slot_id === slotId)
   }
 
   // Show loading while auth is loading or data is loading
@@ -184,14 +229,18 @@ export default function InstructorSchedulePage() {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-6 mb-6 text-sm">
+        <div className="flex flex-wrap items-center gap-6 mb-6 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-sage-100 border border-sage-300"></div>
             <span className="text-sand-600">Available</span>
           </div>
           <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-sage-200 border border-sage-400"></div>
+            <span className="text-sand-600">Your Class</span>
+          </div>
+          <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-sand-200"></div>
-            <span className="text-sand-600">Claimed</span>
+            <span className="text-sand-600">Other Instructor</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-sand-100"></div>
@@ -261,12 +310,27 @@ export default function InstructorSchedulePage() {
                     }
 
                     if (slot.status === 'claimed') {
+                      const classInfo = getClassForSlot(slot.id)
+                      const isMyClass = classInfo?.instructor?.email === profile?.email
+                      
                       return (
                         <div
                           key={slot.id}
-                          className="h-16 rounded-lg bg-sand-200 flex items-center justify-center"
+                          className={`h-16 rounded-lg flex flex-col items-center justify-center p-1 ${
+                            isMyClass 
+                              ? 'bg-sage-200 border border-sage-400' 
+                              : 'bg-sand-200'
+                          }`}
+                          title={classInfo ? `${classInfo.title} by ${classInfo.instructor?.first_name}` : 'Booked'}
                         >
-                          <span className="text-sand-500 text-xs font-medium">Booked</span>
+                          <span className={`text-xs font-medium ${isMyClass ? 'text-sage-700' : 'text-sand-500'}`}>
+                            {isMyClass ? 'Your Class' : 'Booked'}
+                          </span>
+                          {classInfo?.instructor && (
+                            <span className={`text-xs truncate max-w-full px-1 ${isMyClass ? 'text-sage-600' : 'text-sand-400'}`}>
+                              {classInfo.instructor.first_name}
+                            </span>
+                          )}
                         </div>
                       )
                     }

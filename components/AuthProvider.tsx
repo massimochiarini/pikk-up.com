@@ -29,20 +29,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase env vars')
+      return null
+    }
+    
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-
-      if (error) {
-        console.error('Profile fetch error:', error.message)
-        return null
-      }
-      return data as Profile
+      // Use direct REST API for reliability
+      const response = await fetch(
+        `${supabaseUrl}/rest/v1/profiles?id=eq.${userId}&select=*`,
+        {
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+          }
+        }
+      )
+      
+      if (!response.ok) return null
+      
+      const data = await response.json()
+      return data?.[0] as Profile || null
     } catch (err) {
-      console.error('Profile fetch exception:', err)
+      console.error('Profile fetch error:', err)
       return null
     }
   }
@@ -54,31 +66,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
         
-        if (error) {
-          console.error('getSession error:', error)
+        if (error || !isActive) {
           setLoading(false)
           return
         }
-        
-        if (!isActive) return
         
         if (session) {
           setSession(session)
           setUser(session.user)
           const profileData = await fetchProfile(session.user.id)
-          if (isActive) {
-            setProfile(profileData)
-          }
+          if (isActive) setProfile(profileData)
         }
         
-        if (isActive) {
-          setLoading(false)
-        }
+        if (isActive) setLoading(false)
       } catch (err) {
         console.error('Session init error:', err)
-        if (isActive) {
-          setLoading(false)
-        }
+        if (isActive) setLoading(false)
       }
     }
 
@@ -93,16 +96,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (newSession?.user) {
           const profileData = await fetchProfile(newSession.user.id)
-          if (isActive) {
-            setProfile(profileData)
-          }
+          if (isActive) setProfile(profileData)
         } else {
           setProfile(null)
         }
         
-        if (isActive) {
-          setLoading(false)
-        }
+        if (isActive) setLoading(false)
       }
     )
 
