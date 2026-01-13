@@ -29,7 +29,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Track if effect is still active (not cleaned up)
     let isActive = true
 
     const fetchProfile = async (userId: string): Promise<Profile | null> => {
@@ -51,26 +50,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Use onAuthStateChange for both initial state and updates
-    // It fires immediately with INITIAL_SESSION event
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!isActive) return // Don't update state if cleaned up
+    // Get initial session immediately
+    const initSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
         
-        // Update session and user synchronously first
-        setSession(session)
-        setUser(session?.user ?? null)
-
-        if (session?.user) {
-          // Fetch profile asynchronously
+        if (error) {
+          console.error('getSession error:', error)
+        }
+        
+        if (!isActive) return
+        
+        if (session) {
+          setSession(session)
+          setUser(session.user)
           const profileData = await fetchProfile(session.user.id)
-          if (!isActive) return // Don't update state if cleaned up
-          setProfile(profileData)
+          if (isActive) {
+            setProfile(profileData)
+          }
+        }
+        
+        if (isActive) {
+          setLoading(false)
+        }
+      } catch (err) {
+        console.error('Session init error:', err)
+        if (isActive) {
+          setLoading(false)
+        }
+      }
+    }
+
+    initSession()
+
+    // Listen for auth changes (sign in, sign out, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        if (!isActive) return
+        
+        console.log('Auth state change:', event)
+        
+        setSession(newSession)
+        setUser(newSession?.user ?? null)
+
+        if (newSession?.user) {
+          const profileData = await fetchProfile(newSession.user.id)
+          if (isActive) {
+            setProfile(profileData)
+          }
         } else {
           setProfile(null)
         }
         
-        // Always set loading to false after processing
         if (isActive) {
           setLoading(false)
         }
