@@ -38,10 +38,16 @@ function PublicBookingContent() {
   }
 
   useEffect(() => {
-    if (!classId) return
+    if (!classId) {
+      console.log('No classId provided')
+      return
+    }
+
+    let isCancelled = false
 
     const fetchClassDetails = async () => {
       try {
+        console.log('Fetching class details for:', classId)
         setLoading(true)
 
         // Fetch class first
@@ -51,9 +57,15 @@ function PublicBookingContent() {
           .eq('id', classId)
           .single()
 
+        if (isCancelled) return
+
         if (classError) {
           console.error('Class fetch error:', classError)
           throw classError
+        }
+
+        if (!classData) {
+          throw new Error('Class not found')
         }
 
         // Fetch time slot
@@ -62,6 +74,8 @@ function PublicBookingContent() {
           .select('*')
           .eq('id', classData.time_slot_id)
           .single()
+
+        if (isCancelled) return
 
         if (timeSlotError) {
           console.error('Time slot fetch error:', timeSlotError)
@@ -74,6 +88,8 @@ function PublicBookingContent() {
           .select('*')
           .eq('id', classData.instructor_id)
           .single()
+
+        if (isCancelled) return
 
         if (instructorError) {
           console.error('Instructor fetch error:', instructorError)
@@ -88,25 +104,41 @@ function PublicBookingContent() {
 
         // Count bookings using RPC function (accessible to anonymous users)
         try {
-          const { data: count } = await supabase
+          const { data: count, error: rpcError } = await supabase
             .rpc('get_booking_count', { class_uuid: classId })
           
-          setBookingCount(count || 0)
+          if (isCancelled) return
+
+          if (rpcError) {
+            console.error('RPC error:', rpcError)
+            setBookingCount(0)
+          } else {
+            setBookingCount(count || 0)
+          }
         } catch (countError) {
           console.error('Error counting bookings:', countError)
-          // Default to 0 if count fails
           setBookingCount(0)
         }
+
+        console.log('Class details loaded successfully')
       } catch (error) {
         console.error('Error fetching class details:', error)
-        setBookingState('error')
-        setErrorMessage('Unable to load class details. This link may be invalid.')
+        if (!isCancelled) {
+          setBookingState('error')
+          setErrorMessage('Unable to load class details. This link may be invalid.')
+        }
       } finally {
-        setLoading(false)
+        if (!isCancelled) {
+          setLoading(false)
+        }
       }
     }
 
     fetchClassDetails()
+
+    return () => {
+      isCancelled = true
+    }
   }, [classId])
 
   const handleSubmit = async (e: React.FormEvent) => {
