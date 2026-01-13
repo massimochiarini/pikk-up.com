@@ -39,6 +39,13 @@ function PublicBookingContent() {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [linkCopied, setLinkCopied] = useState(false)
+  
+  // Optional account creation
+  const [showAccountPrompt, setShowAccountPrompt] = useState(false)
+  const [accountEmail, setAccountEmail] = useState('')
+  const [accountPassword, setAccountPassword] = useState('')
+  const [creatingAccount, setCreatingAccount] = useState(false)
+  const [bookingId, setBookingId] = useState<string | null>(null)
 
   const copyBookingLink = () => {
     const url = window.location.href

@@ -65,6 +65,17 @@ export function Navbar() {
                       My Classes
                     </Link>
                   </>
+                ) : !isInstructor ? (
+                  <Link
+                    href="/my-classes"
+                    className={`font-medium transition-colors ${
+                      pathname === '/my-classes' 
+                        ? 'text-sage-700' 
+                        : 'text-sand-600 hover:text-sage-700'
+                    }`}
+                  >
+                    My Classes
+                  </Link>
                 ) : null}
                 
                 <div className="flex items-center gap-3">
