@@ -33,19 +33,47 @@ function PublicBookingContent() {
     try {
       setLoading(true)
 
-      // Fetch class with instructor and time slot
+      // Fetch class first
       const { data: classData, error: classError } = await supabase
         .from('classes')
-        .select(`
-          *,
-          time_slot:time_slots(*),
-          instructor:profiles!instructor_id(*)
-        `)
+        .select('*')
         .eq('id', classId)
         .single()
 
-      if (classError) throw classError
-      setYogaClass(classData as ClassWithDetails)
+      if (classError) {
+        console.error('Class fetch error:', classError)
+        throw classError
+      }
+
+      // Fetch time slot
+      const { data: timeSlotData, error: timeSlotError } = await supabase
+        .from('time_slots')
+        .select('*')
+        .eq('id', classData.time_slot_id)
+        .single()
+
+      if (timeSlotError) {
+        console.error('Time slot fetch error:', timeSlotError)
+        throw timeSlotError
+      }
+
+      // Fetch instructor profile
+      const { data: instructorData, error: instructorError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', classData.instructor_id)
+        .single()
+
+      if (instructorError) {
+        console.error('Instructor fetch error:', instructorError)
+        throw instructorError
+      }
+
+      setYogaClass({
+        ...classData,
+        time_slot: timeSlotData,
+        instructor: instructorData,
+      } as ClassWithDetails)
 
       // Count bookings
       const { count, error: countError } = await supabase

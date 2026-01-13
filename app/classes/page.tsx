@@ -23,37 +23,63 @@ export default function ClassesPage() {
   }, [])
 
   const fetchClasses = async () => {
-    // Fetch upcoming classes with instructor and time slot info
-    const { data, error } = await supabase
-      .from('classes')
-      .select(`
-        *,
-        time_slot:time_slots(*),
-        instructor:profiles!instructor_id(*)
-      `)
-      .eq('status', 'upcoming')
-      .gte('time_slot.date', format(new Date(), 'yyyy-MM-dd'))
-      .order('time_slot(date)', { ascending: true })
+    try {
+      // Fetch upcoming classes with instructor and time slot info
+      const { data, error } = await supabase
+        .from('classes')
+        .select(`
+          *,
+          time_slot:time_slots(*),
+          instructor:profiles!instructor_id(*)
+        `)
+        .eq('status', 'upcoming')
 
-    if (!error && data) {
-      // Fetch booking counts separately
-      const classesWithCounts = await Promise.all(
-        data.map(async (c) => {
-          const { count } = await supabase
-            .from('bookings')
-            .select('*', { count: 'exact', head: true })
-            .eq('class_id', c.id)
-            .eq('status', 'confirmed')
+      if (error) {
+        console.error('Error fetching classes:', error)
+        setLoading(false)
+        return
+      }
 
-          return {
-            ...c,
-            booking_count: count || 0,
-          }
-        })
-      )
-      setClasses(classesWithCounts as ClassWithDetails[])
+      if (data) {
+        const today = format(new Date(), 'yyyy-MM-dd')
+        
+        // Filter to only show future classes and sort by date
+        const filteredData = data
+          .filter((c) => c.time_slot && c.time_slot.date >= today)
+          .sort((a, b) => {
+            const dateA = a.time_slot?.date + 'T' + a.time_slot?.start_time
+            const dateB = b.time_slot?.date + 'T' + b.time_slot?.start_time
+            return dateA.localeCompare(dateB)
+          })
+
+        // For booking counts, use the RPC function instead of direct query
+        // This avoids RLS issues for anonymous users
+        const classesWithCounts = await Promise.all(
+          filteredData.map(async (c) => {
+            try {
+              const { data: count } = await supabase
+                .rpc('get_booking_count', { class_uuid: c.id })
+              
+              return {
+                ...c,
+                booking_count: count || 0,
+              }
+            } catch {
+              // If count fails, default to 0
+              return {
+                ...c,
+                booking_count: 0,
+              }
+            }
+          })
+        )
+        setClasses(classesWithCounts as ClassWithDetails[])
+      }
+    } catch (err) {
+      console.error('Error fetching classes:', err)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const formatTime = (time: string) => {
