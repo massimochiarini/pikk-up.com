@@ -78,6 +78,15 @@ export default function InstructorDashboardPage() {
     )
   }
 
+  // Final safety check - should never happen but satisfies TypeScript
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-cream">
       <Navbar />
