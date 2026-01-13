@@ -77,7 +77,9 @@ export default function StudentMyClassesPage() {
 
       if (!error && data) {
         // Filter out any bookings where class data is missing
-        const validBookings = data.filter(b => b.class && b.class.time_slot) as BookedClass[]
+        const validBookings = data.filter((b): b is BookedClass => {
+          return b.class !== null && b.class.time_slot !== null
+        })
         setBookings(validBookings)
       }
     } catch (error) {
