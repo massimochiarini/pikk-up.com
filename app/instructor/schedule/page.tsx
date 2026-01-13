@@ -17,6 +17,17 @@ export default function InstructorSchedulePage() {
   const [loading, setLoading] = useState(true)
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 0 }))
   const [claiming, setClaiming] = useState<string | null>(null)
+  const [isPageVisible, setIsPageVisible] = useState(true)
+
+  // Handle tab visibility to prevent fetching when not visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden)
+    }
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -25,7 +36,7 @@ export default function InstructorSchedulePage() {
   }, [user, authLoading, router])
 
   useEffect(() => {
-    if (!user) return
+    if (!user || !isPageVisible) return
 
     let isCancelled = false
 
@@ -63,7 +74,7 @@ export default function InstructorSchedulePage() {
     return () => {
       isCancelled = true
     }
-  }, [user, weekStart])
+  }, [user, weekStart, isPageVisible])
 
   const handleClaimSlot = async (slot: TimeSlot) => {
     if (slot.status !== 'available' || claiming) return
