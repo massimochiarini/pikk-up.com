@@ -1,24 +1,30 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import Link from 'next/link'
 
 export default function InstructorDashboardPage() {
   const { user, profile, loading } = useAuth()
+  const [showContent, setShowContent] = useState(false)
 
-  // Memoize the render decision to prevent re-computation loops
-  const renderState = useMemo(() => {
-    if (loading || (user && !profile)) return 'loading'
-    if (!user) return 'not-logged-in'
-    if (profile && !profile.is_instructor) return 'not-instructor'
-    if (!profile) return 'loading'
-    return 'dashboard'
-  }, [loading, user, profile])
+  // Add a timeout to prevent infinite loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowContent(true)
+    }, 3000) // Show content after 3 seconds max
 
-  // Loading state
-  if (renderState === 'loading') {
+    if (!loading) {
+      setShowContent(true)
+      clearTimeout(timer)
+    }
+
+    return () => clearTimeout(timer)
+  }, [loading])
+
+  // Still loading auth
+  if (loading && !showContent) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
@@ -26,8 +32,8 @@ export default function InstructorDashboardPage() {
     )
   }
 
-  // Not logged in
-  if (renderState === 'not-logged-in') {
+  // Not logged in - show login/signup options
+  if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50">
         <Navbar />
@@ -57,8 +63,8 @@ export default function InstructorDashboardPage() {
     )
   }
 
-  // Logged in but not an instructor
-  if (renderState === 'not-instructor') {
+  // Logged in but profile not loaded yet or not an instructor
+  if (!profile || !profile.is_instructor) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50">
         <Navbar />
@@ -69,17 +75,20 @@ export default function InstructorDashboardPage() {
             </div>
             <h1 className="text-3xl font-bold text-charcoal mb-4">Become an Instructor</h1>
             <p className="text-sand-600 mb-4">
-              Hi {profile?.first_name}! Your current account is set up for booking classes as a student.
+              {profile ? `Hi ${profile.first_name}! Your current account is set up for booking classes as a student.` : 'Welcome!'}
             </p>
             <p className="text-sand-600 mb-8">
-              To teach classes at PikkUp, you&apos;ll need to create a separate instructor account with your teaching credentials.
+              To teach classes at PikkUp, you need an instructor account.
             </p>
             <div className="space-y-4">
               <Link href="/instructor/auth/signup" className="btn-primary w-full block text-center">
                 Create Instructor Account
               </Link>
-              <Link href="/classes" className="btn-secondary w-full block text-center">
-                Continue Browsing Classes
+              <Link href="/instructor/auth/login" className="btn-secondary w-full block text-center">
+                Sign In as Instructor
+              </Link>
+              <Link href="/classes" className="text-sand-500 hover:text-sage-600 text-sm mt-4 inline-block">
+                ← Browse classes instead
               </Link>
             </div>
           </div>
@@ -88,15 +97,7 @@ export default function InstructorDashboardPage() {
     )
   }
 
-  // Dashboard - only render if we have profile
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
-      </div>
-    )
-  }
-
+  // Instructor dashboard
   return (
     <div className="min-h-screen bg-cream">
       <Navbar />
