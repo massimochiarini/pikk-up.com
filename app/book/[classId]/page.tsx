@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import { useAuth } from '@/components/AuthProvider'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
 import { format, parseISO } from 'date-fns'
 import Link from 'next/link'
@@ -14,6 +15,7 @@ type ClassWithDetails = YogaClass & {
 function PublicBookingContent() {
   const params = useParams()
   const classId = params.classId as string
+  const { user } = useAuth()
   
   // Check for payment cancelled using window.location instead of useSearchParams to avoid Suspense issues
   const [paymentCancelled, setPaymentCancelled] = useState(false)
@@ -211,7 +213,7 @@ function PublicBookingContent() {
         .from('bookings')
         .insert({
           class_id: classId,
-          user_id: null,
+          user_id: user?.id || null,  // Use logged-in user ID if available
           guest_first_name: firstName.trim(),
           guest_last_name: lastName.trim(),
           guest_phone: phone.replace(/\D/g, ''),

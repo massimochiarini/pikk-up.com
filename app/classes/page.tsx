@@ -20,6 +20,7 @@ export default function ClassesPage() {
   const [filter, setFilter] = useState<'all' | 'my-classes'>('all')
   const [skillFilter, setSkillFilter] = useState<string>('all')
   const [myClassIds, setMyClassIds] = useState<Set<string>>(new Set())
+  const [cancelling, setCancelling] = useState<string | null>(null)
 
   useEffect(() => {
     fetchClasses()
@@ -46,6 +47,37 @@ export default function ClassesPage() {
       }
     } catch (error) {
       console.error('Error fetching my bookings:', error)
+    }
+  }
+
+  const handleCancelBooking = async (classId: string, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    if (!user || !confirm('Are you sure you want to cancel this booking?')) return
+    
+    setCancelling(classId)
+    
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: 'cancelled' })
+        .eq('class_id', classId)
+        .eq('user_id', user.id)
+        .eq('status', 'confirmed')
+
+      if (error) throw error
+
+      // Refresh data
+      await fetchMyBookings()
+      await fetchClasses()
+      
+      alert('Booking cancelled successfully!')
+    } catch (error) {
+      console.error('Error cancelling booking:', error)
+      alert('Failed to cancel booking. Please try again.')
+    } finally {
+      setCancelling(null)
     }
   }
 
@@ -219,8 +251,8 @@ export default function ClassesPage() {
               const isFull = spotsLeft <= 0
               
               return (
+                <div key={yogaClass.id} className="relative">
                 <Link
-                  key={yogaClass.id}
                   href={`/book/${yogaClass.id}`}
                   className="card-hover group block"
                 >
@@ -282,6 +314,20 @@ export default function ClassesPage() {
                     </div>
                   </div>
                 </Link>
+                
+                {/* Cancel Button for My Classes */}
+                {filter === 'my-classes' && (
+                  <div className="mt-3">
+                    <button
+                      onClick={(e) => handleCancelBooking(yogaClass.id, e)}
+                      disabled={cancelling === yogaClass.id}
+                      className="w-full px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-medium text-sm transition-colors disabled:opacity-50"
+                    >
+                      {cancelling === yogaClass.id ? 'Cancelling...' : 'Cancel Booking'}
+                    </button>
+                  </div>
+                )}
+                </div>
               )
             })}
           </div>
