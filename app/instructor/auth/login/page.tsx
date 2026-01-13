@@ -16,16 +16,23 @@ export default function InstructorLoginPage() {
     setError('')
 
     try {
+      console.log('Attempting instructor login for:', email)
+      
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      if (signInError) throw signInError
+      if (signInError) {
+        console.error('Sign in error:', signInError)
+        throw signInError
+      }
 
       if (!data.user) {
         throw new Error('No user data returned')
       }
+
+      console.log('Sign in successful, checking profile...')
 
       // Check if user is an instructor
       const { data: profile, error: profileError } = await supabase
@@ -36,10 +43,11 @@ export default function InstructorLoginPage() {
 
       if (profileError) {
         console.error('Profile fetch error:', profileError)
-        // Profile doesn't exist - sign out and show error
         await supabase.auth.signOut()
         throw new Error('Could not find your profile. Please try signing up again.')
       }
+
+      console.log('Profile found, is_instructor:', profile?.is_instructor)
 
       if (!profile?.is_instructor) {
         await supabase.auth.signOut()
@@ -47,7 +55,8 @@ export default function InstructorLoginPage() {
         return
       }
 
-      // Use window.location for cleaner navigation after login
+      // Navigate to instructor dashboard
+      console.log('Redirecting to instructor dashboard...')
       window.location.href = '/instructor'
     } catch (err: any) {
       console.error('Login error:', err)

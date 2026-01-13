@@ -28,46 +28,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const fetchProfile = async (userId: string): Promise<Profile | null> => {
+    try {
+      console.log('Fetching profile for user:', userId)
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      if (error) {
+        console.error('Profile fetch error:', error.message)
+        return null
+      }
+      console.log('Profile fetched:', data?.email)
+      return data as Profile
+    } catch (err) {
+      console.error('Profile fetch exception:', err)
+      return null
+    }
+  }
+
   useEffect(() => {
     let isActive = true
 
-    const fetchProfile = async (userId: string): Promise<Profile | null> => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single()
-
-        if (error) {
-          console.error('Error fetching profile:', error)
-          return null
-        }
-        return data as Profile
-      } catch (err) {
-        console.error('Profile fetch error:', err)
-        return null
-      }
-    }
-
-    // Get initial session immediately
     const initSession = async () => {
       try {
+        console.log('Initializing session...')
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error('getSession error:', error)
+          setLoading(false)
+          return
         }
         
         if (!isActive) return
         
         if (session) {
+          console.log('Session found for:', session.user.email)
           setSession(session)
           setUser(session.user)
           const profileData = await fetchProfile(session.user.id)
           if (isActive) {
             setProfile(profileData)
           }
+        } else {
+          console.log('No session found')
         }
         
         if (isActive) {
@@ -83,12 +90,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initSession()
 
-    // Listen for auth changes (sign in, sign out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         if (!isActive) return
         
-        console.log('Auth state change:', event)
+        console.log('Auth state change:', event, newSession?.user?.email)
         
         setSession(newSession)
         setUser(newSession?.user ?? null)
@@ -116,18 +122,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshProfile = async () => {
     if (user) {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-
-        if (!error && data) {
-          setProfile(data as Profile)
-        }
-      } catch (err) {
-        console.error('Profile refresh error:', err)
+      const profileData = await fetchProfile(user.id)
+      if (profileData) {
+        setProfile(profileData)
       }
     }
   }

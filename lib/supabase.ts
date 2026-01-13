@@ -1,7 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+// Log config issues (will show in browser console)
+if (typeof window !== 'undefined') {
+  if (!supabaseUrl) console.error('❌ NEXT_PUBLIC_SUPABASE_URL is not set!')
+  if (!supabaseAnonKey) console.error('❌ NEXT_PUBLIC_SUPABASE_ANON_KEY is not set!')
+  if (supabaseUrl && supabaseAnonKey) console.log('✅ Supabase config loaded')
+}
 
 // Custom storage that safely handles SSR
 const customStorage = {
@@ -22,7 +29,7 @@ const customStorage = {
 }
 
 // Browser client for client components
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '', {
   auth: {
     persistSession: true,
     storageKey: 'supabase-auth',

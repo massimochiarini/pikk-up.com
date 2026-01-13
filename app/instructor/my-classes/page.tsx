@@ -86,8 +86,8 @@ export default function MyClassesPage() {
     return bookings.filter(b => b.status === 'confirmed')
   }
 
-  // Show loading while auth is loading, data is loading, OR when we have a user but profile hasn't loaded
-  if (authLoading || loading || (user && !profile)) {
+  // Show loading while auth is loading or data is loading
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>

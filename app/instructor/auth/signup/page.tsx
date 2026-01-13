@@ -23,7 +23,8 @@ export default function InstructorSignupPage() {
     setError('')
 
     try {
-      // Sign up the user
+      // Sign up the user with instructor flag in metadata
+      // This allows the database trigger to set is_instructor correctly
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -31,6 +32,7 @@ export default function InstructorSignupPage() {
           data: {
             first_name: firstName,
             last_name: lastName,
+            is_instructor: true,
           },
         },
       })

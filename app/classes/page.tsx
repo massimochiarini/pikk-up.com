@@ -17,22 +17,20 @@ export default function ClassesPage() {
   const { user, profile } = useAuth()
   const [classes, setClasses] = useState<ClassWithDetails[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'my-classes'>('all')
   const [skillFilter, setSkillFilter] = useState<string>('all')
   const [myClassIds, setMyClassIds] = useState<Set<string>>(new Set())
   const [cancelling, setCancelling] = useState<string | null>(null)
   
-  const hasFetchedClasses = useRef(false)
   const hasFetchedBookings = useRef<string | null>(null)
 
   const fetchClasses = useCallback(async () => {
-    if (hasFetchedClasses.current) return
-    hasFetchedClasses.current = true
-    
     console.log('Fetching classes...')
+    setError(null)
     
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('classes')
         .select(`
           *,
@@ -41,8 +39,9 @@ export default function ClassesPage() {
         `)
         .eq('status', 'upcoming')
 
-      if (error) {
-        console.error('Error fetching classes:', error)
+      if (fetchError) {
+        console.error('Error fetching classes:', fetchError)
+        setError('Failed to load classes. Please refresh the page.')
         setClasses([])
         setLoading(false)
         return
@@ -61,11 +60,15 @@ export default function ClassesPage() {
             return dateA.localeCompare(dateB)
           })
 
+        // Fetch booking counts in parallel, with error handling for each
         const classesWithCounts = await Promise.all(
           filteredData.map(async (c) => {
             try {
-              const { data: count } = await supabase
+              const { data: count, error: rpcError } = await supabase
                 .rpc('get_booking_count', { class_uuid: c.id })
+              if (rpcError) {
+                console.warn(`Failed to get booking count for class ${c.id}:`, rpcError.message)
+              }
               return { ...c, booking_count: count || 0 }
             } catch {
               return { ...c, booking_count: 0 }
@@ -76,11 +79,13 @@ export default function ClassesPage() {
       }
     } catch (err) {
       console.error('Error fetching classes:', err)
+      setError('Failed to load classes. Please refresh the page.')
     } finally {
       setLoading(false)
     }
   }, [])
 
+  // Fetch classes on mount
   useEffect(() => {
     fetchClasses()
   }, [fetchClasses])
@@ -134,14 +139,12 @@ export default function ClassesPage() {
         if (error) throw error
       }
 
-      // Reset refs to allow refresh
-      hasFetchedClasses.current = false
+      // Reset booking fetch ref to allow refresh
       hasFetchedBookings.current = null
       
-      // Refresh data by reloading the page
-      window.location.reload()
-      
+      // Refresh data
       alert('Booking cancelled successfully!')
+      window.location.reload()
     } catch (error) {
       console.error('Error cancelling booking:', error)
       alert('Failed to cancel booking. Please try again.')
@@ -238,6 +241,23 @@ export default function ClassesPage() {
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+          </div>
+        ) : error ? (
+          <div className="card text-center py-12">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">⚠️</span>
+            </div>
+            <h3 className="text-xl font-semibold text-charcoal mb-2">Oops! Something went wrong</h3>
+            <p className="text-sand-600 mb-4">{error}</p>
+            <button
+              onClick={() => {
+                setLoading(true)
+                fetchClasses()
+              }}
+              className="btn-primary"
+            >
+              Try Again
+            </button>
           </div>
         ) : filteredClasses.length === 0 ? (
           <div className="card text-center py-12">
