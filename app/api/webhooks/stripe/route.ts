@@ -150,12 +150,25 @@ async function handleCheckoutSessionCompleted(
       return
     }
 
+    // 3.5 Try to find a user account with matching phone number
+    let matchedUserId: string | null = null
+    const { data: matchedProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('phone', phoneNormalized)
+      .single()
+    
+    if (matchedProfile) {
+      matchedUserId = matchedProfile.id
+      console.log('Found matching user account:', matchedUserId)
+    }
+
     // 4. Create booking
     const { data: bookingData, error: bookingError } = await supabase
       .from('bookings')
       .insert({
         class_id: classId,
-        user_id: null,
+        user_id: matchedUserId,
         guest_first_name: firstName.trim(),
         guest_last_name: lastName.trim(),
         guest_phone: phoneNormalized,

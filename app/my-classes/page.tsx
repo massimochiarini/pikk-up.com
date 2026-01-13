@@ -27,34 +27,27 @@ export default function StudentMyClassesPage() {
     
     const fetchBookings = async () => {
       try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        
         const allBookings: any[] = []
         const seenIds = new Set<string>()
 
-        // Fetch bookings by user_id
-        const { data: userBookings } = await supabase
-          .from('bookings')
-          .select(`
-            id,
-            class_id,
-            status,
-            created_at,
-            guest_first_name,
-            guest_last_name,
-            class:classes(
-              id,
-              title,
-              description,
-              price_cents,
-              skill_level,
-              time_slot:time_slots(date, start_time, end_time),
-              instructor:profiles!instructor_id(first_name, last_name, instagram)
-            )
-          `)
-          .eq('user_id', user.id)
-          .eq('status', 'confirmed')
-          .order('created_at', { ascending: false })
+        const selectQuery = 'id,class_id,status,created_at,guest_first_name,guest_last_name,guest_phone,class:classes(id,title,description,price_cents,skill_level,time_slot:time_slots(date,start_time,end_time),instructor:profiles!instructor_id(first_name,last_name,instagram))'
 
-        if (userBookings) {
+        // Fetch bookings by user_id
+        const userRes = await fetch(
+          `${supabaseUrl}/rest/v1/bookings?select=${selectQuery}&user_id=eq.${user.id}&status=eq.confirmed&order=created_at.desc`,
+          {
+            headers: {
+              'apikey': supabaseKey || '',
+              'Authorization': `Bearer ${supabaseKey}`,
+            },
+          }
+        )
+        
+        if (userRes.ok) {
+          const userBookings = await userRes.json()
           for (const b of userBookings) {
             if (!seenIds.has(b.id)) {
               seenIds.add(b.id)
@@ -65,30 +58,19 @@ export default function StudentMyClassesPage() {
 
         // Also fetch by phone number if profile has phone
         if (profile?.phone) {
-          const { data: phoneBookings } = await supabase
-            .from('bookings')
-            .select(`
-              id,
-              class_id,
-              status,
-              created_at,
-              guest_first_name,
-              guest_last_name,
-              class:classes(
-                id,
-                title,
-                description,
-                price_cents,
-                skill_level,
-                time_slot:time_slots(date, start_time, end_time),
-                instructor:profiles!instructor_id(first_name, last_name, instagram)
-              )
-            `)
-            .eq('guest_phone', profile.phone)
-            .eq('status', 'confirmed')
-            .order('created_at', { ascending: false })
-
-          if (phoneBookings) {
+          const phoneNormalized = profile.phone.replace(/\D/g, '')
+          const phoneRes = await fetch(
+            `${supabaseUrl}/rest/v1/bookings?select=${selectQuery}&guest_phone=eq.${phoneNormalized}&status=eq.confirmed&order=created_at.desc`,
+            {
+              headers: {
+                'apikey': supabaseKey || '',
+                'Authorization': `Bearer ${supabaseKey}`,
+              },
+            }
+          )
+          
+          if (phoneRes.ok) {
+            const phoneBookings = await phoneRes.json()
             for (const b of phoneBookings) {
               if (!seenIds.has(b.id)) {
                 seenIds.add(b.id)
