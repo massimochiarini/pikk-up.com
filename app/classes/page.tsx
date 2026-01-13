@@ -24,15 +24,15 @@ export default function ClassesPage() {
 
   const fetchClasses = async () => {
     try {
-      // Fetch upcoming classes with instructor and time slot info
-      const { data, error } = await supabase
-        .from('classes')
-        .select(`
-          *,
-          time_slot:time_slots(*),
-          instructor:profiles!instructor_id(*)
-        `)
-        .eq('status', 'upcoming')
+    // Fetch upcoming classes with instructor and time slot info
+    const { data, error } = await supabase
+      .from('classes')
+      .select(`
+        *,
+        time_slot:time_slots(*),
+        instructor:profiles!instructor_id(*)
+      `)
+      .eq('status', 'upcoming')
 
       if (error) {
         console.error('Error fetching classes:', error)
@@ -54,15 +54,15 @@ export default function ClassesPage() {
 
         // For booking counts, use the RPC function instead of direct query
         // This avoids RLS issues for anonymous users
-        const classesWithCounts = await Promise.all(
+      const classesWithCounts = await Promise.all(
           filteredData.map(async (c) => {
             try {
               const { data: count } = await supabase
                 .rpc('get_booking_count', { class_uuid: c.id })
-              
-              return {
-                ...c,
-                booking_count: count || 0,
+
+          return {
+            ...c,
+            booking_count: count || 0,
               }
             } catch {
               // If count fails, default to 0
@@ -70,15 +70,15 @@ export default function ClassesPage() {
                 ...c,
                 booking_count: 0,
               }
-            }
-          })
-        )
-        setClasses(classesWithCounts as ClassWithDetails[])
-      }
+          }
+        })
+      )
+      setClasses(classesWithCounts as ClassWithDetails[])
+    }
     } catch (err) {
       console.error('Error fetching classes:', err)
     } finally {
-      setLoading(false)
+    setLoading(false)
     }
   }
 

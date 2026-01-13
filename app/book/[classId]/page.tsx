@@ -54,61 +54,61 @@ function PublicBookingContent() {
     let isCancelled = false
 
     const fetchClassDetails = async () => {
-      try {
+    try {
         console.log('Fetching class details for:', classId)
-        setLoading(true)
+      setLoading(true)
 
-        // Fetch class first
-        const { data: classData, error: classError } = await supabase
-          .from('classes')
-          .select('*')
-          .eq('id', classId)
-          .single()
+      // Fetch class first
+      const { data: classData, error: classError } = await supabase
+        .from('classes')
+        .select('*')
+        .eq('id', classId)
+        .single()
 
         if (isCancelled) return
 
-        if (classError) {
-          console.error('Class fetch error:', classError)
-          throw classError
-        }
+      if (classError) {
+        console.error('Class fetch error:', classError)
+        throw classError
+      }
 
         if (!classData) {
           throw new Error('Class not found')
         }
 
-        // Fetch time slot
-        const { data: timeSlotData, error: timeSlotError } = await supabase
-          .from('time_slots')
-          .select('*')
-          .eq('id', classData.time_slot_id)
-          .single()
+      // Fetch time slot
+      const { data: timeSlotData, error: timeSlotError } = await supabase
+        .from('time_slots')
+        .select('*')
+        .eq('id', classData.time_slot_id)
+        .single()
 
         if (isCancelled) return
 
-        if (timeSlotError) {
-          console.error('Time slot fetch error:', timeSlotError)
-          throw timeSlotError
-        }
+      if (timeSlotError) {
+        console.error('Time slot fetch error:', timeSlotError)
+        throw timeSlotError
+      }
 
-        // Fetch instructor profile
-        const { data: instructorData, error: instructorError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', classData.instructor_id)
-          .single()
+      // Fetch instructor profile
+      const { data: instructorData, error: instructorError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', classData.instructor_id)
+        .single()
 
         if (isCancelled) return
 
-        if (instructorError) {
-          console.error('Instructor fetch error:', instructorError)
-          throw instructorError
-        }
+      if (instructorError) {
+        console.error('Instructor fetch error:', instructorError)
+        throw instructorError
+      }
 
-        setYogaClass({
-          ...classData,
-          time_slot: timeSlotData,
-          instructor: instructorData,
-        } as ClassWithDetails)
+      setYogaClass({
+        ...classData,
+        time_slot: timeSlotData,
+        instructor: instructorData,
+      } as ClassWithDetails)
 
         // Count bookings using RPC function (accessible to anonymous users)
         try {
@@ -121,23 +121,23 @@ function PublicBookingContent() {
             console.error('RPC error:', rpcError)
             setBookingCount(0)
           } else {
-            setBookingCount(count || 0)
-          }
+        setBookingCount(count || 0)
+      }
         } catch (countError) {
           console.error('Error counting bookings:', countError)
           setBookingCount(0)
         }
 
         console.log('Class details loaded successfully')
-      } catch (error) {
-        console.error('Error fetching class details:', error)
+    } catch (error) {
+      console.error('Error fetching class details:', error)
         if (!isCancelled) {
-          setBookingState('error')
-          setErrorMessage('Unable to load class details. This link may be invalid.')
+      setBookingState('error')
+      setErrorMessage('Unable to load class details. This link may be invalid.')
         }
-      } finally {
+    } finally {
         if (!isCancelled) {
-          setLoading(false)
+      setLoading(false)
         }
       }
     }
@@ -395,17 +395,17 @@ function PublicBookingContent() {
           <div className="card">
             <div className="flex items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-sage-300 to-sage-400 rounded-2xl flex items-center justify-center">
-                  <span className="text-3xl">🧘</span>
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-charcoal">{yogaClass.title}</h1>
-                  {yogaClass.skill_level && yogaClass.skill_level !== 'all' && (
-                    <span className="inline-block mt-1 px-2 py-0.5 bg-sage-100 text-sage-700 text-xs font-medium rounded-full capitalize">
-                      {yogaClass.skill_level}
-                    </span>
-                  )}
-                </div>
+              <div className="w-16 h-16 bg-gradient-to-br from-sage-300 to-sage-400 rounded-2xl flex items-center justify-center">
+                <span className="text-3xl">🧘</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-charcoal">{yogaClass.title}</h1>
+                {yogaClass.skill_level && yogaClass.skill_level !== 'all' && (
+                  <span className="inline-block mt-1 px-2 py-0.5 bg-sage-100 text-sage-700 text-xs font-medium rounded-full capitalize">
+                    {yogaClass.skill_level}
+                  </span>
+                )}
+              </div>
               </div>
               <button
                 onClick={copyBookingLink}

@@ -38,18 +38,18 @@ export default function CreateClassPage() {
     if (!user || !slotId) return
 
     const fetchTimeSlot = async () => {
-      const { data, error } = await supabase
-        .from('time_slots')
-        .select('*')
-        .eq('id', slotId)
-        .single()
+    const { data, error } = await supabase
+      .from('time_slots')
+      .select('*')
+      .eq('id', slotId)
+      .single()
 
-      if (error || !data) {
-        setError('Time slot not found')
-      } else {
-        setTimeSlot(data)
-      }
-      setLoading(false)
+    if (error || !data) {
+      setError('Time slot not found')
+    } else {
+      setTimeSlot(data)
+    }
+    setLoading(false)
     }
 
     fetchTimeSlot()
@@ -65,12 +65,23 @@ export default function CreateClassPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user || !timeSlot) return
+    if (!user || !timeSlot || submitting) return
 
     setSubmitting(true)
     setError('')
 
     try {
+      // Check if a class already exists for this time slot
+      const { data: existingClass } = await supabase
+        .from('classes')
+        .select('id')
+        .eq('time_slot_id', timeSlot.id)
+        .single()
+
+      if (existingClass) {
+        throw new Error('A class already exists for this time slot')
+      }
+
       const priceCents = Math.round(parseFloat(price || '0') * 100)
 
       const { data, error: createError } = await supabase
@@ -94,7 +105,6 @@ export default function CreateClassPage() {
       setSuccess(true)
     } catch (err: any) {
       setError(err.message || 'Failed to create class')
-    } finally {
       setSubmitting(false)
     }
   }

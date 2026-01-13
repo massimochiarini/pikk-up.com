@@ -27,46 +27,71 @@ export default function InstructorSchedulePage() {
   useEffect(() => {
     if (!user) return
 
+    let isCancelled = false
+
     const fetchTimeSlots = async () => {
+      if (isCancelled) return
+      
       setLoading(true)
       const weekEnd = addDays(weekStart, 6)
       
-      const { data, error } = await supabase
-        .from('time_slots')
-        .select('*')
-        .gte('date', format(weekStart, 'yyyy-MM-dd'))
-        .lte('date', format(weekEnd, 'yyyy-MM-dd'))
-        .order('date')
-        .order('start_time')
+      try {
+        const { data, error } = await supabase
+          .from('time_slots')
+          .select('*')
+          .gte('date', format(weekStart, 'yyyy-MM-dd'))
+          .lte('date', format(weekEnd, 'yyyy-MM-dd'))
+          .order('date')
+          .order('start_time')
 
-      if (!error && data) {
-        setTimeSlots(data)
+        if (isCancelled) return
+
+        if (!error && data) {
+          setTimeSlots(data)
+        }
+      } catch (error) {
+        console.error('Error fetching time slots:', error)
+      } finally {
+        if (!isCancelled) {
+          setLoading(false)
+        }
       }
-      setLoading(false)
     }
 
     fetchTimeSlots()
+
+    return () => {
+      isCancelled = true
+    }
   }, [user, weekStart])
 
   const handleClaimSlot = async (slot: TimeSlot) => {
-    if (slot.status !== 'available') return
+    if (slot.status !== 'available' || claiming) return
     
     setClaiming(slot.id)
     
-    // Update the time slot status
-    const { error } = await supabase
-      .from('time_slots')
-      .update({ status: 'claimed' })
-      .eq('id', slot.id)
+    try {
+      // Update the time slot status
+      const { error } = await supabase
+        .from('time_slots')
+        .update({ status: 'claimed' })
+        .eq('id', slot.id)
+        .eq('status', 'available') // Double-check it's still available
 
-    if (error) {
+      if (error) {
+        console.error('Error claiming slot:', error)
+        setClaiming(null)
+        alert('Failed to claim slot. It may have been claimed by someone else.')
+        return
+      }
+
+      // Redirect to create class page
+      router.push(`/instructor/create/${slot.id}`)
+    } catch (error) {
       console.error('Error claiming slot:', error)
       setClaiming(null)
-      return
+      alert('Failed to claim slot. Please try again.')
     }
-
-    // Redirect to create class page
-    router.push(`/instructor/create/${slot.id}`)
   }
 
   const formatTime = (time: string) => {

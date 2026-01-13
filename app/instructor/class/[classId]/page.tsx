@@ -35,25 +35,25 @@ export default function InstructorClassDetailPage() {
     if (!user || !classId) return
 
     const fetchClass = async () => {
-      const { data, error } = await supabase
-        .from('classes')
-        .select(`
-          *,
-          time_slot:time_slots(*),
-          bookings(*)
-        `)
-        .eq('id', classId)
-        .single()
+    const { data, error } = await supabase
+      .from('classes')
+      .select(`
+        *,
+        time_slot:time_slots(*),
+        bookings(*)
+      `)
+      .eq('id', classId)
+      .single()
 
-      if (!error && data) {
-        // Verify ownership
+    if (!error && data) {
+      // Verify ownership
         if (data.instructor_id !== user.id) {
-          router.push('/instructor/my-classes')
-          return
-        }
-        setYogaClass(data as ClassWithDetails)
+        router.push('/instructor/my-classes')
+        return
       }
-      setLoading(false)
+      setYogaClass(data as ClassWithDetails)
+    }
+    setLoading(false)
     }
 
     fetchClass()
