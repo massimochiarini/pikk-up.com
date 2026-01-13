@@ -100,10 +100,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setProfile(null)
-    setSession(null)
+    try {
+      await supabase.auth.signOut()
+      setUser(null)
+      setProfile(null)
+      setSession(null)
+      // Redirect to home page after sign out
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Sign out error:', error)
+    }
   }
 
   return (
