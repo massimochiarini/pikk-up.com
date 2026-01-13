@@ -41,7 +41,10 @@ export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '', {
 
 // Server-side client with service role for admin operations
 export const createServerClient = () => {
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing Supabase environment variables for server client')
+  }
   return createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,

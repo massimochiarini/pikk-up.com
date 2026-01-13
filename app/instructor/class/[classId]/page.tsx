@@ -65,7 +65,7 @@ export default function InstructorClassDetailPage() {
     return () => {
       isCancelled = true
     }
-  }, [user, classId])
+  }, [user, classId, router])
 
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(':')
