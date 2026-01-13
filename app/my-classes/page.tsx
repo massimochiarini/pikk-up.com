@@ -134,7 +134,7 @@ export default function StudentMyClassesPage() {
     )
   }
 
-  if (!user || !profile) {
+  if (!user) {
     return null
   }
 

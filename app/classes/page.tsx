@@ -29,6 +29,8 @@ export default function ClassesPage() {
     if (hasFetchedClasses.current) return
     hasFetchedClasses.current = true
     
+    console.log('Fetching classes...')
+    
     try {
       const { data, error } = await supabase
         .from('classes')
@@ -41,9 +43,12 @@ export default function ClassesPage() {
 
       if (error) {
         console.error('Error fetching classes:', error)
+        setClasses([])
         setLoading(false)
         return
       }
+      
+      console.log('Classes fetched:', data?.length || 0)
 
       if (data) {
         const today = format(new Date(), 'yyyy-MM-dd')
