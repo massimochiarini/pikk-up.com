@@ -9,27 +9,27 @@ import { format, parseISO, isPast } from 'date-fns'
 import Link from 'next/link'
 
 type BookedClass = {
-  id: string
-  class_id: string
-  status: string
-  created_at: string
-  guest_first_name: string | null
-  guest_last_name: string | null
+  id: any
+  class_id: any
+  status: any
+  created_at: any
+  guest_first_name: any
+  guest_last_name: any
   class: {
-    id: string
+    id: any
     title: string
     description: string | null
     price_cents: number
     skill_level: string
     time_slot: {
-      date: string
-      start_time: string
-      end_time: string
+      date: any
+      start_time: any
+      end_time: any
     }
     instructor: {
-      first_name: string
-      last_name: string
-      instagram: string | null
+      first_name: any
+      last_name: any
+      instagram: any
     }
   }
 }
@@ -77,9 +77,9 @@ export default function StudentMyClassesPage() {
 
       if (!error && data) {
         // Filter out any bookings where class data is missing
-        const validBookings = data.filter((b): b is BookedClass => {
-          return b.class !== null && b.class.time_slot !== null
-        })
+        const validBookings = data.filter(b => 
+          b.class !== null && b.class.time_slot !== null
+        ) as BookedClass[]
         setBookings(validBookings)
       }
     } catch (error) {
