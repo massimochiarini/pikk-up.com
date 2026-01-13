@@ -79,6 +79,17 @@ export default function CreateClassPage() {
     setError('')
 
     try {
+      // First check if slot is still available
+      const { data: currentSlot } = await supabase
+        .from('time_slots')
+        .select('status')
+        .eq('id', timeSlot.id)
+        .single()
+      
+      if (currentSlot?.status !== 'available') {
+        throw new Error('This time slot has already been claimed by another instructor')
+      }
+
       // Check if a class already exists for this time slot
       const { data: existingClass } = await supabase
         .from('classes')
@@ -92,6 +103,7 @@ export default function CreateClassPage() {
 
       const priceCents = Math.round(parseFloat(price || '0') * 100)
 
+      // Create the class
       const { data, error: createError } = await supabase
         .from('classes')
         .insert({
@@ -108,6 +120,18 @@ export default function CreateClassPage() {
         .single()
 
       if (createError) throw createError
+
+      // NOW claim the slot (only after class is successfully created)
+      const { error: slotError } = await supabase
+        .from('time_slots')
+        .update({ status: 'claimed' })
+        .eq('id', timeSlot.id)
+        .eq('status', 'available') // Double-check still available
+
+      if (slotError) {
+        // Class was created but slot update failed - this is okay, the class exists
+        console.error('Slot update error (class was still created):', slotError)
+      }
 
       setCreatedClassId(data.id)
       setSuccess(true)

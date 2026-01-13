@@ -117,33 +117,11 @@ export default function InstructorSchedulePage() {
     }
   }, [user, weekStart, isPageVisible])
 
-  const handleClaimSlot = async (slot: TimeSlot) => {
+  const handleClaimSlot = (slot: TimeSlot) => {
     if (slot.status !== 'available' || claiming) return
     
-    setClaiming(slot.id)
-    
-    try {
-      // Update the time slot status
-      const { error } = await supabase
-        .from('time_slots')
-        .update({ status: 'claimed' })
-        .eq('id', slot.id)
-        .eq('status', 'available') // Double-check it's still available
-
-      if (error) {
-        console.error('Error claiming slot:', error)
-        setClaiming(null)
-        alert('Failed to claim slot. It may have been claimed by someone else.')
-        return
-      }
-
-      // Redirect to create class page
-      router.push(`/instructor/create/${slot.id}`)
-    } catch (error) {
-      console.error('Error claiming slot:', error)
-      setClaiming(null)
-      alert('Failed to claim slot. Please try again.')
-    }
+    // Just navigate to the create form - slot will be claimed when class is created
+    router.push(`/instructor/create/${slot.id}`)
   }
 
   const formatTime = (time: string) => {
