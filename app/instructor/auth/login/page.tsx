@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function InstructorLoginPage() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -18,12 +16,16 @@ export default function InstructorLoginPage() {
     setError('')
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      if (error) throw error
+      if (signInError) throw signInError
+
+      if (!data.user) {
+        throw new Error('No user data returned')
+      }
 
       // Check if user is an instructor
       const { data: profile, error: profileError } = await supabase
@@ -34,19 +36,21 @@ export default function InstructorLoginPage() {
 
       if (profileError) {
         console.error('Profile fetch error:', profileError)
-        // Profile might not exist yet, redirect anyway and let instructor page handle it
-        window.location.href = '/instructor'
-        return
+        // Profile doesn't exist - sign out and show error
+        await supabase.auth.signOut()
+        throw new Error('Could not find your profile. Please try signing up again.')
       }
 
       if (!profile?.is_instructor) {
-        setError('This account is not registered as an instructor. Please sign up as an instructor first.')
         await supabase.auth.signOut()
+        setError('This account is not registered as an instructor. Please sign up as an instructor first.')
         return
       }
 
+      // Use window.location for cleaner navigation after login
       window.location.href = '/instructor'
     } catch (err: any) {
+      console.error('Login error:', err)
       setError(err.message || 'Failed to sign in')
     } finally {
       setLoading(false)

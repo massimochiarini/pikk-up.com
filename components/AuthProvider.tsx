@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, useRef } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase, type Profile } from '@/lib/supabase'
 import { User, Session } from '@supabase/supabase-js'
 
@@ -27,14 +27,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const initialized = useRef(false)
 
   useEffect(() => {
-    // Only initialize once
-    if (initialized.current) return
-    initialized.current = true
+    // Track if effect is still active (not cleaned up)
+    let isActive = true
 
-    const fetchProfile = async (userId: string) => {
+    const fetchProfile = async (userId: string): Promise<Profile | null> => {
       try {
         const { data, error } = await supabase
           .from('profiles')
@@ -53,35 +51,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      
-      if (session?.user) {
-        const profileData = await fetchProfile(session.user.id)
-        setProfile(profileData)
-      }
-      setLoading(false)
-    })
-
-    // Listen for auth changes
+    // Use onAuthStateChange for both initial state and updates
+    // It fires immediately with INITIAL_SESSION event
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!isActive) return // Don't update state if cleaned up
+        
+        // Update session and user synchronously first
         setSession(session)
         setUser(session?.user ?? null)
 
         if (session?.user) {
+          // Fetch profile asynchronously
           const profileData = await fetchProfile(session.user.id)
+          if (!isActive) return // Don't update state if cleaned up
           setProfile(profileData)
         } else {
           setProfile(null)
         }
-        setLoading(false)
+        
+        // Always set loading to false after processing
+        if (isActive) {
+          setLoading(false)
+        }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      isActive = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   const refreshProfile = async () => {

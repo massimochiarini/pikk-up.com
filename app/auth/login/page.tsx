@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function LoginPage() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -18,16 +16,17 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      if (error) throw error
+      if (signInError) throw signInError
 
       // Use window.location for cleaner navigation after login
       window.location.href = '/classes'
     } catch (err: any) {
+      console.error('Login error:', err)
       setError(err.message || 'Failed to sign in')
     } finally {
       setLoading(false)
