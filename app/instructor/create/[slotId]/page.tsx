@@ -36,6 +36,8 @@ export default function CreateClassPage() {
 
   useEffect(() => {
     if (!user || !slotId) return
+    
+    let isCancelled = false
 
     const fetchTimeSlot = async () => {
     const { data, error } = await supabase
@@ -43,6 +45,8 @@ export default function CreateClassPage() {
       .select('*')
       .eq('id', slotId)
       .single()
+
+    if (isCancelled) return
 
     if (error || !data) {
       setError('Time slot not found')
@@ -53,6 +57,10 @@ export default function CreateClassPage() {
     }
 
     fetchTimeSlot()
+    
+    return () => {
+      isCancelled = true
+    }
   }, [user, slotId])
 
   const formatTime = (time: string) => {

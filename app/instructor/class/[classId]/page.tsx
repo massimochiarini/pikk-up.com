@@ -33,6 +33,8 @@ export default function InstructorClassDetailPage() {
 
   useEffect(() => {
     if (!user || !classId) return
+    
+    let isCancelled = false
 
     const fetchClass = async () => {
     const { data, error } = await supabase
@@ -44,6 +46,8 @@ export default function InstructorClassDetailPage() {
       `)
       .eq('id', classId)
       .single()
+
+    if (isCancelled) return
 
     if (!error && data) {
       // Verify ownership
@@ -57,7 +61,11 @@ export default function InstructorClassDetailPage() {
     }
 
     fetchClass()
-  }, [user, classId, router])
+    
+    return () => {
+      isCancelled = true
+    }
+  }, [user, classId])
 
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(':')

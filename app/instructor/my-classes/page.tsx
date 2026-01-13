@@ -29,6 +29,8 @@ export default function MyClassesPage() {
 
   useEffect(() => {
     if (!user) return
+    
+    let isCancelled = false
 
     const fetchClasses = async () => {
       const { data, error } = await supabase
@@ -41,6 +43,8 @@ export default function MyClassesPage() {
         .eq('instructor_id', user.id)
         .order('created_at', { ascending: false })
 
+      if (isCancelled) return
+
       if (!error && data) {
         setClasses(data as ClassWithDetails[])
       }
@@ -48,6 +52,10 @@ export default function MyClassesPage() {
     }
 
     fetchClasses()
+    
+    return () => {
+      isCancelled = true
+    }
   }, [user])
 
   const formatTime = (time: string) => {
