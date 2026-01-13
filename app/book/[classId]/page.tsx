@@ -209,11 +209,26 @@ function PublicBookingContent() {
 
   const handleFreeBooking = async () => {
     try {
+      // Check if user has a profile before associating booking
+      let userId = null
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .single()
+        
+        // Only set user_id if profile exists
+        if (profile) {
+          userId = user.id
+        }
+      }
+
       const { data: bookingData, error: bookingError } = await supabase
         .from('bookings')
         .insert({
           class_id: classId,
-          user_id: user?.id || null,  // Use logged-in user ID if available
+          user_id: userId,
           guest_first_name: firstName.trim(),
           guest_last_name: lastName.trim(),
           guest_phone: phone.replace(/\D/g, ''),
@@ -260,6 +275,21 @@ function PublicBookingContent() {
 
   const handlePaidBooking = async () => {
     try {
+      // Check if user has a profile before associating booking
+      let userId = null
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .single()
+        
+        // Only set user_id if profile exists
+        if (profile) {
+          userId = user.id
+        }
+      }
+
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -273,6 +303,7 @@ function PublicBookingContent() {
           sessionDate: format(parseISO(yogaClass!.time_slot.date), 'EEEE, MMM d, yyyy'),
           sessionTime: formatTime(yogaClass!.time_slot.start_time),
           venueName: 'PikkUp Studio',
+          userId: userId,
         }),
       })
 
