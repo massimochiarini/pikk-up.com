@@ -1,26 +1,24 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import Link from 'next/link'
 
 export default function InstructorDashboardPage() {
   const { user, profile, loading } = useAuth()
-  const [isPageVisible, setIsPageVisible] = useState(true)
 
-  // Handle tab visibility to prevent issues when switching tabs
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      setIsPageVisible(!document.hidden)
-    }
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
-  }, [])
+  // Memoize the render decision to prevent re-computation loops
+  const renderState = useMemo(() => {
+    if (loading || (user && !profile)) return 'loading'
+    if (!user) return 'not-logged-in'
+    if (profile && !profile.is_instructor) return 'not-instructor'
+    if (!profile) return 'loading'
+    return 'dashboard'
+  }, [loading, user, profile])
 
-  // If page is hidden, just show loading to prevent loops
-  if (!isPageVisible) {
+  // Loading state
+  if (renderState === 'loading') {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
@@ -28,17 +26,8 @@ export default function InstructorDashboardPage() {
     )
   }
 
-  // Show loading spinner while auth is loading OR when we have a user but profile hasn't loaded yet
-  if (loading || (user && !profile)) {
-    return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
-      </div>
-    )
-  }
-
-  // Not logged in - show landing page
-  if (!user) {
+  // Not logged in
+  if (renderState === 'not-logged-in') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50">
         <Navbar />
@@ -68,8 +57,8 @@ export default function InstructorDashboardPage() {
     )
   }
 
-  // Logged in but not an instructor - show upgrade prompt
-  if (profile && !profile.is_instructor) {
+  // Logged in but not an instructor
+  if (renderState === 'not-instructor') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50">
         <Navbar />
@@ -80,7 +69,7 @@ export default function InstructorDashboardPage() {
             </div>
             <h1 className="text-3xl font-bold text-charcoal mb-4">Become an Instructor</h1>
             <p className="text-sand-600 mb-4">
-              Hi {profile.first_name}! Your current account is set up for booking classes as a student.
+              Hi {profile?.first_name}! Your current account is set up for booking classes as a student.
             </p>
             <p className="text-sand-600 mb-8">
               To teach classes at PikkUp, you&apos;ll need to create a separate instructor account with your teaching credentials.
@@ -95,15 +84,6 @@ export default function InstructorDashboardPage() {
             </div>
           </div>
         </div>
-      </div>
-    )
-  }
-
-  // Final safety check - should never happen but satisfies TypeScript
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
       </div>
     )
   }
