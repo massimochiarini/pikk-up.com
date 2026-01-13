@@ -48,7 +48,7 @@ export default function InstructorDashboardPage() {
   }
 
   // Logged in but not an instructor - show upgrade prompt
-  if (!profile.is_instructor) {
+  if (profile && !profile.is_instructor) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50">
         <Navbar />
