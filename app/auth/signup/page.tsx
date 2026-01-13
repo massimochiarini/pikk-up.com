@@ -58,7 +58,7 @@ export default function SignupPage() {
         }
       }
 
-      router.push('/classes')
+      window.location.href = '/classes'
     } catch (err: any) {
       console.error('Signup error:', err)
       setError(err.message || 'Failed to create account')

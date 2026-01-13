@@ -26,11 +26,18 @@ export default function InstructorLoginPage() {
       if (error) throw error
 
       // Check if user is an instructor
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('is_instructor')
         .eq('id', data.user.id)
         .single()
+
+      if (profileError) {
+        console.error('Profile fetch error:', profileError)
+        // Profile might not exist yet, redirect anyway and let instructor page handle it
+        window.location.href = '/instructor'
+        return
+      }
 
       if (!profile?.is_instructor) {
         setError('This account is not registered as an instructor. Please sign up as an instructor first.')
@@ -38,7 +45,7 @@ export default function InstructorLoginPage() {
         return
       }
 
-      router.push('/instructor')
+      window.location.href = '/instructor'
     } catch (err: any) {
       setError(err.message || 'Failed to sign in')
     } finally {

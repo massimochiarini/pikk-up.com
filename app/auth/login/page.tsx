@@ -25,7 +25,8 @@ export default function LoginPage() {
 
       if (error) throw error
 
-      router.push('/classes')
+      // Use window.location for cleaner navigation after login
+      window.location.href = '/classes'
     } catch (err: any) {
       setError(err.message || 'Failed to sign in')
     } finally {

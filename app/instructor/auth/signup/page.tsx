@@ -61,7 +61,7 @@ export default function InstructorSignupPage() {
         }
       }
 
-      router.push('/instructor')
+      window.location.href = '/instructor'
     } catch (err: any) {
       console.error('Signup error:', err)
       setError(err.message || 'Failed to create account')

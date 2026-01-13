@@ -16,69 +16,102 @@ export default function StudentMyClassesPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Only redirect if we've finished loading and there's no user
     if (!authLoading && !user) {
-      router.push('/auth/login')
+      window.location.href = '/auth/login'
     }
-  }, [user, authLoading, router])
+  }, [user, authLoading])
 
-  const fetchBookings = useCallback(async () => {
-    if (!user || !profile) return
+  useEffect(() => {
+    if (!user) return
+    
+    const fetchBookings = async () => {
+      try {
+        const allBookings: any[] = []
+        const seenIds = new Set<string>()
 
-    try {
-      // Fetch bookings for the current user (by user_id OR phone number for guest bookings)
-      let query = supabase
-        .from('bookings')
-        .select(`
-          id,
-          class_id,
-          status,
-          created_at,
-          guest_first_name,
-          guest_last_name,
-          class:classes(
+        // Fetch bookings by user_id
+        const { data: userBookings } = await supabase
+          .from('bookings')
+          .select(`
             id,
-            title,
-            description,
-            price_cents,
-            skill_level,
-            time_slot:time_slots(date, start_time, end_time),
-            instructor:profiles!instructor_id(first_name, last_name, instagram)
-          )
-        `)
-        .eq('status', 'confirmed')
-        .order('created_at', { ascending: false })
+            class_id,
+            status,
+            created_at,
+            guest_first_name,
+            guest_last_name,
+            class:classes(
+              id,
+              title,
+              description,
+              price_cents,
+              skill_level,
+              time_slot:time_slots(date, start_time, end_time),
+              instructor:profiles!instructor_id(first_name, last_name, instagram)
+            )
+          `)
+          .eq('user_id', user.id)
+          .eq('status', 'confirmed')
+          .order('created_at', { ascending: false })
 
-      // Match by user_id OR phone number
-      let data, error
-      if (profile.phone) {
-        const result = await query.or(`user_id.eq.${user.id},guest_phone.eq.${profile.phone}`)
-        data = result.data
-        error = result.error
-      } else {
-        const result = await query.eq('user_id', user.id)
-        data = result.data
-        error = result.error
-      }
+        if (userBookings) {
+          for (const b of userBookings) {
+            if (!seenIds.has(b.id)) {
+              seenIds.add(b.id)
+              allBookings.push(b)
+            }
+          }
+        }
 
-      if (!error && data) {
+        // Also fetch by phone number if profile has phone
+        if (profile?.phone) {
+          const { data: phoneBookings } = await supabase
+            .from('bookings')
+            .select(`
+              id,
+              class_id,
+              status,
+              created_at,
+              guest_first_name,
+              guest_last_name,
+              class:classes(
+                id,
+                title,
+                description,
+                price_cents,
+                skill_level,
+                time_slot:time_slots(date, start_time, end_time),
+                instructor:profiles!instructor_id(first_name, last_name, instagram)
+              )
+            `)
+            .eq('guest_phone', profile.phone)
+            .eq('status', 'confirmed')
+            .order('created_at', { ascending: false })
+
+          if (phoneBookings) {
+            for (const b of phoneBookings) {
+              if (!seenIds.has(b.id)) {
+                seenIds.add(b.id)
+                allBookings.push(b)
+              }
+            }
+          }
+        }
+
         // Filter out any bookings where class data is missing
-        const validBookings = data.filter((b: any) => 
+        const validBookings = allBookings.filter((b: any) => 
           b.class !== null && b.class.time_slot !== null
         )
         setBookings(validBookings)
+      } catch (error) {
+        console.error('Error fetching bookings:', error)
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Error fetching bookings:', error)
-    } finally {
-      setLoading(false)
     }
-  }, [user, profile])
 
-  useEffect(() => {
-    if (user && profile) {
-      fetchBookings()
-    }
-  }, [user, profile, fetchBookings])
+    fetchBookings()
+  }, [user, profile])
 
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(':')
