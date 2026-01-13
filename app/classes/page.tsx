@@ -76,46 +76,33 @@ export default function ClassesPage() {
     }
   }, [])
 
-  const fetchMyBookings = useCallback(async () => {
-    if (!user || hasFetchedBookings.current === user.id) return
-    hasFetchedBookings.current = user.id
-    
-    try {
-      // Get bookings by user_id OR by phone number (for guest bookings)
-      let query = supabase
-        .from('bookings')
-        .select('class_id')
-        .eq('status', 'confirmed')
-
-      // Build OR condition: match by user_id or phone number
-      if (profile?.phone) {
-        const { data, error } = await query.or(`user_id.eq.${user.id},guest_phone.eq.${profile.phone}`)
-        
-        if (!error && data) {
-          setMyClassIds(new Set(data.map(b => b.class_id)))
-        }
-      } else {
-        // If no phone, just match by user_id
-        const { data, error } = await query.eq('user_id', user.id)
-        
-        if (!error && data) {
-          setMyClassIds(new Set(data.map(b => b.class_id)))
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching my bookings:', error)
-    }
-  }, [user, profile])
-
   useEffect(() => {
     fetchClasses()
   }, [fetchClasses])
 
   useEffect(() => {
-    if (user && profile && filter === 'my-classes') {
-      fetchMyBookings()
+    if (!user || filter !== 'my-classes') return
+    if (hasFetchedBookings.current === user.id) return
+    hasFetchedBookings.current = user.id
+    
+    const fetchMyBookings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('bookings')
+          .select('class_id')
+          .eq('status', 'confirmed')
+          .eq('user_id', user.id)
+        
+        if (!error && data) {
+          setMyClassIds(new Set(data.map(b => b.class_id)))
+        }
+      } catch (error) {
+        console.error('Error fetching my bookings:', error)
+      }
     }
-  }, [user, profile, filter, fetchMyBookings])
+    
+    fetchMyBookings()
+  }, [user, filter])
 
   const handleCancelBooking = async (classId: string, e: React.MouseEvent) => {
     e.preventDefault()
@@ -146,9 +133,8 @@ export default function ClassesPage() {
       hasFetchedClasses.current = false
       hasFetchedBookings.current = null
       
-      // Refresh data
-      await fetchMyBookings()
-      await fetchClasses()
+      // Refresh data by reloading the page
+      window.location.reload()
       
       alert('Booking cancelled successfully!')
     } catch (error) {
