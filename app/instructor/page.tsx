@@ -61,7 +61,7 @@ export default function InstructorDashboardPage() {
               Hi {profile.first_name}! Your current account is set up for booking classes as a student.
             </p>
             <p className="text-sand-600 mb-8">
-              To teach classes at PikkUp, you'll need to create a separate instructor account with your teaching credentials.
+              To teach classes at PikkUp, you&apos;ll need to create a separate instructor account with your teaching credentials.
             </p>
             <div className="space-y-4">
               <Link href="/instructor/auth/signup" className="btn-primary w-full block text-center">
