@@ -30,7 +30,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
-      console.log('Fetching profile for user:', userId)
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -41,7 +40,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Profile fetch error:', error.message)
         return null
       }
-      console.log('Profile fetched:', data?.email)
       return data as Profile
     } catch (err) {
       console.error('Profile fetch exception:', err)
@@ -54,7 +52,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initSession = async () => {
       try {
-        console.log('Initializing session...')
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -66,15 +63,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!isActive) return
         
         if (session) {
-          console.log('Session found for:', session.user.email)
           setSession(session)
           setUser(session.user)
           const profileData = await fetchProfile(session.user.id)
           if (isActive) {
             setProfile(profileData)
           }
-        } else {
-          console.log('No session found')
         }
         
         if (isActive) {
@@ -93,8 +87,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         if (!isActive) return
-        
-        console.log('Auth state change:', event, newSession?.user?.email)
         
         setSession(newSession)
         setUser(newSession?.user ?? null)
