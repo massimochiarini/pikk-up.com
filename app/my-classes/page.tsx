@@ -22,11 +22,11 @@ export default function StudentMyClassesPage() {
   }, [user, authLoading, router])
 
   const fetchBookings = useCallback(async () => {
-    if (!user) return
+    if (!user || !profile) return
 
     try {
-      // Fetch bookings for the current user
-      const { data, error } = await supabase
+      // Fetch bookings for the current user (by user_id OR phone number for guest bookings)
+      let query = supabase
         .from('bookings')
         .select(`
           id,
@@ -45,9 +45,20 @@ export default function StudentMyClassesPage() {
             instructor:profiles!instructor_id(first_name, last_name, instagram)
           )
         `)
-        .eq('user_id', user.id)
         .eq('status', 'confirmed')
         .order('created_at', { ascending: false })
+
+      // Match by user_id OR phone number
+      let data, error
+      if (profile.phone) {
+        const result = await query.or(`user_id.eq.${user.id},guest_phone.eq.${profile.phone}`)
+        data = result.data
+        error = result.error
+      } else {
+        const result = await query.eq('user_id', user.id)
+        data = result.data
+        error = result.error
+      }
 
       if (!error && data) {
         // Filter out any bookings where class data is missing
@@ -61,13 +72,13 @@ export default function StudentMyClassesPage() {
     } finally {
       setLoading(false)
     }
-  }, [user])
+  }, [user, profile])
 
   useEffect(() => {
-    if (user) {
+    if (user && profile) {
       fetchBookings()
     }
-  }, [user, fetchBookings])
+  }, [user, profile, fetchBookings])
 
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(':')
