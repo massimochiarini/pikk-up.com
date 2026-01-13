@@ -79,9 +79,13 @@ export function Navbar() {
                 ) : null}
                 
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-white font-semibold text-sm">
+                  <Link
+                    href={isInstructor ? '/instructor/profile' : '/profile'}
+                    className="w-9 h-9 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-white font-semibold text-sm hover:from-sage-500 hover:to-sage-700 transition-all"
+                    title="View Profile"
+                  >
                     {profile?.first_name?.[0] || user.email?.[0]?.toUpperCase() || 'U'}
-                  </div>
+                  </Link>
                   <button
                     onClick={(e) => {
                       e.preventDefault()

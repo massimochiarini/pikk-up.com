@@ -121,7 +121,7 @@ export default function InstructorSchedulePage() {
     if (slot.status !== 'available' || claiming) return
     
     // Just navigate to the create form - slot will be claimed when class is created
-    router.push(`/instructor/create/${slot.id}`)
+      router.push(`/instructor/create/${slot.id}`)
   }
 
   const formatTime = (time: string) => {
@@ -145,7 +145,7 @@ export default function InstructorSchedulePage() {
       slot.date === format(date, 'yyyy-MM-dd') && slot.start_time === time
     )
   }
-  
+
   const getClassForSlot = (slotId: string) => {
     return classes.find(c => c.time_slot_id === slotId)
   }

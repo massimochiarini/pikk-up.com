@@ -1,19 +1,17 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
-import { supabase } from '@/lib/supabase'
 import { format, parseISO, isPast } from 'date-fns'
 import Link from 'next/link'
 
 export default function StudentMyClassesPage() {
   const { user, profile, loading: authLoading } = useAuth()
-  const router = useRouter()
   
   const [bookings, setBookings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   useEffect(() => {
     // Only redirect if we've finished loading and there's no user
@@ -33,7 +31,7 @@ export default function StudentMyClassesPage() {
         const allBookings: any[] = []
         const seenIds = new Set<string>()
 
-        const selectQuery = 'id,class_id,status,created_at,guest_first_name,guest_last_name,guest_phone,class:classes(id,title,description,price_cents,skill_level,time_slot:time_slots(date,start_time,end_time),instructor:profiles!instructor_id(first_name,last_name,instagram))'
+        const selectQuery = 'id,class_id,status,created_at,guest_first_name,guest_last_name,guest_phone,class:classes(id,title,description,price_cents,skill_level,max_capacity,time_slot:time_slots(date,start_time,end_time),instructor:profiles!instructor_id(first_name,last_name,instagram,bio))'
 
         // Fetch bookings by user_id
         const userRes = await fetch(
@@ -68,7 +66,7 @@ export default function StudentMyClassesPage() {
               },
             }
           )
-          
+
           if (phoneRes.ok) {
             const phoneBookings = await phoneRes.json()
             for (const b of phoneBookings) {
@@ -178,48 +176,132 @@ export default function StudentMyClassesPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {upcomingClasses.map((booking) => (
-                    <div key={booking.id} className="card border-l-4 border-l-sage-500">
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 bg-sage-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                          <span className="text-2xl">🧘</span>
+                  {upcomingClasses.map((booking) => {
+                    const isExpanded = expandedId === booking.id
+                    
+                    return (
+                      <div 
+                        key={booking.id} 
+                        className="card border-l-4 border-l-sage-500 cursor-pointer hover:shadow-lg transition-shadow"
+                        onClick={() => setExpandedId(isExpanded ? null : booking.id)}
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="w-12 h-12 bg-sage-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <span className="text-2xl">🧘</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-lg text-charcoal truncate">
+                              {booking.class.title}
+                            </h3>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-sand-600">
+                              <span>
+                                📅 {format(parseISO(booking.class.time_slot.date), 'EEE, MMM d')}
+                              </span>
+                              <span>
+                                🕐 {formatTime(booking.class.time_slot.start_time)} - {formatTime(booking.class.time_slot.end_time)}
+                              </span>
+                            </div>
+                            <div className="mt-2 text-sm text-sand-500">
+                              with {booking.class.instructor.first_name} {booking.class.instructor.last_name}
+                            </div>
+                            {booking.class.skill_level && booking.class.skill_level !== 'all' && (
+                              <span className="inline-block mt-2 px-2 py-0.5 bg-sage-100 text-sage-700 text-xs font-medium rounded-full capitalize">
+                                {booking.class.skill_level}
+                              </span>
+                            )}
+                          </div>
+                          <div className={`text-sand-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                            ▼
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-lg text-charcoal truncate">
-                            {booking.class.title}
-                          </h3>
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-sand-600">
-                            <span>
-                              📅 {format(parseISO(booking.class.time_slot.date), 'EEE, MMM d')}
-                            </span>
-                            <span>
-                              🕐 {formatTime(booking.class.time_slot.start_time)}
+                        
+                        {/* Expanded Details */}
+                        {isExpanded && (
+                          <div className="mt-4 pt-4 border-t border-sand-200 space-y-4">
+                            {/* Class Description */}
+                            {booking.class.description && (
+                              <div>
+                                <h4 className="text-sm font-semibold text-charcoal mb-1">About This Class</h4>
+                                <p className="text-sm text-sand-600">{booking.class.description}</p>
+                              </div>
+                            )}
+                            
+                            {/* Class Details */}
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <span className="text-xs text-sand-500 uppercase tracking-wide">Date</span>
+                                <p className="text-sm font-medium text-charcoal">
+                                  {format(parseISO(booking.class.time_slot.date), 'EEEE, MMMM d, yyyy')}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-sand-500 uppercase tracking-wide">Time</span>
+                                <p className="text-sm font-medium text-charcoal">
+                                  {formatTime(booking.class.time_slot.start_time)} - {formatTime(booking.class.time_slot.end_time)}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-sand-500 uppercase tracking-wide">Price Paid</span>
+                                <p className="text-sm font-medium text-charcoal">
+                                  {formatPrice(booking.class.price_cents)}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-sand-500 uppercase tracking-wide">Location</span>
+                                <p className="text-sm font-medium text-charcoal">📍 PikkUp Studio</p>
+                              </div>
+                            </div>
+                            
+                            {/* Instructor Info */}
+                            <div className="bg-sage-50 rounded-xl p-4">
+                              <h4 className="text-sm font-semibold text-charcoal mb-2">Your Instructor</h4>
+                              <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                                  {booking.class.instructor.first_name?.[0] || 'I'}
+                                </div>
+                                <div className="flex-1">
+                                  <p className="font-medium text-charcoal">
+                                    {booking.class.instructor.first_name} {booking.class.instructor.last_name}
+                                  </p>
+                                  {booking.class.instructor.instagram && (
+                                    <a 
+                                      href={`https://instagram.com/${booking.class.instructor.instagram.replace('@', '')}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm text-sage-600 hover:text-sage-700"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      @{booking.class.instructor.instagram.replace('@', '')}
+                                    </a>
+                                  )}
+                                  {booking.class.instructor.bio && (
+                                    <p className="text-sm text-sand-600 mt-2">{booking.class.instructor.bio}</p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Confirmation Status */}
+                            <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
+                              <span>✓</span>
+                              <span className="font-medium">Booking Confirmed</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {!isExpanded && (
+                          <div className="mt-4 pt-4 border-t border-sand-200 flex items-center justify-between">
+                            <div className="text-sm text-sand-500">
+                              📍 PikkUp Studio
+                            </div>
+                            <span className="text-sage-600 text-sm font-medium">
+                              Tap for details
                             </span>
                           </div>
-                          <div className="mt-2 text-sm text-sand-500">
-                            with {booking.class.instructor.first_name} {booking.class.instructor.last_name}
-                          </div>
-                          {booking.class.skill_level && booking.class.skill_level !== 'all' && (
-                            <span className="inline-block mt-2 px-2 py-0.5 bg-sage-100 text-sage-700 text-xs font-medium rounded-full capitalize">
-                              {booking.class.skill_level}
-                            </span>
-                          )}
-                        </div>
+                        )}
                       </div>
-                      
-                      <div className="mt-4 pt-4 border-t border-sand-200 flex items-center justify-between">
-                        <div className="text-sm text-sand-500">
-                          📍 PikkUp Studio
-                        </div>
-                        <Link 
-                          href={`/book/${booking.class_id}`}
-                          className="text-sage-600 hover:text-sage-700 text-sm font-medium"
-                        >
-                          View Details →
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </section>

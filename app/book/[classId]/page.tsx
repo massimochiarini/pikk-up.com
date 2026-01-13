@@ -581,11 +581,11 @@ function PublicBookingContent() {
             {/* Instructor */}
             <div className="mb-6 pb-6 border-b border-sand-200">
               <div className="text-xs uppercase font-semibold text-sand-500 mb-2">Instructor</div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-white font-semibold">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
                   {yogaClass.instructor.first_name?.[0] || 'I'}
                 </div>
-                <div>
+                <div className="flex-1">
                   <div className="font-medium text-charcoal">
                     {yogaClass.instructor.first_name} {yogaClass.instructor.last_name}
                   </div>
@@ -598,6 +598,11 @@ function PublicBookingContent() {
                     >
                       @{yogaClass.instructor.instagram.replace('@', '')}
                     </a>
+                  )}
+                  {yogaClass.instructor.bio && (
+                    <p className="text-sand-600 text-sm mt-2 leading-relaxed">
+                      {yogaClass.instructor.bio}
+                    </p>
                   )}
                 </div>
               </div>

@@ -28,14 +28,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchProfile = async (userId: string): Promise<Profile | null> => {
+    const fetchProfile = async (userId: string): Promise<Profile | null> => {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     
     if (!supabaseUrl || !supabaseKey) {
       console.error('Missing Supabase env vars')
-      return null
-    }
+          return null
+        }
     
     try {
       // Use direct REST API for reliability
@@ -53,11 +53,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const data = await response.json()
       return data?.[0] as Profile || null
-    } catch (err) {
-      console.error('Profile fetch error:', err)
-      return null
+      } catch (err) {
+        console.error('Profile fetch error:', err)
+        return null
+      }
     }
-  }
 
   useEffect(() => {
     let isActive = true
