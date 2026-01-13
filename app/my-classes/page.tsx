@@ -8,63 +8,11 @@ import { supabase } from '@/lib/supabase'
 import { format, parseISO, isPast } from 'date-fns'
 import Link from 'next/link'
 
-type RawBooking = {
-  id: any
-  class_id: any
-  status: any
-  created_at: any
-  guest_first_name: any
-  guest_last_name: any
-  class: {
-    id: any
-    title: string
-    description: string | null
-    price_cents: number
-    skill_level: string
-    time_slot: {
-      date: any
-      start_time: any
-      end_time: any
-    } | null
-    instructor: {
-      first_name: any
-      last_name: any
-      instagram: any
-    }
-  } | null
-}
-
-type BookedClass = {
-  id: any
-  class_id: any
-  status: any
-  created_at: any
-  guest_first_name: any
-  guest_last_name: any
-  class: {
-    id: any
-    title: string
-    description: string | null
-    price_cents: number
-    skill_level: string
-    time_slot: {
-      date: any
-      start_time: any
-      end_time: any
-    }
-    instructor: {
-      first_name: any
-      last_name: any
-      instagram: any
-    }
-  }
-}
-
 export default function StudentMyClassesPage() {
   const { user, profile, loading: authLoading } = useAuth()
   const router = useRouter()
   
-  const [bookings, setBookings] = useState<BookedClass[]>([])
+  const [bookings, setBookings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -103,7 +51,7 @@ export default function StudentMyClassesPage() {
 
       if (!error && data) {
         // Filter out any bookings where class data is missing
-        const validBookings = (data as RawBooking[]).filter((b): b is BookedClass => 
+        const validBookings = data.filter((b: any) => 
           b.class !== null && b.class.time_slot !== null
         )
         setBookings(validBookings)
