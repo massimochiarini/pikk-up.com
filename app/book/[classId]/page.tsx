@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useState } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
 import { format, parseISO } from 'date-fns'
 import Link from 'next/link'
@@ -13,9 +13,17 @@ type ClassWithDetails = YogaClass & {
 
 function PublicBookingContent() {
   const params = useParams()
-  const searchParams = useSearchParams()
   const classId = params.classId as string
-  const paymentCancelled = searchParams.get('payment') === 'cancelled'
+  
+  // Check for payment cancelled using window.location instead of useSearchParams to avoid Suspense issues
+  const [paymentCancelled, setPaymentCancelled] = useState(false)
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      setPaymentCancelled(urlParams.get('payment') === 'cancelled')
+    }
+  }, [])
 
   const [yogaClass, setYogaClass] = useState<ClassWithDetails | null>(null)
   const [bookingCount, setBookingCount] = useState(0)
