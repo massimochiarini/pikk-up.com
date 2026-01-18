@@ -6,11 +6,12 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 backdrop-blur-md border-b border-sand-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-2xl font-bold text-sage-700">
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <Link href="/" className="text-xl sm:text-2xl font-bold text-sage-700 flex-shrink-0">
               Pikk<span className="text-terracotta-500">Up</span>
             </Link>
-            <div className="flex items-center gap-4">
+            {/* Desktop Navigation */}
+            <div className="hidden sm:flex items-center gap-4">
               <Link
                 href="/classes"
                 className="text-sage-700 hover:text-sage-900 font-medium transition-colors"
@@ -28,6 +29,27 @@ export default function LandingPage() {
                 className="btn-primary text-sm"
               >
                 I&apos;m an Instructor
+              </Link>
+            </div>
+            {/* Mobile Navigation */}
+            <div className="flex sm:hidden items-center gap-2">
+              <Link
+                href="/classes"
+                className="text-sage-700 hover:text-sage-900 text-sm font-medium transition-colors"
+              >
+                Classes
+              </Link>
+              <Link
+                href="/auth/login"
+                className="text-sage-600 hover:text-sage-800 text-sm font-medium transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/instructor"
+                className="btn-primary text-xs px-3 py-2"
+              >
+                Instructor
               </Link>
             </div>
           </div>

@@ -177,76 +177,78 @@ export default function InstructorSchedulePage() {
   const days = getDaysOfWeek()
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream flex flex-col">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-charcoal">Schedule</h1>
-            <p className="text-sand-600 mt-1">
-              Select an available slot to create your class.
-            </p>
+      <main className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-2 sm:py-4">
+        {/* Header - Compact on mobile */}
+        <div className="flex flex-col gap-2 mb-2 sm:mb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl sm:text-3xl font-bold text-charcoal">Schedule</h1>
+              <p className="text-sand-600 text-xs sm:text-base hidden sm:block">
+                Select an available slot to create your class.
+              </p>
+            </div>
           </div>
           
-          {/* Week Navigation */}
-          <div className="flex items-center gap-2">
+          {/* Week Navigation - Compact */}
+          <div className="flex items-center justify-center gap-1 sm:gap-2">
             <button
               onClick={() => setWeekStart(addDays(weekStart, -7))}
-              className="btn-secondary px-4 py-2"
+              className="btn-secondary px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base"
             >
               ← Prev
             </button>
-            <div className="px-4 py-2 bg-white rounded-xl border border-sand-200 font-medium text-charcoal">
+            <div className="px-2 sm:px-4 py-1.5 sm:py-2 bg-white rounded-lg sm:rounded-xl border border-sand-200 font-medium text-charcoal text-xs sm:text-base whitespace-nowrap">
               {format(weekStart, 'MMM d')} - {format(addDays(weekStart, 6), 'MMM d, yyyy')}
             </div>
             <button
               onClick={() => setWeekStart(addDays(weekStart, 7))}
-              className="btn-secondary px-4 py-2"
+              className="btn-secondary px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base"
             >
               Next →
             </button>
           </div>
         </div>
 
-        {/* Legend */}
-        <div className="flex flex-wrap items-center gap-6 mb-6 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-sage-100 border border-sage-300"></div>
+        {/* Legend - Horizontal scroll on mobile, more compact */}
+        <div className="flex items-center gap-3 sm:gap-6 mb-2 sm:mb-4 text-xs overflow-x-auto pb-1">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-sage-100 border border-sage-300"></div>
             <span className="text-sand-600">Available</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-sage-200 border border-sage-400"></div>
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-sage-200 border border-sage-400"></div>
             <span className="text-sand-600">Your Class</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-sand-200"></div>
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-sand-200"></div>
             <span className="text-sand-600">Other Instructor</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-sand-100"></div>
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-sand-100"></div>
             <span className="text-sand-600">Past</span>
           </div>
         </div>
 
-        {/* Schedule Grid */}
-        <div className="card overflow-x-auto">
+        {/* Schedule Grid - Full height, compact cells */}
+        <div className="card flex-1 overflow-auto p-2 sm:p-4">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="w-10 h-10 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
             </div>
           ) : (
-            <div className="min-w-[800px]">
+            <div className="min-w-[320px]">
               {/* Header Row */}
-              <div className="grid grid-cols-8 gap-2 mb-4">
-                <div className="text-sm font-medium text-sand-500">Time</div>
+              <div className="grid grid-cols-8 gap-0.5 sm:gap-2 mb-1 sm:mb-2">
+                <div className="text-[10px] sm:text-sm font-medium text-sand-500"></div>
                 {days.map((day) => (
                   <div key={day.toISOString()} className="text-center">
-                    <div className="text-sm font-medium text-sand-500">
+                    <div className="text-[10px] sm:text-sm font-medium text-sand-500">
                       {format(day, 'EEE')}
                     </div>
-                    <div className={`text-lg font-bold ${
+                    <div className={`text-xs sm:text-lg font-bold ${
                       isSameDay(day, new Date()) ? 'text-sage-600' : 'text-charcoal'
                     }`}>
                       {format(day, 'd')}
@@ -255,10 +257,10 @@ export default function InstructorSchedulePage() {
                 ))}
               </div>
 
-              {/* Time Slots Grid */}
+              {/* Time Slots Grid - Much smaller cells on mobile */}
               {TIME_SLOTS.map((time) => (
-                <div key={time} className="grid grid-cols-8 gap-2 mb-2">
-                  <div className="flex items-center text-sm font-medium text-sand-600">
+                <div key={time} className="grid grid-cols-8 gap-0.5 sm:gap-2 mb-0.5 sm:mb-2">
+                  <div className="flex items-center text-[10px] sm:text-sm font-medium text-sand-600 pr-0.5">
                     {formatTime(time)}
                   </div>
                   {days.map((day) => {
@@ -273,9 +275,9 @@ export default function InstructorSchedulePage() {
                       return (
                         <div
                           key={`${day.toISOString()}-${time}`}
-                          className="h-16 rounded-lg bg-sand-100 flex items-center justify-center"
+                          className="h-7 sm:h-12 rounded sm:rounded-lg bg-sand-100 flex items-center justify-center"
                         >
-                          <span className="text-sand-400 text-xs">Past</span>
+                          <span className="text-sand-400 text-[8px] sm:text-xs">Past</span>
                         </div>
                       )
                     }
@@ -284,9 +286,9 @@ export default function InstructorSchedulePage() {
                       return (
                         <div
                           key={`${day.toISOString()}-${time}`}
-                          className="h-16 rounded-lg bg-sand-50 border border-dashed border-sand-200 flex items-center justify-center"
+                          className="h-7 sm:h-12 rounded sm:rounded-lg bg-sand-50 border border-dashed border-sand-200 flex items-center justify-center"
                         >
-                          <span className="text-sand-300 text-xs">—</span>
+                          <span className="text-sand-300 text-[8px] sm:text-xs">—</span>
                         </div>
                       )
                     }
@@ -298,21 +300,16 @@ export default function InstructorSchedulePage() {
                       return (
                         <div
                           key={slot.id}
-                          className={`h-16 rounded-lg flex flex-col items-center justify-center p-1 ${
+                          className={`h-7 sm:h-12 rounded sm:rounded-lg flex flex-col items-center justify-center p-0.5 ${
                             isMyClass 
                               ? 'bg-sage-200 border border-sage-400' 
                               : 'bg-sand-200'
                           }`}
                           title={classInfo ? `${classInfo.title} by ${classInfo.instructor?.first_name}` : 'Booked'}
                         >
-                          <span className={`text-xs font-medium ${isMyClass ? 'text-sage-700' : 'text-sand-500'}`}>
-                            {isMyClass ? 'Your Class' : 'Booked'}
+                          <span className={`text-[7px] sm:text-xs font-medium leading-tight ${isMyClass ? 'text-sage-700' : 'text-sand-500'}`}>
+                            {isMyClass ? 'Yours' : 'Taken'}
                           </span>
-                          {classInfo?.instructor && (
-                            <span className={`text-xs truncate max-w-full px-1 ${isMyClass ? 'text-sage-600' : 'text-sand-400'}`}>
-                              {classInfo.instructor.first_name}
-                            </span>
-                          )}
                         </div>
                       )
                     }
@@ -322,12 +319,12 @@ export default function InstructorSchedulePage() {
                         key={slot.id}
                         onClick={() => handleClaimSlot(slot)}
                         disabled={claiming === slot.id}
-                        className="h-16 rounded-lg bg-sage-100 border border-sage-300 hover:bg-sage-200 hover:border-sage-400 transition-colors flex items-center justify-center group"
+                        className="h-7 sm:h-12 rounded sm:rounded-lg bg-sage-100 border border-sage-300 hover:bg-sage-200 hover:border-sage-400 active:bg-sage-300 transition-colors flex items-center justify-center group"
                       >
                         {claiming === slot.id ? (
-                          <div className="w-5 h-5 border-2 border-sage-300 border-t-sage-600 rounded-full animate-spin"></div>
+                          <div className="w-3 h-3 sm:w-5 sm:h-5 border-2 border-sage-300 border-t-sage-600 rounded-full animate-spin"></div>
                         ) : (
-                          <span className="text-sage-600 text-xs font-medium group-hover:text-sage-700">
+                          <span className="text-sage-600 text-[8px] sm:text-xs font-medium group-hover:text-sage-700">
                             + Claim
                           </span>
                         )}
