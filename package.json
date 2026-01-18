@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@stripe/stripe-js": "^4.10.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.47.0",

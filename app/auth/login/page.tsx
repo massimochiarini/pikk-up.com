@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -34,19 +35,36 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream via-sand-50 to-sage-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="text-3xl font-bold text-sage-700 inline-block">
-            Pikk<span className="text-terracotta-500">Up</span>
-          </Link>
-          <p className="text-sand-600 mt-2">Welcome back! Sign in to continue.</p>
+    <div className="min-h-screen bg-white flex">
+      {/* Left side - Artwork */}
+      <div className="hidden lg:block lg:w-1/2 relative">
+        <Image
+          src="/gallery/1.jpg"
+          alt="Untitled 01"
+          fill
+          sizes="50vw"
+          priority
+          className="object-cover"
+        />
+        <div className="absolute bottom-8 left-8">
+          <span className="text-sm text-white/80 tracking-wide">Untitled 01</span>
         </div>
+      </div>
 
-        <div className="card">
+      {/* Right side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md">
+          <div className="mb-10">
+            <Link href="/" className="text-2xl font-light tracking-tight text-charcoal inline-block mb-8">
+              PikkUp
+            </Link>
+            <h1 className="text-3xl font-light text-charcoal mb-2">Welcome back</h1>
+            <p className="text-neutral-500 font-light">Sign in to continue to your account.</p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
                 {error}
               </div>
             )}
@@ -72,7 +90,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="input-field"
-                placeholder="••••••••"
+                placeholder="Enter your password"
                 required
               />
             </div>
@@ -80,29 +98,29 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full"
+              className="btn-primary w-full py-4"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sand-600 text-sm">
+          <div className="mt-8 pt-8 border-t border-neutral-100">
+            <p className="text-neutral-500 text-sm font-light text-center">
               Don&apos;t have an account?{' '}
-              <Link href="/auth/signup" className="text-sage-600 hover:text-sage-700 font-medium">
+              <Link href="/auth/signup" className="text-charcoal hover:underline">
                 Create one
               </Link>
             </p>
           </div>
-        </div>
 
-        <div className="mt-8 text-center">
-          <Link 
-            href="/instructor/auth/login" 
-            className="text-sand-500 hover:text-sage-600 text-sm transition-colors"
-          >
-            Are you an instructor? Sign in here →
-          </Link>
+          <div className="mt-6 text-center">
+            <Link 
+              href="/instructor/auth/login" 
+              className="text-neutral-400 hover:text-charcoal text-sm font-light transition-colors"
+            >
+              Are you an instructor? Sign in here
+            </Link>
+          </div>
         </div>
       </div>
     </div>

@@ -96,7 +96,7 @@ supabase secrets set TWILIO_PHONE_NUMBER=+1234567890
 
 Add a webhook endpoint in your Stripe Dashboard:
 - URL: `https://your-domain.vercel.app/api/webhooks/stripe`
-- Events: `checkout.session.completed`, `checkout.session.expired`
+- Events: `The checkout.session.completed`, `checkout.session.expired`
 
 ### 6. Run Development Server
 

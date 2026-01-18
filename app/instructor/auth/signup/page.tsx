@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function InstructorSignupPage() {
   const router = useRouter()
@@ -73,22 +74,24 @@ export default function InstructorSignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50 flex items-center justify-center p-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="text-3xl font-bold text-sage-700 inline-block">
-            Pikk<span className="text-terracotta-500">Up</span>
-          </Link>
-          <div className="inline-block ml-2 px-3 py-1 bg-sage-100 text-sage-700 text-sm font-medium rounded-full">
-            Instructor
+    <div className="min-h-screen bg-white flex">
+      {/* Left side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 py-12">
+        <div className="w-full max-w-md">
+          <div className="mb-8">
+            <Link href="/" className="text-2xl font-light tracking-tight text-charcoal inline-block mb-2">
+              PikkUp
+            </Link>
+            <span className="ml-3 text-xs uppercase tracking-wider text-neutral-400 border border-neutral-200 px-2 py-1">
+              Instructor
+            </span>
+            <h1 className="text-3xl font-light text-charcoal mt-8 mb-2">Join us</h1>
+            <p className="text-neutral-500 font-light">Create your instructor account.</p>
           </div>
-          <p className="text-sand-600 mt-3">Join our community of yoga instructors.</p>
-        </div>
 
-        <div className="card">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
                 {error}
               </div>
             )}
@@ -134,7 +137,7 @@ export default function InstructorSignupPage() {
             </div>
 
             <div>
-              <label htmlFor="phone" className="label">Phone Number</label>
+              <label htmlFor="phone" className="label">Phone</label>
               <input
                 id="phone"
                 type="tel"
@@ -147,7 +150,7 @@ export default function InstructorSignupPage() {
 
             <div>
               <label htmlFor="instagram" className="label">
-                Instagram <span className="text-sand-400 font-normal">(optional)</span>
+                Instagram <span className="text-neutral-400 font-normal lowercase">(optional)</span>
               </label>
               <input
                 id="instagram"
@@ -161,15 +164,15 @@ export default function InstructorSignupPage() {
 
             <div>
               <label htmlFor="bio" className="label">
-                Bio <span className="text-sand-400 font-normal">(optional)</span>
+                Bio <span className="text-neutral-400 font-normal lowercase">(optional)</span>
               </label>
               <textarea
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="input-field"
+                className="input-field resize-none"
                 rows={3}
-                placeholder="Tell students about your teaching style and experience..."
+                placeholder="Tell students about your teaching style..."
               />
             </div>
 
@@ -181,39 +184,53 @@ export default function InstructorSignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="input-field"
-                placeholder="••••••••"
+                placeholder="At least 6 characters"
                 minLength={6}
                 required
               />
-              <p className="text-sand-500 text-xs mt-1">At least 6 characters</p>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full"
+              className="btn-primary w-full py-4"
             >
-              {loading ? 'Creating account...' : 'Create Instructor Account'}
+              {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sand-600 text-sm">
+          <div className="mt-8 pt-8 border-t border-neutral-100">
+            <p className="text-neutral-500 text-sm font-light text-center">
               Already have an account?{' '}
-              <Link href="/instructor/auth/login" className="text-sage-600 hover:text-sage-700 font-medium">
+              <Link href="/instructor/auth/login" className="text-charcoal hover:underline">
                 Sign in
               </Link>
             </p>
           </div>
-        </div>
 
-        <div className="mt-8 text-center">
-          <Link 
-            href="/auth/signup" 
-            className="text-sand-500 hover:text-sage-600 text-sm transition-colors"
-          >
-            ← Looking to book classes instead?
-          </Link>
+          <div className="mt-6 text-center">
+            <Link 
+              href="/auth/signup" 
+              className="text-neutral-400 hover:text-charcoal text-sm font-light transition-colors"
+            >
+              Looking to book classes instead?
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Right side - Artwork */}
+      <div className="hidden lg:block lg:w-1/2 relative">
+        <Image
+          src="/gallery/3.jpg"
+          alt="Untitled 03"
+          fill
+          sizes="50vw"
+          priority
+          className="object-cover"
+        />
+        <div className="absolute bottom-8 right-8">
+          <span className="text-sm text-white/80 tracking-wide">Untitled 03</span>
         </div>
       </div>
     </div>

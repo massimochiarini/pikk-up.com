@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -70,19 +71,21 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream via-sand-50 to-sage-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="text-3xl font-bold text-sage-700 inline-block">
-            Pikk<span className="text-terracotta-500">Up</span>
-          </Link>
-          <p className="text-sand-600 mt-2">Create your account to start booking classes.</p>
-        </div>
+    <div className="min-h-screen bg-white flex">
+      {/* Left side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md">
+          <div className="mb-10">
+            <Link href="/" className="text-2xl font-light tracking-tight text-charcoal inline-block mb-8">
+              PikkUp
+            </Link>
+            <h1 className="text-3xl font-light text-charcoal mb-2">Create account</h1>
+            <p className="text-neutral-500 font-light">Start booking yoga classes today.</p>
+          </div>
 
-        <div className="card">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
                 {error}
               </div>
             )}
@@ -129,7 +132,7 @@ export default function SignupPage() {
 
             <div>
               <label htmlFor="phone" className="label">
-                Phone Number <span className="text-sand-400 font-normal">(optional)</span>
+                Phone <span className="text-neutral-400 font-normal lowercase">(optional)</span>
               </label>
               <input
                 id="phone"
@@ -149,39 +152,53 @@ export default function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="input-field"
-                placeholder="••••••••"
+                placeholder="At least 6 characters"
                 minLength={6}
                 required
               />
-              <p className="text-sand-500 text-xs mt-1">At least 6 characters</p>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full"
+              className="btn-primary w-full py-4"
             >
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sand-600 text-sm">
+          <div className="mt-8 pt-8 border-t border-neutral-100">
+            <p className="text-neutral-500 text-sm font-light text-center">
               Already have an account?{' '}
-              <Link href="/auth/login" className="text-sage-600 hover:text-sage-700 font-medium">
+              <Link href="/auth/login" className="text-charcoal hover:underline">
                 Sign in
               </Link>
             </p>
           </div>
-        </div>
 
-        <div className="mt-8 text-center">
-          <Link 
-            href="/instructor/auth/login" 
-            className="text-sand-500 hover:text-sage-600 text-sm transition-colors"
-          >
-            Want to teach? Create an instructor account →
-          </Link>
+          <div className="mt-6 text-center">
+            <Link 
+              href="/instructor/auth/signup" 
+              className="text-neutral-400 hover:text-charcoal text-sm font-light transition-colors"
+            >
+              Want to teach? Create an instructor account
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Right side - Artwork */}
+      <div className="hidden lg:block lg:w-1/2 relative">
+        <Image
+          src="/gallery/2.jpg"
+          alt="Untitled 02"
+          fill
+          sizes="50vw"
+          priority
+          className="object-cover"
+        />
+        <div className="absolute bottom-8 right-8">
+          <span className="text-sm text-white/80 tracking-wide">Untitled 02</span>
         </div>
       </div>
     </div>

@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation'
 import { supabase, type YogaClass, type TimeSlot } from '@/lib/supabase'
 import { format, parseISO } from 'date-fns'
 import Link from 'next/link'
+import Image from 'next/image'
+import { CalendarDaysIcon, ClockIcon, MapPinIcon, CheckIcon } from '@heroicons/react/24/outline'
 
 type ClassWithSlot = YogaClass & {
   time_slot: TimeSlot
@@ -73,78 +75,92 @@ function BookingSuccessContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-sand-600">Confirming your booking...</p>
+          <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-neutral-500 font-light">Confirming your booking...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full card text-center">
-        <div className="w-20 h-20 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <span className="text-4xl">✅</span>
+    <div className="min-h-screen bg-white">
+      {/* Header with artwork */}
+      <div className="relative h-48 overflow-hidden">
+        <Image
+          src="/gallery/8.jpg"
+          alt="Untitled 08"
+          fill
+          sizes="100vw"
+          priority
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-white/60" />
+        <div className="absolute bottom-4 right-4">
+          <span className="text-sm text-charcoal/50 tracking-wide">Untitled 08</span>
         </div>
-        
-        <h1 className="text-2xl font-bold text-charcoal mb-2">
-          Payment Successful!
-        </h1>
-        <p className="text-sand-600 mb-6">
-          Your spot has been reserved. Check your phone for a text confirmation with all the details.
-        </p>
+      </div>
 
-        {yogaClass && yogaClass.time_slot && (
-          <div className="bg-sage-50 rounded-xl p-4 text-left space-y-2 mb-6">
-            <div className="font-semibold text-charcoal text-lg mb-3">
-              {yogaClass.title}
-            </div>
-            <div className="flex items-center gap-2">
-              <span>📅</span>
-              <span className="text-sm font-medium text-charcoal">
-                {format(parseISO(yogaClass.time_slot.date), 'EEEE, MMM d, yyyy')}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>🕐</span>
-              <span className="text-sm font-medium text-charcoal">
-                {formatTime(yogaClass.time_slot.start_time)}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>📍</span>
-              <span className="text-sm font-medium text-charcoal">
-                PikkUp Studio, 2500 South Miami Ave
-              </span>
-            </div>
+      <div className="max-w-md mx-auto px-4 -mt-16 relative z-10">
+        <div className="bg-white border border-neutral-200 p-8 text-center">
+          <div className="w-16 h-16 border border-charcoal flex items-center justify-center mx-auto mb-6">
+            <CheckIcon className="w-8 h-8 text-charcoal" />
           </div>
-        )}
+          
+          <h1 className="text-2xl font-light text-charcoal mb-2">
+            Payment Successful
+          </h1>
+          <p className="text-neutral-500 font-light mb-8">
+            Your spot has been reserved. Check your phone for a confirmation text.
+          </p>
 
-        <div className="bg-sand-100 rounded-xl p-4 mb-6">
-          <p className="text-sm text-sand-700">
-            📸 <strong>Pro tip:</strong> Screenshot this page to save your class details!
+          {yogaClass && yogaClass.time_slot && (
+            <div className="border border-neutral-100 p-6 text-left space-y-4 mb-8">
+              <div className="font-medium text-charcoal text-lg">
+                {yogaClass.title}
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-sm">
+                  <CalendarDaysIcon className="w-5 h-5 text-neutral-400" />
+                  <span className="text-charcoal font-light">
+                    {format(parseISO(yogaClass.time_slot.date), 'EEEE, MMM d, yyyy')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <ClockIcon className="w-5 h-5 text-neutral-400" />
+                  <span className="text-charcoal font-light">
+                    {formatTime(yogaClass.time_slot.start_time)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <MapPinIcon className="w-5 h-5 text-neutral-400" />
+                  <span className="text-charcoal font-light">
+                    PikkUp Studio, 2500 South Miami Ave
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=2500+South+Miami+Avenue"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary w-full block py-4"
+            >
+              Get Directions
+            </a>
+            <Link href="/classes" className="btn-secondary w-full block py-4">
+              Browse More Classes
+            </Link>
+          </div>
+
+          <p className="text-neutral-400 text-xs mt-8 font-light">
+            See you there! For questions, contact the instructor through the class details.
           </p>
         </div>
-
-        <div className="space-y-3">
-          <a
-            href="https://www.google.com/maps/search/?api=1&query=2500+South+Miami+Avenue"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary w-full block"
-          >
-            📍 Get Directions
-          </a>
-          <Link href="/classes" className="btn-secondary w-full block">
-            Browse More Classes
-          </Link>
-        </div>
-
-        <p className="text-sand-500 text-xs mt-6">
-          See you there! For questions, contact the instructor through the class details.
-        </p>
       </div>
     </div>
   )
@@ -152,10 +168,10 @@ function BookingSuccessContent() {
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50 flex items-center justify-center">
+    <div className="min-h-screen bg-white flex items-center justify-center">
       <div className="text-center">
-        <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-sand-600">Loading...</p>
+        <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-neutral-500 font-light">Loading...</p>
       </div>
     </div>
   )

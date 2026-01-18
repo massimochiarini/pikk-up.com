@@ -5,6 +5,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import { ArrowLeftIcon, CheckIcon, EyeIcon } from '@heroicons/react/24/outline'
 
 export default function InstructorProfilePage() {
   const { user, profile, loading: authLoading } = useAuth()
@@ -71,8 +72,8 @@ export default function InstructorProfilePage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -82,50 +83,52 @@ export default function InstructorProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="mb-10">
           <Link 
             href="/instructor" 
-            className="text-sage-600 hover:text-sage-700 text-sm font-medium flex items-center gap-1 mb-4"
+            className="text-neutral-400 hover:text-charcoal text-sm font-light flex items-center gap-2 mb-6 transition-colors"
           >
-            ← Back to Dashboard
+            <ArrowLeftIcon className="w-4 h-4" />
+            Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-charcoal">Instructor Profile</h1>
-          <p className="text-sand-600 mt-1">
-            Update your profile information. Your bio will be visible to students.
+          <h1 className="text-3xl font-light text-charcoal">Instructor Profile</h1>
+          <p className="text-neutral-500 font-light mt-1">
+            Update your profile. Your bio will be visible to students.
           </p>
         </div>
 
-        <div className="card">
+        <div className="border border-neutral-200 p-8">
           {/* Profile Avatar */}
-          <div className="flex items-center gap-4 mb-6 pb-6 border-b border-sand-200">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-white text-3xl font-semibold">
+          <div className="flex items-center gap-4 mb-8 pb-8 border-b border-neutral-100">
+            <div className="w-20 h-20 border border-neutral-200 flex items-center justify-center text-charcoal text-2xl font-light">
               {firstName?.[0] || user.email?.[0]?.toUpperCase() || 'I'}
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-charcoal">
+              <h2 className="text-xl font-medium text-charcoal">
                 {firstName} {lastName}
               </h2>
-              <p className="text-sand-500 text-sm">{user.email}</p>
-              <span className="inline-block mt-1 px-2 py-0.5 bg-sage-100 text-sage-700 text-xs font-medium rounded-full">
+              <p className="text-neutral-400 text-sm font-light">{user.email}</p>
+              <span className="inline-block mt-2 px-2 py-1 bg-charcoal text-white text-xs">
                 Instructor
               </span>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
                 {error}
               </div>
             )}
             
             {success && (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm">
-                ✓ Profile updated successfully!
+              <div className="bg-neutral-50 border border-neutral-200 text-charcoal px-4 py-3 text-sm flex items-center gap-2">
+                <CheckIcon className="w-4 h-4" />
+                Profile updated successfully
               </div>
             )}
 
@@ -162,10 +165,10 @@ export default function InstructorProfilePage() {
                 id="email"
                 type="email"
                 value={user.email || ''}
-                className="input-field bg-sand-50 cursor-not-allowed"
+                className="input-field bg-neutral-50 cursor-not-allowed"
                 disabled
               />
-              <p className="text-sand-500 text-xs mt-1">Email cannot be changed</p>
+              <p className="text-neutral-400 text-xs mt-2 font-light">Email cannot be changed</p>
             </div>
 
             <div>
@@ -181,9 +184,9 @@ export default function InstructorProfilePage() {
             </div>
 
             <div>
-              <label htmlFor="instagram" className="label">Instagram Handle</label>
+              <label htmlFor="instagram" className="label">Instagram</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sand-400">@</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-light">@</span>
                 <input
                   id="instagram"
                   type="text"
@@ -193,7 +196,7 @@ export default function InstructorProfilePage() {
                   placeholder="yourusername"
                 />
               </div>
-              <p className="text-sand-500 text-xs mt-1">Shown on class listings so students can follow you</p>
+              <p className="text-neutral-400 text-xs mt-2 font-light">Shown on class listings</p>
             </div>
 
             <div>
@@ -203,17 +206,17 @@ export default function InstructorProfilePage() {
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 className="input-field min-h-[120px] resize-y"
-                placeholder="Tell students about yourself, your teaching style, certifications, and what they can expect from your classes..."
+                placeholder="Tell students about yourself, your teaching style, certifications..."
                 maxLength={500}
               />
-              <p className="text-sand-500 text-xs mt-1">{bio.length}/500 characters • Visible to students on class pages</p>
+              <p className="text-neutral-400 text-xs mt-2 font-light">{bio.length}/500 characters</p>
             </div>
 
             <div className="pt-4">
               <button
                 type="submit"
                 disabled={saving}
-                className="btn-primary w-full"
+                className="btn-primary w-full py-4"
               >
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>
@@ -222,15 +225,16 @@ export default function InstructorProfilePage() {
         </div>
 
         {/* Preview Card */}
-        <div className="card mt-6 bg-sage-50/50">
-          <h3 className="font-semibold text-charcoal mb-3 flex items-center gap-2">
-            👀 Student Preview
+        <div className="border border-neutral-100 p-6 mt-6 bg-neutral-50">
+          <h3 className="font-medium text-charcoal mb-4 flex items-center gap-2">
+            <EyeIcon className="w-4 h-4" />
+            Student Preview
           </h3>
-          <p className="text-sand-600 text-sm mb-4">This is how students will see your profile on class pages:</p>
+          <p className="text-neutral-500 text-sm font-light mb-4">How students will see your profile:</p>
           
-          <div className="bg-white rounded-xl p-4 border border-sand-200">
-            <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
+          <div className="bg-white p-6 border border-neutral-200">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center text-charcoal font-light flex-shrink-0">
                 {firstName?.[0] || 'I'}
               </div>
               <div className="flex-1">
@@ -238,12 +242,12 @@ export default function InstructorProfilePage() {
                   {firstName || 'First'} {lastName || 'Last'}
                 </p>
                 {instagram && (
-                  <span className="text-sage-600 text-sm">@{instagram.replace('@', '')}</span>
+                  <span className="text-neutral-500 text-sm font-light">@{instagram.replace('@', '')}</span>
                 )}
                 {bio ? (
-                  <p className="text-sand-600 text-sm mt-2">{bio}</p>
+                  <p className="text-neutral-500 text-sm font-light mt-3">{bio}</p>
                 ) : (
-                  <p className="text-sand-400 text-sm mt-2 italic">No bio added yet</p>
+                  <p className="text-neutral-300 text-sm font-light mt-3 italic">No bio added yet</p>
                 )}
               </div>
             </div>

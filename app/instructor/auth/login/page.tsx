@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function InstructorLoginPage() {
   const [email, setEmail] = useState('')
@@ -25,11 +26,11 @@ export default function InstructorLoginPage() {
       })
 
       if (signInError) {
-        console.error('2. ❌ Sign in FAILED:', signInError.message)
+        console.error('2. Sign in FAILED:', signInError.message)
         throw signInError
       }
 
-      console.log('2. ✅ Sign in SUCCESS, user:', data.user?.email)
+      console.log('2. Sign in SUCCESS, user:', data.user?.email)
       console.log('3. Session exists:', !!data.session)
 
       if (!data.user) {
@@ -49,16 +50,16 @@ export default function InstructorLoginPage() {
         .single()
 
       if (profileError) {
-        console.error('6. ❌ Profile fetch FAILED:', profileError.message)
+        console.error('6. Profile fetch FAILED:', profileError.message)
         console.error('   Full error:', profileError)
         await supabase.auth.signOut()
         throw new Error('Could not find your profile. Please try signing up again.')
       }
 
-      console.log('6. ✅ Profile found, is_instructor:', profile?.is_instructor)
+      console.log('6. Profile found, is_instructor:', profile?.is_instructor)
 
       if (!profile?.is_instructor) {
-        console.log('7. ❌ User is NOT an instructor, signing out')
+        console.log('7. User is NOT an instructor, signing out')
         await supabase.auth.signOut()
         setError('This account is not registered as an instructor. Please sign up as an instructor first.')
         return
@@ -66,7 +67,7 @@ export default function InstructorLoginPage() {
 
       // Final verification before redirect
       const { data: finalSession } = await supabase.auth.getSession()
-      console.log('7. ✅ Final session check:', finalSession.session ? 'VALID' : 'NULL')
+      console.log('7. Final session check:', finalSession.session ? 'VALID' : 'NULL')
       
       console.log('8. Redirecting to /instructor...')
       console.log('=== INSTRUCTOR LOGIN END ===')
@@ -81,22 +82,39 @@ export default function InstructorLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="text-3xl font-bold text-sage-700 inline-block">
-            Pikk<span className="text-terracotta-500">Up</span>
-          </Link>
-          <div className="inline-block ml-2 px-3 py-1 bg-sage-100 text-sage-700 text-sm font-medium rounded-full">
-            Instructor
-          </div>
-          <p className="text-sand-600 mt-3">Welcome back! Sign in to your instructor account.</p>
+    <div className="min-h-screen bg-white flex">
+      {/* Left side - Artwork */}
+      <div className="hidden lg:block lg:w-1/2 relative">
+        <Image
+          src="/gallery/4.jpg"
+          alt="Untitled 04"
+          fill
+          sizes="50vw"
+          priority
+          className="object-cover"
+        />
+        <div className="absolute bottom-8 left-8">
+          <span className="text-sm text-white/80 tracking-wide">Untitled 04</span>
         </div>
+      </div>
 
-        <div className="card">
+      {/* Right side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md">
+          <div className="mb-10">
+            <Link href="/" className="text-2xl font-light tracking-tight text-charcoal inline-block mb-2">
+              PikkUp
+            </Link>
+            <span className="ml-3 text-xs uppercase tracking-wider text-neutral-400 border border-neutral-200 px-2 py-1">
+              Instructor
+            </span>
+            <h1 className="text-3xl font-light text-charcoal mt-8 mb-2">Welcome back</h1>
+            <p className="text-neutral-500 font-light">Sign in to your instructor account.</p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
                 {error}
               </div>
             )}
@@ -122,7 +140,7 @@ export default function InstructorLoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="input-field"
-                placeholder="••••••••"
+                placeholder="Enter your password"
                 required
               />
             </div>
@@ -130,29 +148,29 @@ export default function InstructorLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full"
+              className="btn-primary w-full py-4"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sand-600 text-sm">
+          <div className="mt-8 pt-8 border-t border-neutral-100">
+            <p className="text-neutral-500 text-sm font-light text-center">
               New instructor?{' '}
-              <Link href="/instructor/auth/signup" className="text-sage-600 hover:text-sage-700 font-medium">
+              <Link href="/instructor/auth/signup" className="text-charcoal hover:underline">
                 Create an account
               </Link>
             </p>
           </div>
-        </div>
 
-        <div className="mt-8 text-center">
-          <Link 
-            href="/auth/login" 
-            className="text-sand-500 hover:text-sage-600 text-sm transition-colors"
-          >
-            ← Back to student login
-          </Link>
+          <div className="mt-6 text-center">
+            <Link 
+              href="/auth/login" 
+              className="text-neutral-400 hover:text-charcoal text-sm font-light transition-colors"
+            >
+              Back to student login
+            </Link>
+          </div>
         </div>
       </div>
     </div>

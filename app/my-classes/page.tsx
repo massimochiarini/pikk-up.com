@@ -5,6 +5,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import { format, parseISO, isPast } from 'date-fns'
 import Link from 'next/link'
+import { CalendarDaysIcon, ClockIcon, MapPinIcon, CheckIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 
 export default function StudentMyClassesPage() {
   const { user, profile, loading: authLoading } = useAuth()
@@ -108,8 +109,8 @@ export default function StudentMyClassesPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -127,15 +128,15 @@ export default function StudentMyClassesPage() {
   )
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10 pb-10 border-b border-neutral-100">
           <div>
-            <h1 className="text-3xl font-bold text-charcoal">My Classes</h1>
-            <p className="text-sand-600 mt-1">
-              View your upcoming and past yoga sessions.
+            <h1 className="text-3xl font-light text-charcoal">My Classes</h1>
+            <p className="text-neutral-500 font-light mt-1">
+              View your upcoming and past sessions
             </p>
           </div>
           <Link href="/classes" className="btn-primary">
@@ -144,34 +145,34 @@ export default function StudentMyClassesPage() {
         </div>
 
         {bookings.length === 0 ? (
-          <div className="card text-center py-12">
-            <div className="w-16 h-16 bg-sand-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">🧘</span>
+          <div className="border border-neutral-200 p-12 text-center">
+            <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center mx-auto mb-4">
+              <CalendarDaysIcon className="w-6 h-6 text-neutral-400" />
             </div>
-            <h3 className="text-xl font-semibold text-charcoal mb-2">No classes booked yet</h3>
-            <p className="text-sand-600 mb-6">
-              Find a class that interests you and reserve your spot!
+            <h3 className="text-lg font-light text-charcoal mb-2">No classes booked yet</h3>
+            <p className="text-neutral-500 font-light mb-6">
+              Find a class that interests you and reserve your spot.
             </p>
             <Link href="/classes" className="btn-primary">
               Explore Classes
             </Link>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid lg:grid-cols-2 gap-12">
             {/* Upcoming Classes Column */}
             <section>
-              <h2 className="text-xl font-bold text-charcoal mb-4 flex items-center gap-2">
-                <span className="w-8 h-8 bg-sage-100 rounded-lg flex items-center justify-center">
-                  <span className="text-lg">📅</span>
-                </span>
-                Upcoming Classes
+              <h2 className="text-lg font-medium text-charcoal mb-6 flex items-center gap-3">
+                <div className="w-8 h-8 border border-charcoal flex items-center justify-center">
+                  <CalendarDaysIcon className="w-4 h-4" />
+                </div>
+                Upcoming
               </h2>
               
               {upcomingClasses.length === 0 ? (
-                <div className="card text-center py-8 bg-sage-50/50">
-                  <p className="text-sand-600 mb-4">No upcoming classes</p>
-                  <Link href="/classes" className="text-sage-600 hover:text-sage-700 font-medium text-sm">
-                    Find a class →
+                <div className="border border-neutral-200 p-8 text-center bg-neutral-50">
+                  <p className="text-neutral-500 font-light mb-4">No upcoming classes</p>
+                  <Link href="/classes" className="text-charcoal hover:underline text-sm">
+                    Find a class
                   </Link>
                 </div>
               ) : (
@@ -182,121 +183,108 @@ export default function StudentMyClassesPage() {
                     return (
                       <div 
                         key={booking.id} 
-                        className="card border-l-4 border-l-sage-500 cursor-pointer hover:shadow-lg transition-shadow"
+                        className="border border-neutral-200 cursor-pointer hover:border-charcoal transition-colors"
                         onClick={() => setExpandedId(isExpanded ? null : booking.id)}
                       >
-                        <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 bg-sage-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <span className="text-2xl">🧘</span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-lg text-charcoal truncate">
-                              {booking.class.title}
-                            </h3>
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-sand-600">
-                              <span>
-                                📅 {format(parseISO(booking.class.time_slot.date), 'EEE, MMM d')}
-                              </span>
-                              <span>
-                                🕐 {formatTime(booking.class.time_slot.start_time)} - {formatTime(booking.class.time_slot.end_time)}
-                              </span>
+                        <div className="p-6">
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center flex-shrink-0">
+                              <span className="text-lg font-light">{format(parseISO(booking.class.time_slot.date), 'd')}</span>
                             </div>
-                            <div className="mt-2 text-sm text-sand-500">
-                              with {booking.class.instructor.first_name} {booking.class.instructor.last_name}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-medium text-lg text-charcoal">
+                                {booking.class.title}
+                              </h3>
+                              <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-neutral-500 font-light">
+                                <span className="flex items-center gap-1">
+                                  <CalendarDaysIcon className="w-4 h-4" />
+                                  {format(parseISO(booking.class.time_slot.date), 'EEE, MMM d')}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <ClockIcon className="w-4 h-4" />
+                                  {formatTime(booking.class.time_slot.start_time)}
+                                </span>
+                              </div>
+                              <div className="mt-2 text-sm text-neutral-400 font-light">
+                                with {booking.class.instructor.first_name} {booking.class.instructor.last_name}
+                              </div>
                             </div>
-                            {booking.class.skill_level && booking.class.skill_level !== 'all' && (
-                              <span className="inline-block mt-2 px-2 py-0.5 bg-sage-100 text-sage-700 text-xs font-medium rounded-full capitalize">
-                                {booking.class.skill_level}
-                              </span>
-                            )}
-                          </div>
-                          <div className={`text-sand-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                            ▼
+                            <ChevronDownIcon className={`w-5 h-5 text-neutral-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                           </div>
                         </div>
                         
                         {/* Expanded Details */}
                         {isExpanded && (
-                          <div className="mt-4 pt-4 border-t border-sand-200 space-y-4">
-                            {/* Class Description */}
-                            {booking.class.description && (
-                              <div>
-                                <h4 className="text-sm font-semibold text-charcoal mb-1">About This Class</h4>
-                                <p className="text-sm text-sand-600">{booking.class.description}</p>
-                              </div>
-                            )}
-                            
-                            {/* Class Details */}
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <span className="text-xs text-sand-500 uppercase tracking-wide">Date</span>
-                                <p className="text-sm font-medium text-charcoal">
-                                  {format(parseISO(booking.class.time_slot.date), 'EEEE, MMMM d, yyyy')}
-                                </p>
-                              </div>
-                              <div>
-                                <span className="text-xs text-sand-500 uppercase tracking-wide">Time</span>
-                                <p className="text-sm font-medium text-charcoal">
-                                  {formatTime(booking.class.time_slot.start_time)} - {formatTime(booking.class.time_slot.end_time)}
-                                </p>
-                              </div>
-                              <div>
-                                <span className="text-xs text-sand-500 uppercase tracking-wide">Price Paid</span>
-                                <p className="text-sm font-medium text-charcoal">
-                                  {formatPrice(booking.class.price_cents)}
-                                </p>
-                              </div>
-                              <div>
-                                <span className="text-xs text-sand-500 uppercase tracking-wide">Location</span>
-                                <p className="text-sm font-medium text-charcoal">📍 PikkUp Studio</p>
-                              </div>
-                            </div>
-                            
-                            {/* Instructor Info */}
-                            <div className="bg-sage-50 rounded-xl p-4">
-                              <h4 className="text-sm font-semibold text-charcoal mb-2">Your Instructor</h4>
-                              <div className="flex items-start gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-                                  {booking.class.instructor.first_name?.[0] || 'I'}
+                          <div className="px-6 pb-6 pt-0 border-t border-neutral-100 mt-0">
+                            <div className="pt-6 space-y-6">
+                              {/* Class Description */}
+                              {booking.class.description && (
+                                <div>
+                                  <h4 className="text-xs uppercase tracking-wider text-neutral-400 mb-2">About</h4>
+                                  <p className="text-sm text-neutral-600 font-light">{booking.class.description}</p>
                                 </div>
-                                <div className="flex-1">
-                                  <p className="font-medium text-charcoal">
-                                    {booking.class.instructor.first_name} {booking.class.instructor.last_name}
+                              )}
+                              
+                              {/* Class Details */}
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <span className="text-xs uppercase tracking-wider text-neutral-400">Date</span>
+                                  <p className="text-sm text-charcoal font-light mt-1">
+                                    {format(parseISO(booking.class.time_slot.date), 'EEEE, MMMM d, yyyy')}
                                   </p>
-                                  {booking.class.instructor.instagram && (
-                                    <a 
-                                      href={`https://instagram.com/${booking.class.instructor.instagram.replace('@', '')}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-sm text-sage-600 hover:text-sage-700"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      @{booking.class.instructor.instagram.replace('@', '')}
-                                    </a>
-                                  )}
-                                  {booking.class.instructor.bio && (
-                                    <p className="text-sm text-sand-600 mt-2">{booking.class.instructor.bio}</p>
-                                  )}
+                                </div>
+                                <div>
+                                  <span className="text-xs uppercase tracking-wider text-neutral-400">Time</span>
+                                  <p className="text-sm text-charcoal font-light mt-1">
+                                    {formatTime(booking.class.time_slot.start_time)} - {formatTime(booking.class.time_slot.end_time)}
+                                  </p>
+                                </div>
+                                <div>
+                                  <span className="text-xs uppercase tracking-wider text-neutral-400">Price</span>
+                                  <p className="text-sm text-charcoal font-light mt-1">
+                                    {formatPrice(booking.class.price_cents)}
+                                  </p>
+                                </div>
+                                <div>
+                                  <span className="text-xs uppercase tracking-wider text-neutral-400">Location</span>
+                                  <p className="text-sm text-charcoal font-light mt-1 flex items-center gap-1">
+                                    <MapPinIcon className="w-4 h-4" /> PikkUp Studio
+                                  </p>
                                 </div>
                               </div>
+                              
+                              {/* Instructor Info */}
+                              <div className="border border-neutral-100 p-4">
+                                <h4 className="text-xs uppercase tracking-wider text-neutral-400 mb-3">Instructor</h4>
+                                <div className="flex items-start gap-3">
+                                  <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center text-charcoal font-light">
+                                    {booking.class.instructor.first_name?.[0] || 'I'}
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="font-medium text-charcoal">
+                                      {booking.class.instructor.first_name} {booking.class.instructor.last_name}
+                                    </p>
+                                    {booking.class.instructor.instagram && (
+                                      <a 
+                                        href={`https://instagram.com/${booking.class.instructor.instagram.replace('@', '')}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm text-neutral-500 hover:text-charcoal"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        @{booking.class.instructor.instagram.replace('@', '')}
+                                      </a>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* Confirmation Status */}
+                              <div className="flex items-center gap-2 text-sm text-charcoal bg-neutral-50 px-4 py-3">
+                                <CheckIcon className="w-4 h-4" />
+                                <span className="font-light">Booking Confirmed</span>
+                              </div>
                             </div>
-                            
-                            {/* Confirmation Status */}
-                            <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
-                              <span>✓</span>
-                              <span className="font-medium">Booking Confirmed</span>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {!isExpanded && (
-                          <div className="mt-4 pt-4 border-t border-sand-200 flex items-center justify-between">
-                            <div className="text-sm text-sand-500">
-                              📍 PikkUp Studio
-                            </div>
-                            <span className="text-sage-600 text-sm font-medium">
-                              Tap for details
-                            </span>
                           </div>
                         )}
                       </div>
@@ -308,35 +296,35 @@ export default function StudentMyClassesPage() {
 
             {/* Past Classes Column */}
             <section>
-              <h2 className="text-xl font-bold text-charcoal mb-4 flex items-center gap-2">
-                <span className="w-8 h-8 bg-sand-200 rounded-lg flex items-center justify-center">
-                  <span className="text-lg">✓</span>
-                </span>
-                Previously Attended
+              <h2 className="text-lg font-medium text-charcoal mb-6 flex items-center gap-3">
+                <div className="w-8 h-8 border border-neutral-300 flex items-center justify-center bg-neutral-50">
+                  <CheckIcon className="w-4 h-4 text-neutral-400" />
+                </div>
+                Attended
               </h2>
               
               {pastClasses.length === 0 ? (
-                <div className="card text-center py-8 bg-sand-50/50">
-                  <p className="text-sand-500">No past classes yet</p>
+                <div className="border border-neutral-100 p-8 text-center bg-neutral-50">
+                  <p className="text-neutral-400 font-light">No past classes yet</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {pastClasses.map((booking) => (
-                    <div key={booking.id} className="card bg-sand-50/50 opacity-80 hover:opacity-100 transition-opacity">
+                    <div key={booking.id} className="border border-neutral-100 p-4 bg-neutral-50">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-sand-200 rounded-xl flex items-center justify-center flex-shrink-0">
-                          <span className="text-xl">✓</span>
+                        <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center bg-white">
+                          <CheckIcon className="w-4 h-4 text-neutral-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-charcoal truncate">
+                          <h3 className="font-medium text-neutral-600 truncate">
                             {booking.class.title}
                           </h3>
-                          <div className="text-sm text-sand-500">
-                            {format(parseISO(booking.class.time_slot.date), 'MMM d, yyyy')} • 
-                            with {booking.class.instructor.first_name} {booking.class.instructor.last_name}
+                          <div className="text-sm text-neutral-400 font-light">
+                            {format(parseISO(booking.class.time_slot.date), 'MMM d, yyyy')} · 
+                            {booking.class.instructor.first_name} {booking.class.instructor.last_name}
                           </div>
                         </div>
-                        <div className="text-sm text-sand-400">
+                        <div className="text-sm text-neutral-400 font-light">
                           {formatPrice(booking.class.price_cents)}
                         </div>
                       </div>

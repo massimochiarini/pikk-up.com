@@ -7,6 +7,7 @@ import { Navbar } from '@/components/Navbar'
 import { supabase, type TimeSlot } from '@/lib/supabase'
 import { format, parseISO } from 'date-fns'
 import Link from 'next/link'
+import { ArrowLeftIcon, CalendarDaysIcon, ClockIcon, CheckIcon, LinkIcon } from '@heroicons/react/24/outline'
 
 export default function CreateClassPage() {
   const { user, profile, loading: authLoading } = useAuth()
@@ -20,6 +21,7 @@ export default function CreateClassPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [createdClassId, setCreatedClassId] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   // Form fields
   const [title, setTitle] = useState('')
@@ -149,22 +151,24 @@ export default function CreateClassPage() {
 
   const copyBookingLink = () => {
     navigator.clipboard.writeText(getBookingUrl())
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   // Show loading while auth is loading, data is loading, OR when we have a user but profile hasn't loaded
   if (authLoading || loading || (user && !profile)) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
       </div>
     )
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-sand-600 mb-4">Please sign in to create a class.</p>
+          <p className="text-neutral-500 font-light mb-4">Please sign in to create a class.</p>
           <a href="/instructor/auth/login" className="btn-primary">Sign In</a>
         </div>
       </div>
@@ -173,41 +177,42 @@ export default function CreateClassPage() {
 
   if (success && createdClassId) {
     return (
-      <div className="min-h-screen bg-cream">
+      <div className="min-h-screen bg-white">
         <Navbar />
         <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="card text-center">
-            <div className="w-20 h-20 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-4xl">✅</span>
+          <div className="border border-neutral-200 p-8 text-center">
+            <div className="w-16 h-16 border border-charcoal flex items-center justify-center mx-auto mb-6">
+              <CheckIcon className="w-8 h-8 text-charcoal" />
             </div>
-            <h1 className="text-3xl font-bold text-charcoal mb-2">Class Created!</h1>
-            <p className="text-sand-600 mb-8">
-              Your class is now live on the marketplace. Share the booking link with your students!
+            <h1 className="text-3xl font-light text-charcoal mb-2">Class Created</h1>
+            <p className="text-neutral-500 font-light mb-8">
+              Your class is now live. Share the booking link with your students.
             </p>
 
-            <div className="bg-sage-50 rounded-xl p-6 mb-6">
-              <div className="text-sm text-sage-600 mb-2">Booking Link</div>
+            <div className="border border-neutral-100 p-6 mb-8">
+              <div className="text-xs uppercase tracking-wider text-neutral-400 mb-3">Booking Link</div>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={getBookingUrl()}
                   readOnly
-                  className="input-field text-sm bg-white"
+                  className="input-field text-sm bg-neutral-50"
                 />
                 <button
                   onClick={copyBookingLink}
-                  className="btn-primary whitespace-nowrap"
+                  className="btn-primary flex items-center gap-2 whitespace-nowrap"
                 >
-                  Copy
+                  <LinkIcon className="w-4 h-4" />
+                  {copied ? 'Copied!' : 'Copy'}
                 </button>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/instructor/my-classes" className="btn-secondary">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/instructor/my-classes" className="btn-secondary py-4">
                 View My Classes
               </Link>
-              <Link href="/instructor/schedule" className="btn-outline">
+              <Link href="/instructor/schedule" className="btn-outline py-4">
                 Schedule Another
               </Link>
             </div>
@@ -218,35 +223,37 @@ export default function CreateClassPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="mb-10">
           <Link 
             href="/instructor/schedule" 
-            className="text-sage-600 hover:text-sage-700 text-sm font-medium inline-flex items-center gap-1"
+            className="text-neutral-400 hover:text-charcoal text-sm font-light inline-flex items-center gap-2 transition-colors"
           >
-            ← Back to Schedule
+            <ArrowLeftIcon className="w-4 h-4" />
+            Back to Schedule
           </Link>
-          <h1 className="text-3xl font-bold text-charcoal mt-4">Create Your Class</h1>
-          <p className="text-sand-600 mt-1">
-            Fill in the details for your yoga session.
+          <h1 className="text-3xl font-light text-charcoal mt-6">Create Class</h1>
+          <p className="text-neutral-500 font-light mt-1">
+            Fill in the details for your session
           </p>
         </div>
 
         {/* Time Slot Info */}
         {timeSlot && (
-          <div className="card mb-8 bg-gradient-to-r from-sage-50 to-sand-50">
+          <div className="border border-neutral-200 p-6 mb-8 bg-neutral-50">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                <span className="text-2xl">📅</span>
+              <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center bg-white">
+                <CalendarDaysIcon className="w-6 h-6 text-charcoal" />
               </div>
               <div>
-                <div className="font-semibold text-charcoal">
+                <div className="font-medium text-charcoal">
                   {format(parseISO(timeSlot.date), 'EEEE, MMMM d, yyyy')}
                 </div>
-                <div className="text-sand-600">
+                <div className="text-neutral-500 font-light flex items-center gap-1">
+                  <ClockIcon className="w-4 h-4" />
                   {formatTime(timeSlot.start_time)} - {formatTime(timeSlot.end_time)}
                 </div>
               </div>
@@ -255,16 +262,16 @@ export default function CreateClassPage() {
         )}
 
         {/* Create Form */}
-        <div className="card">
+        <div className="border border-neutral-200 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="title" className="label">Class Title *</label>
+              <label htmlFor="title" className="label">Class Title</label>
               <input
                 id="title"
                 type="text"
@@ -278,13 +285,13 @@ export default function CreateClassPage() {
 
             <div>
               <label htmlFor="description" className="label">
-                Description <span className="text-sand-400 font-normal">(optional)</span>
+                Description <span className="text-neutral-400 font-normal lowercase">(optional)</span>
               </label>
               <textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="input-field"
+                className="input-field resize-none"
                 rows={4}
                 placeholder="Describe what students can expect from your class..."
               />
@@ -301,9 +308,9 @@ export default function CreateClassPage() {
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   className="input-field"
-                  placeholder="0 for free"
+                  placeholder="0"
                 />
-                <p className="text-sand-500 text-xs mt-1">Leave empty or 0 for free class</p>
+                <p className="text-neutral-400 text-xs mt-2 font-light">Leave empty for free</p>
               </div>
               <div>
                 <label htmlFor="capacity" className="label">Max Capacity</label>
@@ -335,14 +342,14 @@ export default function CreateClassPage() {
               </select>
             </div>
 
-            <div className="flex gap-4 pt-4">
-              <Link href="/instructor/schedule" className="btn-outline flex-1 text-center">
+            <div className="flex gap-3 pt-4">
+              <Link href="/instructor/schedule" className="btn-secondary flex-1 text-center py-4">
                 Cancel
               </Link>
               <button
                 type="submit"
                 disabled={submitting || !title.trim()}
-                className="btn-primary flex-1"
+                className="btn-primary flex-1 py-4"
               >
                 {submitting ? 'Creating...' : 'Create Class'}
               </button>

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import Link from 'next/link'
+import Image from 'next/image'
+import { CalendarDaysIcon, RectangleStackIcon, MapPinIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
 
 export default function InstructorDashboardPage() {
   const { user, profile, loading } = useAuth()
@@ -36,8 +38,8 @@ export default function InstructorDashboardPage() {
   // Still loading auth
   if (loading && !showContent) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -45,27 +47,27 @@ export default function InstructorDashboardPage() {
   // Not logged in - show login/signup options
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50">
+      <div className="min-h-screen bg-white">
         <Navbar />
         <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
           <div className="text-center max-w-md">
-            <div className="w-20 h-20 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-4xl">🧘</span>
+            <div className="w-16 h-16 border border-neutral-200 flex items-center justify-center mx-auto mb-6">
+              <CalendarDaysIcon className="w-8 h-8 text-charcoal" />
             </div>
-            <h1 className="text-3xl font-bold text-charcoal mb-4">Instructor Portal</h1>
-            <p className="text-sand-600 mb-8">
-              Sign in to access your instructor dashboard and start teaching classes.
+            <h1 className="text-3xl font-light text-charcoal mb-4">Instructor Portal</h1>
+            <p className="text-neutral-500 font-light mb-8">
+              Sign in to access your dashboard and start teaching classes.
             </p>
-            <div className="space-y-4">
-              <Link href="/instructor/auth/login" className="btn-primary w-full block text-center">
+            <div className="space-y-3">
+              <Link href="/instructor/auth/login" className="btn-primary w-full block text-center py-4">
                 Sign In
               </Link>
-              <Link href="/instructor/auth/signup" className="btn-secondary w-full block text-center">
+              <Link href="/instructor/auth/signup" className="btn-secondary w-full block text-center py-4">
                 Create Instructor Account
               </Link>
             </div>
-            <Link href="/" className="text-sand-500 hover:text-sage-600 text-sm mt-8 inline-block">
-              ← Back to home
+            <Link href="/" className="text-neutral-400 hover:text-charcoal text-sm mt-8 inline-block transition-colors">
+              Back to home
             </Link>
           </div>
         </div>
@@ -76,31 +78,31 @@ export default function InstructorDashboardPage() {
   // Logged in but profile not loaded yet or not an instructor
   if (!profile || !profile.is_instructor) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50">
+      <div className="min-h-screen bg-white">
         <Navbar />
         <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
           <div className="text-center max-w-lg">
-            <div className="w-20 h-20 bg-terracotta-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-4xl">✨</span>
+            <div className="w-16 h-16 border border-neutral-200 flex items-center justify-center mx-auto mb-6">
+              <span className="text-2xl">+</span>
             </div>
-            <h1 className="text-3xl font-bold text-charcoal mb-4">Become an Instructor</h1>
-            <p className="text-sand-600 mb-4">
-              {profile ? `Hi ${profile.first_name}! Your current account is set up for booking classes as a student.` : 'Welcome!'}
+            <h1 className="text-3xl font-light text-charcoal mb-4">Become an Instructor</h1>
+            <p className="text-neutral-500 font-light mb-2">
+              {profile ? `Hi ${profile.first_name}! Your current account is set up for booking classes.` : 'Welcome!'}
             </p>
-            <p className="text-sand-600 mb-8">
+            <p className="text-neutral-500 font-light mb-8">
               To teach classes at PikkUp, you need an instructor account.
             </p>
-            <div className="space-y-4">
-              <Link href="/instructor/auth/signup" className="btn-primary w-full block text-center">
+            <div className="space-y-3">
+              <Link href="/instructor/auth/signup" className="btn-primary w-full block text-center py-4">
                 Create Instructor Account
               </Link>
-              <Link href="/instructor/auth/login" className="btn-secondary w-full block text-center">
+              <Link href="/instructor/auth/login" className="btn-secondary w-full block text-center py-4">
                 Sign In as Instructor
               </Link>
-              <Link href="/classes" className="text-sand-500 hover:text-sage-600 text-sm mt-4 inline-block">
-                ← Browse classes instead
-              </Link>
             </div>
+            <Link href="/classes" className="text-neutral-400 hover:text-charcoal text-sm mt-8 inline-block transition-colors">
+              Browse classes instead
+            </Link>
           </div>
         </div>
       </div>
@@ -109,63 +111,81 @@ export default function InstructorDashboardPage() {
 
   // Instructor dashboard
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-charcoal">
-            Welcome back, {profile.first_name}!
-          </h1>
-          <p className="text-sand-600 mt-1">
-            Manage your classes and view your schedule.
-          </p>
+      {/* Hero with Artwork */}
+      <div className="relative h-48 md:h-64 overflow-hidden">
+        <Image
+          src="/gallery/4.jpg"
+          alt="Untitled 04"
+          fill
+          sizes="100vw"
+          priority
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-white/70" />
+        <div className="absolute inset-0 flex items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <h1 className="text-3xl md:text-4xl font-light text-charcoal">
+              Welcome back, {profile.first_name}
+            </h1>
+            <p className="text-neutral-500 mt-2 font-light">
+              Manage your classes and schedule
+            </p>
+          </div>
         </div>
+        <div className="absolute bottom-4 right-4">
+          <span className="text-sm text-charcoal/50 tracking-wide">Untitled 04</span>
+        </div>
+      </div>
 
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          <Link href="/instructor/schedule" className="card-hover group">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          <Link href="/instructor/schedule" className="group block border border-neutral-200 p-6 hover:border-charcoal transition-colors">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-sage-100 rounded-xl flex items-center justify-center group-hover:bg-sage-200 transition-colors">
-                <span className="text-2xl">📅</span>
+              <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center group-hover:border-charcoal transition-colors">
+                <CalendarDaysIcon className="w-6 h-6 text-charcoal" />
               </div>
-              <div>
-                <h3 className="font-semibold text-charcoal group-hover:text-sage-700 transition-colors">
+              <div className="flex-1">
+                <h3 className="font-medium text-charcoal mb-1">
                   View Schedule
                 </h3>
-                <p className="text-sand-600 text-sm mt-1">
+                <p className="text-neutral-500 text-sm font-light">
                   Browse and claim available time slots
                 </p>
               </div>
+              <ArrowRightIcon className="w-5 h-5 text-neutral-300 group-hover:text-charcoal transition-colors" />
             </div>
           </Link>
 
-          <Link href="/instructor/my-classes" className="card-hover group">
+          <Link href="/instructor/my-classes" className="group block border border-neutral-200 p-6 hover:border-charcoal transition-colors">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-terracotta-100 rounded-xl flex items-center justify-center group-hover:bg-terracotta-200 transition-colors">
-                <span className="text-2xl">🧘</span>
+              <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center group-hover:border-charcoal transition-colors">
+                <RectangleStackIcon className="w-6 h-6 text-charcoal" />
               </div>
-              <div>
-                <h3 className="font-semibold text-charcoal group-hover:text-sage-700 transition-colors">
+              <div className="flex-1">
+                <h3 className="font-medium text-charcoal mb-1">
                   My Classes
                 </h3>
-                <p className="text-sand-600 text-sm mt-1">
+                <p className="text-neutral-500 text-sm font-light">
                   View and manage your scheduled classes
                 </p>
               </div>
+              <ArrowRightIcon className="w-5 h-5 text-neutral-300 group-hover:text-charcoal transition-colors" />
             </div>
           </Link>
 
-          <div className="card bg-gradient-to-br from-sage-500 to-sage-600 text-white">
+          <div className="border border-neutral-200 p-6 bg-neutral-50">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                <span className="text-2xl">✨</span>
+              <div className="w-12 h-12 border border-neutral-300 flex items-center justify-center bg-white">
+                <span className="text-lg">*</span>
               </div>
               <div>
-                <h3 className="font-semibold">Quick Tip</h3>
-                <p className="text-sage-100 text-sm mt-1">
-                  Claim a time slot to create your next class!
+                <h3 className="font-medium text-charcoal mb-1">Quick Tip</h3>
+                <p className="text-neutral-500 text-sm font-light">
+                  Claim a time slot to create your next class
                 </p>
               </div>
             </div>
@@ -173,56 +193,56 @@ export default function InstructorDashboardPage() {
         </div>
 
         {/* Studio Info */}
-        <div className="card bg-gradient-to-r from-sand-100 to-sage-50">
-          <h2 className="text-xl font-bold text-charcoal mb-4">Studio Location</h2>
+        <div className="border border-neutral-200 p-8 mb-16">
+          <h2 className="text-lg font-medium text-charcoal mb-6">Studio Location</h2>
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
-              <span className="text-2xl">📍</span>
+            <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center">
+              <MapPinIcon className="w-6 h-6 text-charcoal" />
             </div>
             <div>
-              <h3 className="font-semibold text-charcoal">PikkUp Studio</h3>
-              <p className="text-sand-600">2500 South Miami Avenue</p>
+              <h3 className="font-medium text-charcoal">PikkUp Studio</h3>
+              <p className="text-neutral-500 font-light">2500 South Miami Avenue</p>
               <a 
                 href="https://www.google.com/maps/search/?api=1&query=2500+South+Miami+Avenue"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sage-600 hover:text-sage-700 text-sm font-medium mt-2 inline-block"
+                className="text-charcoal hover:underline text-sm mt-2 inline-block"
               >
-                View on Maps →
+                View on Maps
               </a>
             </div>
           </div>
         </div>
 
         {/* How It Works */}
-        <div className="mt-12">
-          <h2 className="text-xl font-bold text-charcoal mb-6">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-6">
+        <div>
+          <h2 className="text-lg font-medium text-charcoal mb-8">How It Works</h2>
+          <div className="grid md:grid-cols-3 gap-12">
             <div className="text-center">
-              <div className="w-10 h-10 bg-sage-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-bold">
+              <div className="w-10 h-10 bg-charcoal text-white flex items-center justify-center mx-auto mb-4 font-light">
                 1
               </div>
-              <h3 className="font-semibold text-charcoal mb-2">Claim a Time Slot</h3>
-              <p className="text-sand-600 text-sm">
+              <h3 className="font-medium text-charcoal mb-2">Claim a Time Slot</h3>
+              <p className="text-neutral-500 text-sm font-light">
                 Browse the schedule and pick an available slot that works for you.
               </p>
             </div>
             <div className="text-center">
-              <div className="w-10 h-10 bg-sage-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-bold">
+              <div className="w-10 h-10 bg-charcoal text-white flex items-center justify-center mx-auto mb-4 font-light">
                 2
               </div>
-              <h3 className="font-semibold text-charcoal mb-2">Create Your Class</h3>
-              <p className="text-sand-600 text-sm">
+              <h3 className="font-medium text-charcoal mb-2">Create Your Class</h3>
+              <p className="text-neutral-500 text-sm font-light">
                 Add your class details: title, description, price, and capacity.
               </p>
             </div>
             <div className="text-center">
-              <div className="w-10 h-10 bg-sage-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-bold">
+              <div className="w-10 h-10 bg-charcoal text-white flex items-center justify-center mx-auto mb-4 font-light">
                 3
               </div>
-              <h3 className="font-semibold text-charcoal mb-2">Share & Teach</h3>
-              <p className="text-sand-600 text-sm">
-                Get a booking link to share with students. We handle the rest!
+              <h3 className="font-medium text-charcoal mb-2">Share & Teach</h3>
+              <p className="text-neutral-500 text-sm font-light">
+                Get a booking link to share with students. We handle the rest.
               </p>
             </div>
           </div>

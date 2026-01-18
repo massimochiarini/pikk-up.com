@@ -6,6 +6,8 @@ import { useAuth } from '@/components/AuthProvider'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
 import { format, parseISO, isToday, isTomorrow } from 'date-fns'
 import Link from 'next/link'
+import Image from 'next/image'
+import { CalendarDaysIcon, ClockIcon, UserIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 type ClassWithDetails = YogaClass & {
   time_slot: TimeSlot
@@ -186,27 +188,43 @@ export default function ClassesPage() {
   })
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-charcoal">Yoga Classes</h1>
-          <p className="text-sand-600 mt-1">
-            Find and book your next yoga session.
-          </p>
+      {/* Hero Header with Artwork */}
+      <div className="relative h-48 md:h-64 overflow-hidden">
+        <Image
+          src="/gallery/2.jpg"
+          alt="Untitled 02"
+          fill
+          sizes="100vw"
+          priority
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-white/70" />
+        <div className="absolute inset-0 flex items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <h1 className="text-3xl md:text-4xl font-light text-charcoal">Classes</h1>
+            <p className="text-neutral-500 mt-2 font-light">
+              Find and book your next session
+            </p>
+          </div>
         </div>
+        <div className="absolute bottom-4 right-4">
+          <span className="text-sm text-charcoal/50 tracking-wide">Untitled 02</span>
+        </div>
+      </div>
 
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-4 mb-10 pb-10 border-b border-neutral-100">
           <div className="flex gap-2">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+              className={`px-4 py-2 text-sm font-light transition-colors ${
                 filter === 'all'
-                  ? 'bg-sage-600 text-white'
-                  : 'bg-white text-sand-600 hover:bg-sand-100'
+                  ? 'bg-charcoal text-white'
+                  : 'bg-white text-neutral-500 border border-neutral-200 hover:border-charcoal'
               }`}
             >
               All Upcoming
@@ -214,10 +232,10 @@ export default function ClassesPage() {
             {user && (
               <button
                 onClick={() => setFilter('my-classes')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                className={`px-4 py-2 text-sm font-light transition-colors ${
                   filter === 'my-classes'
-                    ? 'bg-sage-600 text-white'
-                    : 'bg-white text-sand-600 hover:bg-sand-100'
+                    ? 'bg-charcoal text-white'
+                    : 'bg-white text-neutral-500 border border-neutral-200 hover:border-charcoal'
                 }`}
               >
                 My Classes
@@ -228,7 +246,7 @@ export default function ClassesPage() {
           <select
             value={skillFilter}
             onChange={(e) => setSkillFilter(e.target.value)}
-            className="px-4 py-2 rounded-xl bg-white border border-sand-200 text-sm text-sand-700 focus:outline-none focus:ring-2 focus:ring-sage-500"
+            className="px-4 py-2 bg-white border border-neutral-200 text-sm text-neutral-600 font-light focus:outline-none focus:border-charcoal"
           >
             <option value="all">All Levels</option>
             <option value="beginner">Beginner</option>
@@ -239,16 +257,14 @@ export default function ClassesPage() {
 
         {/* Classes Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
           </div>
         ) : error ? (
-          <div className="card text-center py-12">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">⚠️</span>
-            </div>
-            <h3 className="text-xl font-semibold text-charcoal mb-2">Oops! Something went wrong</h3>
-            <p className="text-sand-600 mb-4">{error}</p>
+          <div className="card text-center py-16">
+            <ExclamationTriangleIcon className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
+            <h3 className="text-xl font-light text-charcoal mb-2">Something went wrong</h3>
+            <p className="text-neutral-500 font-light mb-6">{error}</p>
             <button
               onClick={() => {
                 setLoading(true)
@@ -260,102 +276,101 @@ export default function ClassesPage() {
             </button>
           </div>
         ) : filteredClasses.length === 0 ? (
-          <div className="card text-center py-12">
-            <div className="w-16 h-16 bg-sand-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">🧘</span>
+          <div className="card text-center py-16">
+            <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center mx-auto mb-4">
+              <CalendarDaysIcon className="w-6 h-6 text-neutral-400" />
             </div>
-            <h3 className="text-xl font-semibold text-charcoal mb-2">No classes found</h3>
-            <p className="text-sand-600">
+            <h3 className="text-xl font-light text-charcoal mb-2">No classes found</h3>
+            <p className="text-neutral-500 font-light">
               {filter === 'my-classes'
-                ? 'You haven\'t registered for any classes yet. Browse all upcoming classes to book your first session!'
+                ? 'You haven\'t registered for any classes yet.'
                 : filter !== 'all' || skillFilter !== 'all'
-                ? 'Try adjusting your filters to see more classes.'
-                : 'Check back soon for new yoga sessions!'}
+                ? 'Try adjusting your filters.'
+                : 'Check back soon for new sessions.'}
             </p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredClasses.map((yogaClass) => {
               const spotsLeft = yogaClass.max_capacity - yogaClass.booking_count
               const isFull = spotsLeft <= 0
               
               return (
-                <div key={yogaClass.id} className="relative">
-                <Link
-                  href={`/book/${yogaClass.id}`}
-                  className="card-hover group block"
-                >
-                  {/* Header with gradient */}
-                  <div className="h-32 rounded-xl bg-gradient-to-br from-sage-300 to-sage-400 flex items-center justify-center mb-4 relative overflow-hidden">
-                    <span className="text-5xl transform group-hover:scale-110 transition-transform">🧘</span>
-                    {yogaClass.price_cents === 0 && (
-                      <div className="absolute top-3 right-3 bg-white/90 text-sage-700 text-xs font-bold px-2 py-1 rounded-full">
-                        FREE
+                <div key={yogaClass.id} className="relative group">
+                  <Link
+                    href={`/book/${yogaClass.id}`}
+                    className="block"
+                  >
+                    {/* Card */}
+                    <div className="border border-neutral-200 p-6 transition-all duration-300 hover:border-charcoal">
+                      {/* Header */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="text-lg font-medium text-charcoal group-hover:text-neutral-600 transition-colors">
+                            {yogaClass.title}
+                          </h3>
+                          {yogaClass.skill_level && yogaClass.skill_level !== 'all' && (
+                            <span className="inline-block mt-1 text-xs uppercase tracking-wider text-neutral-400">
+                              {yogaClass.skill_level}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-medium text-charcoal">
+                            {formatPrice(yogaClass.price_cents)}
+                          </div>
+                          {yogaClass.price_cents === 0 && (
+                            <span className="text-xs uppercase tracking-wider text-neutral-400">Free</span>
+                          )}
+                        </div>
                       </div>
-                    )}
-                    {isFull && (
-                      <div className="absolute inset-0 bg-charcoal/60 flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">FULL</span>
+                      
+                      {/* Details */}
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-sm text-neutral-500">
+                          <CalendarDaysIcon className="w-4 h-4" />
+                          <span className="font-light">{formatDate(yogaClass.time_slot.date)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-neutral-500">
+                          <ClockIcon className="w-4 h-4" />
+                          <span className="font-light">{formatTime(yogaClass.time_slot.start_time)}</span>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  
-                  {/* Content */}
-                  <div className="space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-lg text-charcoal group-hover:text-sage-700 transition-colors">
-                        {yogaClass.title}
-                      </h3>
-                      {yogaClass.skill_level && yogaClass.skill_level !== 'all' && (
-                        <span className="inline-block mt-1 px-2 py-0.5 bg-sage-100 text-sage-700 text-xs font-medium rounded-full capitalize">
-                          {yogaClass.skill_level}
-                        </span>
+                      
+                      {/* Footer */}
+                      <div className="flex items-center justify-between pt-4 border-t border-neutral-100">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 border border-neutral-200 flex items-center justify-center text-charcoal text-xs font-light">
+                            {yogaClass.instructor.first_name?.[0] || 'I'}
+                          </div>
+                          <span className="text-sm text-neutral-500 font-light">
+                            {yogaClass.instructor.first_name} {yogaClass.instructor.last_name}
+                          </span>
+                        </div>
+                        <div className={`text-sm font-light ${isFull ? 'text-red-500' : spotsLeft <= 3 ? 'text-amber-600' : 'text-neutral-400'}`}>
+                          {isFull ? 'Full' : `${spotsLeft} spots`}
+                        </div>
+                      </div>
+
+                      {/* Full overlay */}
+                      {isFull && (
+                        <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                          <span className="text-charcoal font-medium uppercase tracking-wider text-sm">Class Full</span>
+                        </div>
                       )}
                     </div>
-                    
-                    <div className="flex items-center gap-3 text-sm text-sand-600">
-                      <span className="flex items-center gap-1">
-                        📅 {formatDate(yogaClass.time_slot.date)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        🕐 {formatTime(yogaClass.time_slot.start_time)}
-                      </span>
-                    </div>
-                    
-                    {/* Instructor */}
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-white text-xs font-semibold">
-                        {yogaClass.instructor.first_name?.[0] || 'I'}
-                      </div>
-                      <span className="text-sm text-sand-600">
-                        {yogaClass.instructor.first_name} {yogaClass.instructor.last_name}
-                      </span>
-                    </div>
-                    
-                    {/* Footer */}
-                    <div className="flex items-center justify-between pt-3 border-t border-sand-100">
-                      <div className="text-lg font-bold text-sage-700">
-                        {formatPrice(yogaClass.price_cents)}
-                      </div>
-                      <div className={`text-sm ${isFull ? 'text-red-500' : spotsLeft <= 3 ? 'text-terracotta-600' : 'text-sand-500'}`}>
-                        {isFull ? 'Full' : `${spotsLeft} spots left`}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-                
-                {/* Cancel Button for My Classes */}
-                {filter === 'my-classes' && (
-                  <div className="mt-3">
+                  </Link>
+                  
+                  {/* Cancel Button for My Classes */}
+                  {filter === 'my-classes' && (
                     <button
                       onClick={(e) => handleCancelBooking(yogaClass.id, e)}
                       disabled={cancelling === yogaClass.id}
-                      className="w-full px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-medium text-sm transition-colors disabled:opacity-50"
+                      className="w-full mt-2 px-4 py-2 border border-red-200 text-red-600 text-sm font-light transition-colors hover:bg-red-50 disabled:opacity-50"
                     >
                       {cancelling === yogaClass.id ? 'Cancelling...' : 'Cancel Booking'}
                     </button>
-                  </div>
-                )}
+                  )}
                 </div>
               )
             })}

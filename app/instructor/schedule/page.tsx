@@ -6,6 +6,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import { supabase, type TimeSlot } from '@/lib/supabase'
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns'
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline'
 
 const TIME_SLOTS = [
   '07:00:00', '08:00:00', '09:00:00', '10:00:00', '11:00:00', '12:00:00',
@@ -157,17 +158,17 @@ export default function InstructorSchedulePage() {
   // Show loading while auth is loading or data is loading
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
       </div>
     )
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-sand-600 mb-4">Please sign in to view the schedule.</p>
+          <p className="text-neutral-500 font-light mb-4">Please sign in to view the schedule.</p>
           <a href="/instructor/auth/login" className="btn-primary">Sign In</a>
         </div>
       </div>
@@ -177,164 +178,154 @@ export default function InstructorSchedulePage() {
   const days = getDaysOfWeek()
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
-      <main className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-2 sm:py-4">
-        {/* Header - Compact on mobile */}
-        <div className="flex flex-col gap-2 mb-2 sm:mb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl sm:text-3xl font-bold text-charcoal">Schedule</h1>
-              <p className="text-sand-600 text-xs sm:text-base hidden sm:block">
-                Select an available slot to create your class.
-              </p>
-            </div>
+      <main className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+        {/* Header */}
+        <div className="flex flex-col gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-light text-charcoal">Schedule</h1>
+            <p className="text-neutral-500 text-sm font-light hidden sm:block">
+              Select an available slot to create your class
+            </p>
           </div>
           
-          {/* Week Navigation - Compact */}
-          <div className="flex items-center justify-center gap-1 sm:gap-2">
+          {/* Week Navigation */}
+          <div className="flex items-center justify-center gap-2">
             <button
               onClick={() => setWeekStart(addDays(weekStart, -7))}
-              className="btn-secondary px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base"
+              className="p-2 border border-neutral-200 hover:border-charcoal transition-colors"
             >
-              ← Prev
+              <ChevronLeftIcon className="w-5 h-5 text-charcoal" />
             </button>
-            <div className="px-2 sm:px-4 py-1.5 sm:py-2 bg-white rounded-lg sm:rounded-xl border border-sand-200 font-medium text-charcoal text-xs sm:text-base whitespace-nowrap">
+            <div className="px-4 py-2 border border-neutral-200 font-light text-charcoal text-sm">
               {format(weekStart, 'MMM d')} - {format(addDays(weekStart, 6), 'MMM d, yyyy')}
             </div>
             <button
               onClick={() => setWeekStart(addDays(weekStart, 7))}
-              className="btn-secondary px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-base"
+              className="p-2 border border-neutral-200 hover:border-charcoal transition-colors"
             >
-              Next →
+              <ChevronRightIcon className="w-5 h-5 text-charcoal" />
             </button>
           </div>
         </div>
 
-        {/* Legend - Horizontal scroll on mobile, more compact */}
-        <div className="flex items-center gap-3 sm:gap-6 mb-2 sm:mb-4 text-xs overflow-x-auto pb-1">
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-sage-100 border border-sage-300"></div>
-            <span className="text-sand-600">Available</span>
+        {/* Legend */}
+        <div className="flex items-center gap-4 sm:gap-6 mb-4 text-xs overflow-x-auto pb-1">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="w-3 h-3 border border-charcoal bg-white"></div>
+            <span className="text-neutral-500 font-light">Available</span>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-sage-200 border border-sage-400"></div>
-            <span className="text-sand-600">Your Class</span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="w-3 h-3 bg-charcoal"></div>
+            <span className="text-neutral-500 font-light">Your Class</span>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-sand-200"></div>
-            <span className="text-sand-600">Other Instructor</span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="w-3 h-3 bg-neutral-200"></div>
+            <span className="text-neutral-500 font-light">Taken</span>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-sand-100"></div>
-            <span className="text-sand-600">Past</span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="w-3 h-3 bg-neutral-100"></div>
+            <span className="text-neutral-500 font-light">Past</span>
           </div>
         </div>
 
-        {/* Schedule Grid - Full height, compact cells */}
-        <div className="card flex-1 overflow-auto p-2 sm:p-4">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-10 h-10 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
-            </div>
-          ) : (
-            <div className="min-w-[320px]">
-              {/* Header Row */}
-              <div className="grid grid-cols-8 gap-0.5 sm:gap-2 mb-1 sm:mb-2">
-                <div className="text-[10px] sm:text-sm font-medium text-sand-500"></div>
-                {days.map((day) => (
-                  <div key={day.toISOString()} className="text-center">
-                    <div className="text-[10px] sm:text-sm font-medium text-sand-500">
-                      {format(day, 'EEE')}
-                    </div>
-                    <div className={`text-xs sm:text-lg font-bold ${
-                      isSameDay(day, new Date()) ? 'text-sage-600' : 'text-charcoal'
-                    }`}>
-                      {format(day, 'd')}
-                    </div>
+        {/* Schedule Grid */}
+        <div className="flex-1 overflow-auto border border-neutral-200 p-2 sm:p-4">
+          <div className="min-w-[320px]">
+            {/* Header Row */}
+            <div className="grid grid-cols-8 gap-0.5 sm:gap-2 mb-1 sm:mb-2">
+              <div className="text-[10px] sm:text-xs font-light text-neutral-400 uppercase tracking-wider"></div>
+              {days.map((day) => (
+                <div key={day.toISOString()} className="text-center">
+                  <div className="text-[10px] sm:text-xs font-light text-neutral-400 uppercase tracking-wider">
+                    {format(day, 'EEE')}
                   </div>
-                ))}
-              </div>
-
-              {/* Time Slots Grid - Much smaller cells on mobile */}
-              {TIME_SLOTS.map((time) => (
-                <div key={time} className="grid grid-cols-8 gap-0.5 sm:gap-2 mb-0.5 sm:mb-2">
-                  <div className="flex items-center text-[10px] sm:text-sm font-medium text-sand-600 pr-0.5">
-                    {formatTime(time)}
+                  <div className={`text-sm sm:text-lg font-light ${
+                    isSameDay(day, new Date()) ? 'text-charcoal' : 'text-neutral-600'
+                  }`}>
+                    {format(day, 'd')}
                   </div>
-                  {days.map((day) => {
-                    const slot = getSlotForDayAndTime(day, time)
-                    const isPast = day < new Date() && !isSameDay(day, new Date())
-                    const isToday = isSameDay(day, new Date())
-                    const currentHour = new Date().getHours()
-                    const slotHour = parseInt(time.split(':')[0])
-                    const isPastToday = isToday && slotHour <= currentHour
-
-                    if (isPast || isPastToday) {
-                      return (
-                        <div
-                          key={`${day.toISOString()}-${time}`}
-                          className="h-7 sm:h-12 rounded sm:rounded-lg bg-sand-100 flex items-center justify-center"
-                        >
-                          <span className="text-sand-400 text-[8px] sm:text-xs">Past</span>
-                        </div>
-                      )
-                    }
-
-                    if (!slot) {
-                      return (
-                        <div
-                          key={`${day.toISOString()}-${time}`}
-                          className="h-7 sm:h-12 rounded sm:rounded-lg bg-sand-50 border border-dashed border-sand-200 flex items-center justify-center"
-                        >
-                          <span className="text-sand-300 text-[8px] sm:text-xs">—</span>
-                        </div>
-                      )
-                    }
-
-                    if (slot.status === 'claimed') {
-                      const classInfo = getClassForSlot(slot.id)
-                      const isMyClass = classInfo?.instructor?.email === profile?.email
-                      
-                      return (
-                        <div
-                          key={slot.id}
-                          className={`h-7 sm:h-12 rounded sm:rounded-lg flex flex-col items-center justify-center p-0.5 ${
-                            isMyClass 
-                              ? 'bg-sage-200 border border-sage-400' 
-                              : 'bg-sand-200'
-                          }`}
-                          title={classInfo ? `${classInfo.title} by ${classInfo.instructor?.first_name}` : 'Booked'}
-                        >
-                          <span className={`text-[7px] sm:text-xs font-medium leading-tight ${isMyClass ? 'text-sage-700' : 'text-sand-500'}`}>
-                            {isMyClass ? 'Yours' : 'Taken'}
-                          </span>
-                        </div>
-                      )
-                    }
-
-                    return (
-                      <button
-                        key={slot.id}
-                        onClick={() => handleClaimSlot(slot)}
-                        disabled={claiming === slot.id}
-                        className="h-7 sm:h-12 rounded sm:rounded-lg bg-sage-100 border border-sage-300 hover:bg-sage-200 hover:border-sage-400 active:bg-sage-300 transition-colors flex items-center justify-center group"
-                      >
-                        {claiming === slot.id ? (
-                          <div className="w-3 h-3 sm:w-5 sm:h-5 border-2 border-sage-300 border-t-sage-600 rounded-full animate-spin"></div>
-                        ) : (
-                          <span className="text-sage-600 text-[8px] sm:text-xs font-medium group-hover:text-sage-700">
-                            + Claim
-                          </span>
-                        )}
-                      </button>
-                    )
-                  })}
                 </div>
               ))}
             </div>
-          )}
+
+            {/* Time Slots Grid */}
+            {TIME_SLOTS.map((time) => (
+              <div key={time} className="grid grid-cols-8 gap-0.5 sm:gap-2 mb-0.5 sm:mb-1">
+                <div className="flex items-center text-[10px] sm:text-xs font-light text-neutral-400 pr-1">
+                  {formatTime(time)}
+                </div>
+                {days.map((day) => {
+                  const slot = getSlotForDayAndTime(day, time)
+                  const isPast = day < new Date() && !isSameDay(day, new Date())
+                  const isToday = isSameDay(day, new Date())
+                  const currentHour = new Date().getHours()
+                  const slotHour = parseInt(time.split(':')[0])
+                  const isPastToday = isToday && slotHour <= currentHour
+
+                  if (isPast || isPastToday) {
+                    return (
+                      <div
+                        key={`${day.toISOString()}-${time}`}
+                        className="h-7 sm:h-10 bg-neutral-50 flex items-center justify-center"
+                      >
+                        <span className="text-neutral-300 text-[8px] sm:text-xs font-light">-</span>
+                      </div>
+                    )
+                  }
+
+                  if (!slot) {
+                    return (
+                      <div
+                        key={`${day.toISOString()}-${time}`}
+                        className="h-7 sm:h-10 border border-dashed border-neutral-200 flex items-center justify-center"
+                      >
+                        <span className="text-neutral-200 text-[8px] sm:text-xs">-</span>
+                      </div>
+                    )
+                  }
+
+                  if (slot.status === 'claimed') {
+                    const classInfo = getClassForSlot(slot.id)
+                    const isMyClass = classInfo?.instructor?.email === profile?.email
+                    
+                    return (
+                      <div
+                        key={slot.id}
+                        className={`h-7 sm:h-10 flex items-center justify-center ${
+                          isMyClass 
+                            ? 'bg-charcoal text-white' 
+                            : 'bg-neutral-200 text-neutral-500'
+                        }`}
+                        title={classInfo ? `${classInfo.title} by ${classInfo.instructor?.first_name}` : 'Booked'}
+                      >
+                        <span className="text-[7px] sm:text-xs font-light">
+                          {isMyClass ? 'Yours' : 'Taken'}
+                        </span>
+                      </div>
+                    )
+                  }
+
+                  return (
+                    <button
+                      key={slot.id}
+                      onClick={() => handleClaimSlot(slot)}
+                      disabled={claiming === slot.id}
+                      className="h-7 sm:h-10 border border-charcoal hover:bg-charcoal hover:text-white transition-colors flex items-center justify-center group"
+                    >
+                      {claiming === slot.id ? (
+                        <div className="w-3 h-3 sm:w-4 sm:h-4 border border-neutral-300 border-t-charcoal rounded-full animate-spin"></div>
+                      ) : (
+                        <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4 text-charcoal group-hover:text-white" />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       </main>
     </div>

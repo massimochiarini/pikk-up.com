@@ -6,6 +6,8 @@ import { useAuth } from '@/components/AuthProvider'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
 import { format, parseISO } from 'date-fns'
 import Link from 'next/link'
+import Image from 'next/image'
+import { CalendarDaysIcon, ClockIcon, MapPinIcon, UsersIcon, CheckIcon, LinkIcon } from '@heroicons/react/24/outline'
 
 type ClassWithDetails = YogaClass & {
   time_slot: TimeSlot
@@ -406,19 +408,21 @@ function PublicBookingContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cream via-sand-50 to-sage-50 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
       </div>
     )
   }
 
   if (!yogaClass || bookingState === 'error') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cream via-sand-50 to-sage-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full card text-center">
-          <div className="text-6xl mb-4">❌</div>
-          <h1 className="text-2xl font-bold text-charcoal mb-2">Class Not Found</h1>
-          <p className="text-sand-600 mb-6">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center">
+          <div className="w-16 h-16 border border-neutral-200 flex items-center justify-center mx-auto mb-6">
+            <span className="text-2xl text-neutral-400">?</span>
+          </div>
+          <h1 className="text-2xl font-light text-charcoal mb-2">Class Not Found</h1>
+          <p className="text-neutral-500 font-light mb-8">
             {errorMessage || 'This booking link may be invalid or the class may have been cancelled.'}
           </p>
           <Link href="/classes" className="btn-primary">
@@ -431,62 +435,54 @@ function PublicBookingContent() {
 
   if (bookingState === 'success') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream to-sand-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full card text-center">
-          <div className="w-20 h-20 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <span className="text-4xl">✅</span>
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center">
+          <div className="w-16 h-16 border border-charcoal flex items-center justify-center mx-auto mb-6">
+            <CheckIcon className="w-8 h-8 text-charcoal" />
           </div>
-          <h1 className="text-2xl font-bold text-charcoal mb-2">You&apos;re All Set!</h1>
-          <p className="text-sand-600 mb-6">
-            Your spot has been reserved! Check your phone for a text confirmation with all the details.
+          <h1 className="text-2xl font-light text-charcoal mb-2">You&apos;re All Set</h1>
+          <p className="text-neutral-500 font-light mb-8">
+            Your spot has been reserved. Check your phone for a confirmation text.
           </p>
           
-          <div className="bg-sage-50 rounded-xl p-4 text-left space-y-2 mb-6">
-            <div className="flex items-center gap-2">
-              <span>📅</span>
-              <span className="text-sm font-medium text-charcoal">
+          <div className="border border-neutral-200 p-6 text-left space-y-4 mb-8">
+            <div className="flex items-center gap-3 text-sm">
+              <CalendarDaysIcon className="w-5 h-5 text-neutral-400" />
+              <span className="text-charcoal font-light">
                 {format(parseISO(yogaClass.time_slot.date), 'EEEE, MMM d, yyyy')}
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <span>🕐</span>
-              <span className="text-sm font-medium text-charcoal">
+            <div className="flex items-center gap-3 text-sm">
+              <ClockIcon className="w-5 h-5 text-neutral-400" />
+              <span className="text-charcoal font-light">
                 {formatTime(yogaClass.time_slot.start_time)}
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <span>📍</span>
-              <span className="text-sm font-medium text-charcoal">
+            <div className="flex items-center gap-3 text-sm">
+              <MapPinIcon className="w-5 h-5 text-neutral-400" />
+              <span className="text-charcoal font-light">
                 PikkUp Studio, 2500 South Miami Ave
               </span>
             </div>
           </div>
 
-          <div className="bg-sand-100 rounded-xl p-4 mb-6">
-            <p className="text-sm text-sand-700">
-              📸 <strong>Pro tip:</strong> Screenshot this page to save your class details!
-            </p>
-          </div>
-
           {/* Optional Account Creation */}
           {showAccountPrompt && !user && (
-            <div className="bg-gradient-to-br from-sage-50 to-terracotta-50 rounded-2xl p-6 mb-6 border-2 border-sage-200">
-              <h3 className="font-bold text-charcoal mb-2 flex items-center gap-2">
-                ✨ Want to manage your bookings?
-              </h3>
-              <p className="text-sm text-sand-600 mb-4">
-                Create an account to view all your classes, cancel bookings, and get updates.
+            <div className="border border-neutral-200 p-6 mb-8 text-left">
+              <h3 className="font-medium text-charcoal mb-2">Save your bookings</h3>
+              <p className="text-sm text-neutral-500 font-light mb-4">
+                Create an account to view and manage all your classes.
               </p>
               
-              <form onSubmit={handleCreateAccount} className="space-y-3">
+              <form onSubmit={handleCreateAccount} className="space-y-4">
                 {errorMessage && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 text-sm">
                     {errorMessage}
                   </div>
                 )}
                 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-1">Email</label>
+                  <label className="label">Email</label>
                   <input
                     type="email"
                     value={accountEmail}
@@ -498,7 +494,7 @@ function PublicBookingContent() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-1">Password</label>
+                  <label className="label">Password</label>
                   <input
                     type="password"
                     value={accountPassword}
@@ -510,7 +506,7 @@ function PublicBookingContent() {
                   />
                 </div>
                 
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     type="submit"
                     disabled={creatingAccount}
@@ -523,7 +519,7 @@ function PublicBookingContent() {
                     onClick={() => setShowAccountPrompt(false)}
                     className="btn-secondary flex-1"
                   >
-                    Maybe Later
+                    Skip
                   </button>
                 </div>
               </form>
@@ -542,50 +538,56 @@ function PublicBookingContent() {
   const isFull = spotsLeft <= 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream via-sand-50 to-sage-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-sand-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link href="/" className="text-xl font-bold text-sage-700">
-            Pikk<span className="text-terracotta-500">Up</span>
+      <header className="border-b border-neutral-100">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="text-xl font-light tracking-tight text-charcoal">
+            PikkUp
           </Link>
+          <button
+            onClick={copyBookingLink}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-500 hover:text-charcoal transition-colors"
+          >
+            <LinkIcon className="w-4 h-4" />
+            {linkCopied ? 'Copied!' : 'Share'}
+          </button>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Class Details */}
-          <div className="card">
-            <div className="flex items-center justify-between gap-4 mb-6">
-              <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-sage-300 to-sage-400 rounded-2xl flex items-center justify-center">
-                <span className="text-3xl">🧘</span>
-              </div>
+      <main className="max-w-6xl mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
+          {/* Left side - Artwork + Class Details */}
+          <div>
+            {/* Artwork Header */}
+            <div className="relative aspect-[4/3] mb-6 overflow-hidden bg-neutral-100">
+              <Image
+                src="/gallery/3.jpg"
+                alt="Untitled 03"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+              />
+            </div>
+            <p className="gallery-caption text-center mb-8">Untitled 03</p>
+
+            {/* Class Info */}
+            <div className="space-y-6">
               <div>
-                <h1 className="text-2xl font-bold text-charcoal">{yogaClass.title}</h1>
+                <h1 className="text-2xl md:text-3xl font-light text-charcoal mb-2">{yogaClass.title}</h1>
                 {yogaClass.skill_level && yogaClass.skill_level !== 'all' && (
-                  <span className="inline-block mt-1 px-2 py-0.5 bg-sage-100 text-sage-700 text-xs font-medium rounded-full capitalize">
+                  <span className="text-xs uppercase tracking-wider text-neutral-400">
                     {yogaClass.skill_level}
                   </span>
                 )}
               </div>
-              </div>
-              <button
-                onClick={copyBookingLink}
-                className="flex-shrink-0 px-3 py-2 bg-sand-100 hover:bg-sand-200 text-sand-700 rounded-xl text-sm font-medium transition-colors flex items-center gap-2"
-              >
-                {linkCopied ? '✓ Copied!' : '🔗 Share'}
-              </button>
-            </div>
 
-            {/* Instructor */}
-            <div className="mb-6 pb-6 border-b border-sand-200">
-              <div className="text-xs uppercase font-semibold text-sand-500 mb-2">Instructor</div>
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
+              {/* Instructor */}
+              <div className="flex items-center gap-4 py-6 border-y border-neutral-100">
+                <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center text-charcoal font-light">
                   {yogaClass.instructor.first_name?.[0] || 'I'}
                 </div>
-                <div className="flex-1">
+                <div>
                   <div className="font-medium text-charcoal">
                     {yogaClass.instructor.first_name} {yogaClass.instructor.last_name}
                   </div>
@@ -594,180 +596,177 @@ function PublicBookingContent() {
                       href={`https://instagram.com/${yogaClass.instructor.instagram.replace('@', '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sage-600 text-sm hover:underline"
+                      className="text-neutral-500 text-sm hover:text-charcoal transition-colors"
                     >
                       @{yogaClass.instructor.instagram.replace('@', '')}
                     </a>
                   )}
-                  {yogaClass.instructor.bio && (
-                    <p className="text-sand-600 text-sm mt-2 leading-relaxed">
-                      {yogaClass.instructor.bio}
-                    </p>
-                  )}
                 </div>
               </div>
+
+              {/* Details */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <CalendarDaysIcon className="w-5 h-5 text-neutral-400" />
+                  <div>
+                    <div className="text-charcoal">
+                      {format(parseISO(yogaClass.time_slot.date), 'EEEE, MMMM d, yyyy')}
+                    </div>
+                    <div className="text-neutral-500 text-sm font-light">
+                      {formatTime(yogaClass.time_slot.start_time)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <MapPinIcon className="w-5 h-5 text-neutral-400" />
+                  <div>
+                    <div className="text-charcoal">PikkUp Studio</div>
+                    <a 
+                      href="https://www.google.com/maps/search/?api=1&query=2500+South+Miami+Avenue"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-neutral-500 text-sm hover:text-charcoal transition-colors"
+                    >
+                      2500 South Miami Avenue
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <UsersIcon className="w-5 h-5 text-neutral-400" />
+                  <div>
+                    <div className={`${isFull ? 'text-red-500' : 'text-charcoal'}`}>
+                      {isFull ? 'Class Full' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
+                    </div>
+                    <div className="text-neutral-500 text-sm font-light">
+                      {bookingCount} / {yogaClass.max_capacity} registered
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              {yogaClass.description && (
+                <div className="pt-6 border-t border-neutral-100">
+                  <p className="text-neutral-600 font-light leading-relaxed whitespace-pre-wrap">
+                    {yogaClass.description}
+                  </p>
+                </div>
+              )}
+
+              {yogaClass.instructor.bio && (
+                <div className="pt-6 border-t border-neutral-100">
+                  <h3 className="text-xs uppercase tracking-wider text-neutral-400 mb-3">About the instructor</h3>
+                  <p className="text-neutral-600 font-light leading-relaxed">
+                    {yogaClass.instructor.bio}
+                  </p>
+                </div>
+              )}
             </div>
-
-            {/* Details */}
-            <div className="space-y-4 mb-6">
-              <div className="flex items-start gap-3">
-                <span className="text-xl">📅</span>
-                <div>
-                  <div className="font-medium text-charcoal">
-                    {format(parseISO(yogaClass.time_slot.date), 'EEEE, MMMM d, yyyy')}
-                  </div>
-                  <div className="text-sand-600 text-sm">
-                    {formatTime(yogaClass.time_slot.start_time)}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <span className="text-xl">📍</span>
-                <div>
-                  <div className="font-medium text-charcoal">PikkUp Studio</div>
-                  <a 
-                    href="https://www.google.com/maps/search/?api=1&query=2500+South+Miami+Avenue"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sage-600 text-sm hover:underline"
-                  >
-                    2500 South Miami Avenue
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <span className="text-xl">💰</span>
-                <div>
-                  <div className="font-medium text-sage-700">{formatPrice(yogaClass.price_cents)}</div>
-                  <div className="text-sand-600 text-sm">per person</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <span className="text-xl">👥</span>
-                <div>
-                  <div className={`font-medium ${isFull ? 'text-red-600' : 'text-charcoal'}`}>
-                    {isFull ? 'Class Full' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
-                  </div>
-                  <div className="text-sand-600 text-sm">
-                    {bookingCount} / {yogaClass.max_capacity} registered
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
-            {yogaClass.description && (
-              <div className="pt-6 border-t border-sand-200">
-                <div className="text-xs uppercase font-semibold text-sand-500 mb-2">About this class</div>
-                <p className="text-sand-700 text-sm leading-relaxed whitespace-pre-wrap">
-                  {yogaClass.description}
-                </p>
-              </div>
-            )}
           </div>
 
-          {/* Booking Form */}
-          <div className="card">
-            {isFull ? (
-              <div className="text-center py-8">
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-xl font-bold text-charcoal mb-2">Class Full</h3>
-                <p className="text-sand-600 mb-6">
-                  Sorry, all spots have been filled for this class.
-                </p>
-                <Link href="/classes" className="btn-secondary">
-                  Find Another Class
-                </Link>
+          {/* Right side - Booking Form */}
+          <div>
+            <div className="lg:sticky lg:top-8">
+              <div className="border border-neutral-200 p-8">
+                {/* Price */}
+                <div className="text-center mb-8 pb-8 border-b border-neutral-100">
+                  <div className="text-3xl font-light text-charcoal">{formatPrice(yogaClass.price_cents)}</div>
+                  <div className="text-neutral-500 text-sm font-light mt-1">per person</div>
+                </div>
+
+                {isFull ? (
+                  <div className="text-center py-8">
+                    <h3 className="text-xl font-light text-charcoal mb-2">Class Full</h3>
+                    <p className="text-neutral-500 font-light mb-6">
+                      All spots have been filled for this class.
+                    </p>
+                    <Link href="/classes" className="btn-secondary w-full">
+                      Find Another Class
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-medium text-charcoal mb-6">Reserve Your Spot</h2>
+
+                    {paymentCancelled && (
+                      <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 mb-6 text-sm font-light">
+                        Payment was cancelled. You can try again when you&apos;re ready.
+                      </div>
+                    )}
+
+                    {errorMessage && (
+                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 mb-6 text-sm">
+                        {errorMessage}
+                      </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                      <div>
+                        <label htmlFor="firstName" className="label">First Name</label>
+                        <input
+                          type="text"
+                          id="firstName"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          className="input-field"
+                          placeholder="Jane"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="lastName" className="label">Last Name</label>
+                        <input
+                          type="text"
+                          id="lastName"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          className="input-field"
+                          placeholder="Doe"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="phone" className="label">Phone Number</label>
+                        <input
+                          type="tel"
+                          id="phone"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="input-field"
+                          placeholder="+1 (555) 123-4567"
+                          required
+                        />
+                        <p className="text-neutral-400 text-xs mt-2 font-light">
+                          We&apos;ll send your confirmation via text.
+                        </p>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={submitting}
+                        className="btn-primary w-full py-4"
+                      >
+                        {submitting
+                          ? 'Processing...'
+                          : yogaClass.price_cents > 0
+                            ? `Pay ${formatPrice(yogaClass.price_cents)} & Reserve`
+                            : 'Reserve My Spot'}
+                      </button>
+
+                      {yogaClass.price_cents > 0 && (
+                        <p className="text-neutral-400 text-xs text-center font-light">
+                          Secure payment powered by Stripe
+                        </p>
+                      )}
+                    </form>
+                  </>
+                )}
               </div>
-            ) : (
-              <>
-                <h2 className="text-xl font-bold text-charcoal mb-2">Reserve Your Spot</h2>
-                <p className="text-sand-600 text-sm mb-6">
-                  Fill out the form below to register for this class.
-                </p>
-
-                {paymentCancelled && (
-                  <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-xl mb-4 text-sm">
-                    ⚠️ Payment was cancelled. You can try again when you&apos;re ready.
-                  </div>
-                )}
-
-                {errorMessage && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">
-                    {errorMessage}
-                  </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label htmlFor="firstName" className="label">First Name *</label>
-                    <input
-                      type="text"
-                      id="firstName"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      className="input-field"
-                      placeholder="Jane"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="lastName" className="label">Last Name *</label>
-                    <input
-                      type="text"
-                      id="lastName"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      className="input-field"
-                      placeholder="Doe"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="phone" className="label">Phone Number *</label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="input-field"
-                      placeholder="+1 (555) 123-4567"
-                      required
-                    />
-                    <p className="text-sand-500 text-xs mt-1">
-                      We&apos;ll send your confirmation via text message.
-                    </p>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="btn-primary w-full py-4 text-base"
-                  >
-                    {submitting
-                      ? 'Processing...'
-                      : yogaClass.price_cents > 0
-                        ? `💳 Pay ${formatPrice(yogaClass.price_cents)} & Reserve`
-                        : '✓ Reserve My Spot (Free)'}
-                  </button>
-
-                  {yogaClass.price_cents > 0 && (
-                    <p className="text-sand-500 text-xs text-center">
-                      🔒 Secure payment powered by Stripe
-                    </p>
-                  )}
-
-                  <p className="text-sand-400 text-xs text-center">
-                    By booking, you agree to receive confirmation and reminder texts about this class.
-                  </p>
-                </form>
-              </>
-            )}
+            </div>
           </div>
         </div>
       </main>
@@ -777,8 +776,8 @@ function PublicBookingContent() {
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream via-sand-50 to-sage-50 flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
     </div>
   )
 }
