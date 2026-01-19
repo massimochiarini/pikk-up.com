@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
+import { supabase } from '@/lib/supabase'
 import { format, parseISO, isPast } from 'date-fns'
 import Link from 'next/link'
-import { CalendarDaysIcon, ClockIcon, MapPinIcon, CheckIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, ClockIcon, MapPinIcon, CheckIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 export default function StudentMyClassesPage() {
   const { user, profile, loading: authLoading } = useAuth()
@@ -13,6 +14,8 @@ export default function StudentMyClassesPage() {
   const [bookings, setBookings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [cancellingId, setCancellingId] = useState<string | null>(null)
+  const [showCancelConfirm, setShowCancelConfirm] = useState<string | null>(null)
 
   useEffect(() => {
     // Only redirect if we've finished loading and there's no user
@@ -105,6 +108,32 @@ export default function StudentMyClassesPage() {
   const formatPrice = (cents: number) => {
     if (cents === 0) return 'Free'
     return `$${(cents / 100).toFixed(0)}`
+  }
+
+  const handleCancelBooking = async (bookingId: string) => {
+    setCancellingId(bookingId)
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: 'cancelled' })
+        .eq('id', bookingId)
+
+      if (error) {
+        console.error('Error cancelling booking:', error)
+        alert('Failed to cancel booking. Please try again.')
+        return
+      }
+
+      // Remove the cancelled booking from the list
+      setBookings(prev => prev.filter(b => b.id !== bookingId))
+      setShowCancelConfirm(null)
+      setExpandedId(null)
+    } catch (error) {
+      console.error('Error cancelling booking:', error)
+      alert('Failed to cancel booking. Please try again.')
+    } finally {
+      setCancellingId(null)
+    }
   }
 
   if (authLoading || loading) {
@@ -284,6 +313,47 @@ export default function StudentMyClassesPage() {
                                 <CheckIcon className="w-4 h-4" />
                                 <span className="font-light">Booking Confirmed</span>
                               </div>
+
+                              {/* Cancel Booking Section */}
+                              {showCancelConfirm === booking.id ? (
+                                <div className="border border-red-200 bg-red-50 p-4 mt-4">
+                                  <p className="text-sm text-red-800 mb-4">
+                                    Are you sure you want to cancel this booking? Your spot will be released and available for others to book.
+                                  </p>
+                                  <div className="flex gap-3">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleCancelBooking(booking.id)
+                                      }}
+                                      disabled={cancellingId === booking.id}
+                                      className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+                                    >
+                                      {cancellingId === booking.id ? 'Cancelling...' : 'Yes, Cancel Booking'}
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setShowCancelConfirm(null)
+                                      }}
+                                      className="flex-1 px-4 py-2 border border-neutral-300 text-neutral-600 text-sm font-medium hover:bg-neutral-50 transition-colors"
+                                    >
+                                      Keep Booking
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setShowCancelConfirm(booking.id)
+                                  }}
+                                  className="w-full mt-4 px-4 py-3 border border-neutral-200 text-neutral-500 text-sm font-light hover:border-red-300 hover:text-red-600 transition-colors flex items-center justify-center gap-2"
+                                >
+                                  <XMarkIcon className="w-4 h-4" />
+                                  Cancel Booking
+                                </button>
+                              )}
                             </div>
                           </div>
                         )}
