@@ -89,30 +89,42 @@ export async function POST(request: NextRequest) {
       b.class !== null && b.class.time_slot !== null
     )
 
-    // Fetch booking counts for each class
-    const classIds = [...new Set(validBookings.map((b: any) => b.class_id))]
-    const bookingCounts: Record<string, number> = {}
+    // Get unique class IDs using Array.from to avoid TypeScript downlevelIteration issue
+    const classIdSet = new Set(validBookings.map((b: any) => b.class_id))
+    const classIds = Array.from(classIdSet)
+    
+    // Fetch participants for each class
+    const classParticipants: Record<string, { first_name: string; last_name: string }[]> = {}
 
     for (const classId of classIds) {
-      const { count } = await supabase
+      const { data: participants } = await supabase
         .from('bookings')
-        .select('*', { count: 'exact', head: true })
+        .select('guest_first_name, guest_last_name')
         .eq('class_id', classId)
         .eq('status', 'confirmed')
+        .order('created_at', { ascending: true })
       
-      bookingCounts[classId] = count || 0
+      if (participants) {
+        classParticipants[classId] = participants.map((p: any) => ({
+          first_name: p.guest_first_name || '',
+          last_name: p.guest_last_name || '',
+        }))
+      } else {
+        classParticipants[classId] = []
+      }
     }
 
-    // Add booking count to each booking's class data
-    const bookingsWithCounts = validBookings.map((b: any) => ({
+    // Add participants to each booking's class data
+    const bookingsWithParticipants = validBookings.map((b: any) => ({
       ...b,
       class: {
         ...b.class,
-        booking_count: bookingCounts[b.class_id] || 0,
+        participants: classParticipants[b.class_id] || [],
+        booking_count: classParticipants[b.class_id]?.length || 0,
       },
     }))
 
-    return NextResponse.json({ bookings: bookingsWithCounts })
+    return NextResponse.json({ bookings: bookingsWithParticipants })
   } catch (error) {
     console.error('Fetch bookings error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
