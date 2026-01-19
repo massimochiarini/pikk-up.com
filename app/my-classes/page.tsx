@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
-import { supabase } from '@/lib/supabase'
 import { format, parseISO, isPast } from 'date-fns'
 import Link from 'next/link'
 import { CalendarDaysIcon, ClockIcon, MapPinIcon, CheckIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline'
@@ -113,14 +112,21 @@ export default function StudentMyClassesPage() {
   const handleCancelBooking = async (bookingId: string) => {
     setCancellingId(bookingId)
     try {
-      const { error } = await supabase
-        .from('bookings')
-        .update({ status: 'cancelled' })
-        .eq('id', bookingId)
+      const response = await fetch('/api/cancel-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId,
+          userId: user?.id,
+          userPhone: profile?.phone,
+        }),
+      })
 
-      if (error) {
-        console.error('Error cancelling booking:', error)
-        alert('Failed to cancel booking. Please try again.')
+      const data = await response.json()
+
+      if (!response.ok) {
+        console.error('Error cancelling booking:', data.error)
+        alert(data.error || 'Failed to cancel booking. Please try again.')
         return
       }
 
