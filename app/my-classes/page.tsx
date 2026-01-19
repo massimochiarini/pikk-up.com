@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import { format, parseISO, isPast } from 'date-fns'
 import Link from 'next/link'
-import { CalendarDaysIcon, ClockIcon, MapPinIcon, CheckIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, ClockIcon, MapPinIcon, CheckIcon, ChevronDownIcon, XMarkIcon, UsersIcon } from '@heroicons/react/24/outline'
 
 export default function StudentMyClassesPage() {
   const { user, profile, loading: authLoading } = useAuth()
@@ -241,6 +241,13 @@ export default function StudentMyClassesPage() {
                                   <span className="text-xs uppercase tracking-wider text-neutral-400">Location</span>
                                   <p className="text-sm text-charcoal font-light mt-1 flex items-center gap-1">
                                     <MapPinIcon className="w-4 h-4" /> PikkUp Studio
+                                  </p>
+                                </div>
+                                <div className="col-span-2">
+                                  <span className="text-xs uppercase tracking-wider text-neutral-400">Participants</span>
+                                  <p className="text-sm text-charcoal font-light mt-1 flex items-center gap-1">
+                                    <UsersIcon className="w-4 h-4" /> 
+                                    {booking.class.booking_count} / {booking.class.max_capacity} registered
                                   </p>
                                 </div>
                               </div>

@@ -89,7 +89,30 @@ export async function POST(request: NextRequest) {
       b.class !== null && b.class.time_slot !== null
     )
 
-    return NextResponse.json({ bookings: validBookings })
+    // Fetch booking counts for each class
+    const classIds = [...new Set(validBookings.map((b: any) => b.class_id))]
+    const bookingCounts: Record<string, number> = {}
+
+    for (const classId of classIds) {
+      const { count } = await supabase
+        .from('bookings')
+        .select('*', { count: 'exact', head: true })
+        .eq('class_id', classId)
+        .eq('status', 'confirmed')
+      
+      bookingCounts[classId] = count || 0
+    }
+
+    // Add booking count to each booking's class data
+    const bookingsWithCounts = validBookings.map((b: any) => ({
+      ...b,
+      class: {
+        ...b.class,
+        booking_count: bookingCounts[b.class_id] || 0,
+      },
+    }))
+
+    return NextResponse.json({ bookings: bookingsWithCounts })
   } catch (error) {
     console.error('Fetch bookings error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
