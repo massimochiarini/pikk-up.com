@@ -223,13 +223,21 @@ function PublicBookingContent() {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, phone')
           .eq('id', user.id)
           .single()
         
         // Only set user_id if profile exists
         if (profile) {
           userId = user.id
+          
+          // Update profile phone if not already set
+          if (!profile.phone && phone) {
+            await supabase
+              .from('profiles')
+              .update({ phone: phone.replace(/\D/g, '') })
+              .eq('id', user.id)
+          }
         }
       }
 
@@ -295,13 +303,21 @@ function PublicBookingContent() {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, phone')
           .eq('id', user.id)
           .single()
         
         // Only set user_id if profile exists
         if (profile) {
           userId = user.id
+          
+          // Update profile phone if not already set
+          if (!profile.phone && phone) {
+            await supabase
+              .from('profiles')
+              .update({ phone: phone.replace(/\D/g, '') })
+              .eq('id', user.id)
+          }
         }
       }
 

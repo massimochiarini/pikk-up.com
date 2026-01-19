@@ -28,64 +28,21 @@ export default function StudentMyClassesPage() {
     
     const fetchBookings = async () => {
       try {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-        
-        const allBookings: any[] = []
-        const seenIds = new Set<string>()
+        const response = await fetch('/api/my-bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            userPhone: profile?.phone,
+          }),
+        })
 
-        const selectQuery = 'id,class_id,status,created_at,guest_first_name,guest_last_name,guest_phone,class:classes(id,title,description,price_cents,skill_level,max_capacity,time_slot:time_slots(date,start_time,end_time),instructor:profiles!instructor_id(first_name,last_name,instagram,bio))'
-
-        // Fetch bookings by user_id
-        const userRes = await fetch(
-          `${supabaseUrl}/rest/v1/bookings?select=${selectQuery}&user_id=eq.${user.id}&status=eq.confirmed&order=created_at.desc`,
-          {
-            headers: {
-              'apikey': supabaseKey || '',
-              'Authorization': `Bearer ${supabaseKey}`,
-            },
-          }
-        )
-        
-        if (userRes.ok) {
-          const userBookings = await userRes.json()
-          for (const b of userBookings) {
-            if (!seenIds.has(b.id)) {
-              seenIds.add(b.id)
-              allBookings.push(b)
-            }
-          }
+        if (response.ok) {
+          const data = await response.json()
+          setBookings(data.bookings || [])
+        } else {
+          console.error('Error fetching bookings:', await response.text())
         }
-
-        // Also fetch by phone number if profile has phone
-        if (profile?.phone) {
-          const phoneNormalized = profile.phone.replace(/\D/g, '')
-          const phoneRes = await fetch(
-            `${supabaseUrl}/rest/v1/bookings?select=${selectQuery}&guest_phone=eq.${phoneNormalized}&status=eq.confirmed&order=created_at.desc`,
-            {
-              headers: {
-                'apikey': supabaseKey || '',
-                'Authorization': `Bearer ${supabaseKey}`,
-              },
-            }
-          )
-
-          if (phoneRes.ok) {
-            const phoneBookings = await phoneRes.json()
-            for (const b of phoneBookings) {
-              if (!seenIds.has(b.id)) {
-                seenIds.add(b.id)
-                allBookings.push(b)
-              }
-            }
-          }
-        }
-
-        // Filter out any bookings where class data is missing
-        const validBookings = allBookings.filter((b: any) => 
-          b.class !== null && b.class.time_slot !== null
-        )
-        setBookings(validBookings)
       } catch (error) {
         console.error('Error fetching bookings:', error)
       } finally {
