@@ -163,7 +163,8 @@ export default function ClassesPage() {
     return `${displayHour}:${minutes} ${period}`
   }
 
-  const formatPrice = (cents: number) => {
+  const formatPrice = (cents: number, isDonation?: boolean) => {
+    if (isDonation) return 'Donation'
     if (cents === 0) return 'Free'
     return `$${(cents / 100).toFixed(0)}`
   }
@@ -317,10 +318,10 @@ export default function ClassesPage() {
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-medium text-charcoal">
-                            {formatPrice(yogaClass.price_cents)}
+                            {formatPrice(yogaClass.price_cents, yogaClass.is_donation)}
                           </div>
-                          {yogaClass.price_cents === 0 && (
-                            <span className="text-xs uppercase tracking-wider text-neutral-400">Free</span>
+                          {yogaClass.is_donation && (
+                            <span className="text-xs uppercase tracking-wider text-neutral-400">Pay what you can</span>
                           )}
                         </div>
                       </div>

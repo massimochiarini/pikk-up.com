@@ -16,7 +16,13 @@ export async function POST(request: NextRequest) {
       durationMinutes,
       recurring,
       recurrenceWeeks,
+      isDonation,
     } = await request.json()
+    
+    // Determine if this is a donation-based class
+    // If no price or price is 0, treat as donation
+    const finalPriceCents = priceCents || 0
+    const finalIsDonation = isDonation ?? (finalPriceCents === 0)
 
     // Validate required fields
     if (!instructorId || !title || !date || !startTime || !durationMinutes) {
@@ -29,9 +35,11 @@ export async function POST(request: NextRequest) {
     const supabase = createServerClient()
 
     // Calculate end time from start time and duration
+    // Add 30-minute buffer after each class
+    const BUFFER_MINUTES = 30
     const [startHours, startMinutes] = startTime.split(':').map(Number)
     const totalStartMinutes = startHours * 60 + startMinutes
-    const totalEndMinutes = totalStartMinutes + durationMinutes
+    const totalEndMinutes = totalStartMinutes + durationMinutes + BUFFER_MINUTES
     const endHours = Math.floor(totalEndMinutes / 60)
     const endMinutes = totalEndMinutes % 60
     const endTime = `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}:00`
@@ -56,6 +64,32 @@ export async function POST(request: NextRequest) {
         .eq('date', formattedDate)
         .eq('start_time', formattedStartTime)
         .single()
+
+      // Check for overlapping time slots on this date
+      const { data: claimedSlots } = await supabase
+        .from('time_slots')
+        .select('start_time, end_time')
+        .eq('date', formattedDate)
+        .eq('status', 'claimed')
+      
+      // Check if the new class would overlap with any existing claimed slots
+      const newStartMinutes = totalStartMinutes
+      const newEndMinutes = totalEndMinutes
+      
+      const hasOverlap = claimedSlots?.some(slot => {
+        const [slotStartH, slotStartM] = slot.start_time.split(':').map(Number)
+        const [slotEndH, slotEndM] = slot.end_time.split(':').map(Number)
+        const slotStartMinutes = slotStartH * 60 + slotStartM
+        const slotEndMinutes = slotEndH * 60 + slotEndM
+        
+        // Check if time ranges overlap
+        return (newStartMinutes < slotEndMinutes && newEndMinutes > slotStartMinutes)
+      })
+
+      if (hasOverlap) {
+        console.log(`Time slot overlaps with existing class for ${formattedDate} at ${formattedStartTime}, skipping`)
+        continue
+      }
 
       let timeSlotId: string
 
@@ -100,10 +134,11 @@ export async function POST(request: NextRequest) {
           time_slot_id: timeSlotId,
           title: title.trim(),
           description: description?.trim() || null,
-          price_cents: priceCents || 0,
+          price_cents: finalPriceCents,
           max_capacity: maxCapacity || 15,
           skill_level: skillLevel || 'all',
           status: 'upcoming',
+          is_donation: finalIsDonation,
         })
         .select()
         .single()

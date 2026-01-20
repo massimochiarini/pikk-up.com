@@ -38,6 +38,7 @@ function PublicBookingContent() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
+  const [donationAmount, setDonationAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [linkCopied, setLinkCopied] = useState(false)
@@ -201,6 +202,19 @@ function PublicBookingContent() {
         return
       }
 
+      // Donation-based class
+      if (yogaClass.is_donation) {
+        const donationCents = Math.round(parseFloat(donationAmount || '0') * 100)
+        if (donationCents === 0) {
+          // $0 donation - book directly as free
+          await handleFreeBooking()
+        } else {
+          // Positive donation - redirect to Stripe
+          await handlePaidBooking(donationCents, true)
+        }
+        return
+      }
+
       // Free class - book directly
       if (yogaClass.price_cents === 0) {
         await handleFreeBooking()
@@ -208,7 +222,7 @@ function PublicBookingContent() {
       }
 
       // Paid class - redirect to Stripe
-      await handlePaidBooking()
+      await handlePaidBooking(yogaClass.price_cents, false)
     } catch (error: any) {
       console.error('Error processing booking:', error)
       setErrorMessage(error.message || 'Failed to process booking. Please try again.')
@@ -296,7 +310,7 @@ function PublicBookingContent() {
     }
   }
 
-  const handlePaidBooking = async () => {
+  const handlePaidBooking = async (priceCents: number, isDonation: boolean) => {
     try {
       // Check if user has a profile before associating booking
       let userId = null
@@ -329,7 +343,8 @@ function PublicBookingContent() {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           phone,
-          priceCents: yogaClass!.price_cents,
+          priceCents,
+          isDonation,
           sessionTitle: yogaClass!.title,
           sessionDate: format(parseISO(yogaClass!.time_slot.date), 'EEEE, MMM d, yyyy'),
           sessionTime: formatTime(yogaClass!.time_slot.start_time),
@@ -362,7 +377,8 @@ function PublicBookingContent() {
     return `${displayHour}:${minutes} ${period}`
   }
 
-  const formatPrice = (cents: number) => {
+  const formatPrice = (cents: number, isDonation?: boolean) => {
+    if (isDonation) return 'Donation'
     if (cents === 0) return 'Free'
     return `$${(cents / 100).toFixed(0)}`
   }
@@ -688,8 +704,10 @@ function PublicBookingContent() {
               <div className="border border-neutral-200 p-8">
                 {/* Price */}
                 <div className="text-center mb-8 pb-8 border-b border-neutral-100">
-                  <div className="text-3xl font-light text-charcoal">{formatPrice(yogaClass.price_cents)}</div>
-                  <div className="text-neutral-500 text-sm font-light mt-1">per person</div>
+                  <div className="text-3xl font-light text-charcoal">{formatPrice(yogaClass.price_cents, yogaClass.is_donation)}</div>
+                  <div className="text-neutral-500 text-sm font-light mt-1">
+                    {yogaClass.is_donation ? 'pay what you can' : 'per person'}
+                  </div>
                 </div>
 
                 {isFull ? (
@@ -761,6 +779,29 @@ function PublicBookingContent() {
                         </p>
                       </div>
 
+                      {/* Donation Amount Input for donation-based classes */}
+                      {yogaClass.is_donation && (
+                        <div className="border border-neutral-100 p-4 bg-neutral-50">
+                          <label htmlFor="donation" className="label">Donation Amount (Optional)</label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">$</span>
+                            <input
+                              type="number"
+                              id="donation"
+                              min="0"
+                              step="1"
+                              value={donationAmount}
+                              onChange={(e) => setDonationAmount(e.target.value)}
+                              className="input-field pl-7"
+                              placeholder="0"
+                            />
+                          </div>
+                          <p className="text-neutral-400 text-xs mt-2 font-light">
+                            This class is donation-based. Enter any amount you&apos;d like to contribute, or leave empty to attend for free.
+                          </p>
+                        </div>
+                      )}
+
                       <button
                         type="submit"
                         disabled={submitting}
@@ -768,12 +809,16 @@ function PublicBookingContent() {
                       >
                         {submitting
                           ? 'Processing...'
-                          : yogaClass.price_cents > 0
-                            ? `Pay ${formatPrice(yogaClass.price_cents)} & Reserve`
-                            : 'Reserve My Spot'}
+                          : yogaClass.is_donation
+                            ? parseFloat(donationAmount || '0') > 0
+                              ? `Donate $${parseFloat(donationAmount).toFixed(0)} & Reserve`
+                              : 'Reserve My Spot'
+                            : yogaClass.price_cents > 0
+                              ? `Pay ${formatPrice(yogaClass.price_cents)} & Reserve`
+                              : 'Reserve My Spot'}
                       </button>
 
-                      {yogaClass.price_cents > 0 && (
+                      {(yogaClass.price_cents > 0 || (yogaClass.is_donation && parseFloat(donationAmount || '0') > 0)) && (
                         <p className="text-neutral-400 text-xs text-center font-light">
                           Secure payment powered by Stripe
                         </p>

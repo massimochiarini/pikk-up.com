@@ -94,6 +94,7 @@ export type YogaClass = {
   max_capacity: number
   skill_level?: 'beginner' | 'intermediate' | 'advanced' | 'all'
   status: 'upcoming' | 'in_progress' | 'completed' | 'cancelled'
+  is_donation?: boolean
   created_at: string
 }
 

@@ -83,7 +83,8 @@ export default function MyClassesPage() {
     return `${displayHour}:${minutes} ${period}`
   }
 
-  const formatPrice = (cents: number) => {
+  const formatPrice = (cents: number, isDonation?: boolean) => {
+    if (isDonation) return 'Donation'
     if (cents === 0) return 'Free'
     return `$${(cents / 100).toFixed(0)}`
   }
@@ -198,7 +199,7 @@ export default function MyClassesPage() {
                                     {formatTime(yogaClass.time_slot.start_time)}
                                   </span>
                                   <span className="font-light">
-                                    {formatPrice(yogaClass.price_cents)}
+                                    {formatPrice(yogaClass.price_cents, yogaClass.is_donation)}
                                   </span>
                                   <span className={`flex items-center gap-1 font-light ${spotsLeft <= 3 ? 'text-amber-600' : ''}`}>
                                     <UsersIcon className="w-4 h-4" />

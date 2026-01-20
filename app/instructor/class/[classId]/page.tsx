@@ -76,7 +76,8 @@ export default function InstructorClassDetailPage() {
     return `${displayHour}:${minutes} ${period}`
   }
 
-  const formatPrice = (cents: number) => {
+  const formatPrice = (cents: number, isDonation?: boolean) => {
+    if (isDonation) return 'Donation'
     if (cents === 0) return 'Free'
     return `$${(cents / 100).toFixed(0)}`
   }
@@ -194,7 +195,7 @@ export default function InstructorClassDetailPage() {
                     <ClockIcon className="w-4 h-4" />
                     {formatTime(yogaClass.time_slot.start_time)}
                   </span>
-                  <span>{formatPrice(yogaClass.price_cents)}</span>
+                  <span>{formatPrice(yogaClass.price_cents, yogaClass.is_donation)}</span>
                 </div>
                 {yogaClass.skill_level && yogaClass.skill_level !== 'all' && (
                   <span className="inline-block mt-3 text-xs uppercase tracking-wider text-neutral-400">

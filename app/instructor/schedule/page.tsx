@@ -14,6 +14,7 @@ type ClassWithDetails = {
   title: string
   price_cents: number
   max_capacity: number
+  is_donation?: boolean
   time_slot: {
     date: string
     start_time: string
@@ -107,7 +108,8 @@ export default function InstructorSchedulePage() {
     return `${displayHour}:${minutes} ${period}`
   }
 
-  const formatPrice = (cents: number) => {
+  const formatPrice = (cents: number, isDonation?: boolean) => {
+    if (isDonation) return 'Donation'
     if (cents === 0) return 'Free'
     return `$${(cents / 100).toFixed(0)}`
   }
@@ -194,7 +196,7 @@ export default function InstructorSchedulePage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-charcoal font-light">{formatPrice(cls.price_cents)}</span>
+                      <span className="text-charcoal font-light">{formatPrice(cls.price_cents, cls.is_donation)}</span>
                     </div>
                   </div>
                 </Link>

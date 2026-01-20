@@ -1,12 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
+import { supabase } from '@/lib/supabase'
 import { format, addDays } from 'date-fns'
 import Link from 'next/link'
-import { ArrowLeftIcon, CalendarDaysIcon, ClockIcon, CheckIcon, LinkIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, CalendarDaysIcon, ClockIcon, CheckIcon, LinkIcon, ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+
+// 30-minute buffer after each class
+const BUFFER_MINUTES = 30
 
 const DURATION_OPTIONS = [
   { value: 30, label: '30 minutes' },
@@ -58,6 +62,10 @@ export default function CreateClassPage() {
   const [duration, setDuration] = useState(60)
   const [recurring, setRecurring] = useState(false)
   const [recurrenceWeeks, setRecurrenceWeeks] = useState(4)
+  
+  // Booked time slots for the selected date
+  const [bookedSlots, setBookedSlots] = useState<{ start_time: string; end_time: string }[]>([])
+  const [loadingSlots, setLoadingSlots] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -71,6 +79,63 @@ export default function CreateClassPage() {
     setDate(format(tomorrow, 'yyyy-MM-dd'))
   }, [])
 
+  // Fetch booked time slots when date changes
+  const fetchBookedSlots = useCallback(async (selectedDate: string) => {
+    if (!selectedDate) return
+    
+    setLoadingSlots(true)
+    try {
+      const { data, error } = await supabase
+        .from('time_slots')
+        .select('start_time, end_time')
+        .eq('date', selectedDate)
+        .eq('status', 'claimed')
+      
+      if (error) {
+        console.error('Error fetching booked slots:', error)
+        setBookedSlots([])
+      } else {
+        setBookedSlots(data || [])
+      }
+    } catch (err) {
+      console.error('Error:', err)
+      setBookedSlots([])
+    } finally {
+      setLoadingSlots(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (date) {
+      fetchBookedSlots(date)
+    }
+  }, [date, fetchBookedSlots])
+
+  // Check if a time slot would overlap with existing booked slots
+  const isTimeAvailable = useCallback((timeValue: string, durationMins: number) => {
+    const [hours, minutes] = timeValue.split(':').map(Number)
+    const startMinutes = hours * 60 + minutes
+    const endMinutes = startMinutes + durationMins + BUFFER_MINUTES // Include buffer
+    
+    return !bookedSlots.some(slot => {
+      const [slotStartH, slotStartM] = slot.start_time.split(':').map(Number)
+      const [slotEndH, slotEndM] = slot.end_time.split(':').map(Number)
+      const slotStartMinutes = slotStartH * 60 + slotStartM
+      const slotEndMinutes = slotEndH * 60 + slotEndM
+      
+      // Check if time ranges overlap
+      return (startMinutes < slotEndMinutes && endMinutes > slotStartMinutes)
+    })
+  }, [bookedSlots])
+
+  // Filter available time options based on booked slots and selected duration
+  const availableTimeOptions = useMemo(() => {
+    return TIME_OPTIONS.map(opt => ({
+      ...opt,
+      available: isTimeAvailable(opt.value, duration)
+    }))
+  }, [isTimeAvailable, duration])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user || submitting) return
@@ -80,6 +145,8 @@ export default function CreateClassPage() {
 
     try {
       const priceCents = Math.round(parseFloat(price || '0') * 100)
+      // If no price or price is 0, treat as donation-based
+      const isDonation = priceCents === 0
 
       const response = await fetch('/api/create-class', {
         method: 'POST',
@@ -89,6 +156,7 @@ export default function CreateClassPage() {
           title: title.trim(),
           description: description.trim() || null,
           priceCents,
+          isDonation,
           maxCapacity: parseInt(maxCapacity),
           skillLevel,
           date,
@@ -248,6 +316,13 @@ export default function CreateClassPage() {
               </div>
             )}
 
+            {!isTimeAvailable(time, duration) && bookedSlots.length > 0 && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm flex items-center gap-2">
+                <ExclamationTriangleIcon className="w-5 h-5" />
+                The selected time conflicts with an existing class. Please choose a different time.
+              </div>
+            )}
+
             <div>
               <label htmlFor="title" className="label">Class Title</label>
               <input
@@ -304,10 +379,20 @@ export default function CreateClassPage() {
                     className="input-field"
                     required
                   >
-                    {TIME_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    {availableTimeOptions.map((opt) => (
+                      <option 
+                        key={opt.value} 
+                        value={opt.value}
+                        disabled={!opt.available}
+                        className={!opt.available ? 'text-neutral-300' : ''}
+                      >
+                        {opt.label}{!opt.available ? ' (Unavailable)' : ''}
+                      </option>
                     ))}
                   </select>
+                  {loadingSlots && (
+                    <p className="text-neutral-400 text-xs mt-1 font-light">Loading availability...</p>
+                  )}
                 </div>
               </div>
 
@@ -324,6 +409,9 @@ export default function CreateClassPage() {
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
+                <p className="text-neutral-400 text-xs mt-2 font-light">
+                  A 30-minute buffer will be added after each class
+                </p>
               </div>
 
               {/* Recurrence Section */}
@@ -376,7 +464,7 @@ export default function CreateClassPage() {
                   className="input-field"
                   placeholder="0"
                 />
-                <p className="text-neutral-400 text-xs mt-2 font-light">Leave empty for free</p>
+                <p className="text-neutral-400 text-xs mt-2 font-light">Leave empty for donation-based pricing</p>
               </div>
               <div>
                 <label htmlFor="capacity" className="label">Max Capacity</label>
@@ -414,7 +502,7 @@ export default function CreateClassPage() {
               </Link>
               <button
                 type="submit"
-                disabled={submitting || !title.trim() || !date}
+                disabled={submitting || !title.trim() || !date || !isTimeAvailable(time, duration)}
                 className="btn-primary flex-1 py-4"
               >
                 {submitting ? 'Creating...' : recurring ? `Create ${recurrenceWeeks} Classes` : 'Create Class'}

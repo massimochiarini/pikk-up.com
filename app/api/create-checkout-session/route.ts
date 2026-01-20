@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
       lastName,
       phone,
       priceCents,
+      isDonation,
       sessionTitle,
       sessionDate,
       sessionTime,
@@ -27,22 +28,36 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Validation
-    if (!classId || !firstName || !lastName || !phone || !priceCents) {
+    if (!classId || !firstName || !lastName || !phone) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
     }
 
-    if (priceCents <= 0) {
+    // For non-donation classes, price is required and must be positive
+    if (!isDonation && (!priceCents || priceCents <= 0)) {
       return NextResponse.json(
         { error: 'Invalid price' },
         { status: 400 }
       )
     }
 
+    // For donation classes, price must be positive (0 donations are handled as free bookings)
+    if (isDonation && priceCents <= 0) {
+      return NextResponse.json(
+        { error: 'Invalid donation amount' },
+        { status: 400 }
+      )
+    }
+
     const customerName = `${firstName.trim()} ${lastName.trim()}`
     const phoneNormalized = phone.replace(/\D/g, '')
+
+    // Determine product name based on whether it's a donation
+    const productName = isDonation 
+      ? `Donation - ${sessionTitle || 'Yoga Class'}`
+      : sessionTitle || 'Yoga Class'
 
     // Create Stripe Checkout Session
     const session = await getStripe().checkout.sessions.create({
@@ -52,7 +67,7 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: sessionTitle || 'Yoga Class',
+              name: productName,
               description: `${sessionDate} at ${sessionTime}\n${venueName}`,
             },
             unit_amount: priceCents,
@@ -67,6 +82,7 @@ export async function POST(request: NextRequest) {
         lastName: lastName.trim(),
         phone: phoneNormalized,
         customerName,
+        isDonation: isDonation ? 'true' : 'false',
       },
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/booking-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/book/${classId}?payment=cancelled`,
