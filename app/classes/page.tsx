@@ -320,9 +320,6 @@ export default function ClassesPage() {
                           <div className="text-lg font-medium text-charcoal">
                             {formatPrice(yogaClass.price_cents, yogaClass.is_donation)}
                           </div>
-                          {yogaClass.is_donation && (
-                            <span className="text-xs uppercase tracking-wider text-neutral-400">Pay what you can</span>
-                          )}
                         </div>
                       </div>
                       
