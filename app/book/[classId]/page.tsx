@@ -705,9 +705,7 @@ function PublicBookingContent() {
                 {/* Price */}
                 <div className="text-center mb-8 pb-8 border-b border-neutral-100">
                   <div className="text-3xl font-light text-charcoal">{formatPrice(yogaClass.price_cents, yogaClass.is_donation)}</div>
-                  <div className="text-neutral-500 text-sm font-light mt-1">
-                    {yogaClass.is_donation ? 'pay what you can' : 'per person'}
-                  </div>
+                  <div className="text-neutral-500 text-sm font-light mt-1">per person</div>
                 </div>
 
                 {isFull ? (
