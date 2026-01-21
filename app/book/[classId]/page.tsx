@@ -7,7 +7,7 @@ import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/sup
 import { format, parseISO } from 'date-fns'
 import Link from 'next/link'
 import Image from 'next/image'
-import { CalendarDaysIcon, ClockIcon, MapPinIcon, UsersIcon, CheckIcon, LinkIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, ClockIcon, MapPinIcon, UsersIcon, CheckIcon, LinkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 
 type ClassWithDetails = YogaClass & {
   time_slot: TimeSlot
@@ -49,6 +49,11 @@ function PublicBookingContent() {
   const [accountPassword, setAccountPassword] = useState('')
   const [creatingAccount, setCreatingAccount] = useState(false)
   const [bookingId, setBookingId] = useState<string | null>(null)
+  
+  // Participants list
+  const [showParticipants, setShowParticipants] = useState(false)
+  const [participants, setParticipants] = useState<{ first_name: string; last_initial: string }[]>([])
+  const [loadingParticipants, setLoadingParticipants] = useState(false)
 
   const copyBookingLink = () => {
     const url = window.location.href
@@ -160,6 +165,40 @@ function PublicBookingContent() {
       isCancelled = true
     }
   }, [classId])
+
+  const fetchParticipants = async () => {
+    if (loadingParticipants || participants.length > 0) return
+    
+    setLoadingParticipants(true)
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('guest_first_name, guest_last_name')
+        .eq('class_id', classId)
+        .eq('status', 'confirmed')
+        .order('created_at', { ascending: true })
+
+      if (!error && data) {
+        setParticipants(
+          data.map(b => ({
+            first_name: b.guest_first_name || 'Guest',
+            last_initial: b.guest_last_name?.[0] || ''
+          }))
+        )
+      }
+    } catch (err) {
+      console.error('Error fetching participants:', err)
+    } finally {
+      setLoadingParticipants(false)
+    }
+  }
+
+  const toggleParticipants = () => {
+    if (!showParticipants && participants.length === 0) {
+      fetchParticipants()
+    }
+    setShowParticipants(!showParticipants)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -665,15 +704,48 @@ function PublicBookingContent() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <UsersIcon className="w-5 h-5 text-neutral-400" />
-                  <div>
+                <div className="flex items-start gap-4">
+                  <UsersIcon className="w-5 h-5 text-neutral-400 mt-0.5" />
+                  <div className="flex-1">
                     <div className={`${isFull ? 'text-red-500' : 'text-charcoal'}`}>
                       {isFull ? 'Class Full' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
                     </div>
-                    <div className="text-neutral-500 text-sm font-light">
+                    <button
+                      onClick={toggleParticipants}
+                      className="text-neutral-500 text-sm font-light hover:text-charcoal transition-colors flex items-center gap-1"
+                    >
                       {bookingCount} / {yogaClass.max_capacity} registered
-                    </div>
+                      {bookingCount > 0 && (
+                        showParticipants ? (
+                          <ChevronUpIcon className="w-4 h-4" />
+                        ) : (
+                          <ChevronDownIcon className="w-4 h-4" />
+                        )
+                      )}
+                    </button>
+                    
+                    {/* Participants list */}
+                    {showParticipants && bookingCount > 0 && (
+                      <div className="mt-3 pt-3 border-t border-neutral-100">
+                        {loadingParticipants ? (
+                          <div className="flex items-center gap-2 text-sm text-neutral-400">
+                            <div className="w-4 h-4 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
+                            Loading...
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {participants.map((p, i) => (
+                              <span
+                                key={i}
+                                className="px-2 py-1 bg-neutral-50 text-neutral-600 text-sm font-light"
+                              >
+                                {p.first_name} {p.last_initial}.
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

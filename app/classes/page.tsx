@@ -3,11 +3,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { Navbar } from '@/components/Navbar'
 import { useAuth } from '@/components/AuthProvider'
+import { ParticipantsModal } from '@/components/ParticipantsModal'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
 import { format, parseISO, isToday, isTomorrow } from 'date-fns'
 import Link from 'next/link'
 import Image from 'next/image'
-import { CalendarDaysIcon, ClockIcon, UserIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, ClockIcon, ExclamationTriangleIcon, UsersIcon } from '@heroicons/react/24/outline'
 
 type ClassWithDetails = YogaClass & {
   time_slot: TimeSlot
@@ -24,6 +25,7 @@ export default function ClassesPage() {
   const [skillFilter, setSkillFilter] = useState<string>('all')
   const [myClassIds, setMyClassIds] = useState<Set<string>>(new Set())
   const [cancelling, setCancelling] = useState<string | null>(null)
+  const [participantsModal, setParticipantsModal] = useState<{ classId: string; title: string; isOwner: boolean } | null>(null)
   
   const hasFetchedBookings = useRef<string | null>(null)
 
@@ -345,9 +347,21 @@ export default function ClassesPage() {
                             {yogaClass.instructor.first_name} {yogaClass.instructor.last_name}
                           </span>
                         </div>
-                        <div className={`text-sm font-light ${isFull ? 'text-red-500' : spotsLeft <= 3 ? 'text-amber-600' : 'text-neutral-400'}`}>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setParticipantsModal({
+                              classId: yogaClass.id,
+                              title: yogaClass.title,
+                              isOwner: user?.id === yogaClass.instructor_id
+                            })
+                          }}
+                          className={`flex items-center gap-1.5 text-sm font-light hover:underline ${isFull ? 'text-red-500' : spotsLeft <= 3 ? 'text-amber-600' : 'text-neutral-400'}`}
+                        >
+                          <UsersIcon className="w-4 h-4" />
                           {isFull ? 'Full' : `${spotsLeft} spots`}
-                        </div>
+                        </button>
                       </div>
 
                       {/* Full overlay */}
@@ -373,6 +387,16 @@ export default function ClassesPage() {
               )
             })}
           </div>
+        )}
+
+        {/* Participants Modal */}
+        {participantsModal && (
+          <ParticipantsModal
+            classId={participantsModal.classId}
+            classTitle={participantsModal.title}
+            isOwner={participantsModal.isOwner}
+            onClose={() => setParticipantsModal(null)}
+          />
         )}
       </main>
     </div>

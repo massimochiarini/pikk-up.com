@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
+import { ParticipantsModal } from '@/components/ParticipantsModal'
 import { supabase, type YogaClass, type TimeSlot, type Booking } from '@/lib/supabase'
 import { format, parseISO, isPast } from 'date-fns'
 import Link from 'next/link'
@@ -21,6 +22,7 @@ export default function MyClassesPage() {
   const [classes, setClasses] = useState<ClassWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [participantsModal, setParticipantsModal] = useState<{ classId: string; title: string } | null>(null)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -201,10 +203,13 @@ export default function MyClassesPage() {
                                   <span className="font-light">
                                     {formatPrice(yogaClass.price_cents, yogaClass.is_donation)}
                                   </span>
-                                  <span className={`flex items-center gap-1 font-light ${spotsLeft <= 3 ? 'text-amber-600' : ''}`}>
+                                  <button
+                                    onClick={() => setParticipantsModal({ classId: yogaClass.id, title: yogaClass.title })}
+                                    className={`flex items-center gap-1 font-light hover:underline ${spotsLeft <= 3 ? 'text-amber-600' : ''}`}
+                                  >
                                     <UsersIcon className="w-4 h-4" />
                                     {confirmedBookings.length}/{yogaClass.max_capacity}
-                                  </span>
+                                  </button>
                                 </div>
                                 {yogaClass.skill_level && yogaClass.skill_level !== 'all' && (
                                   <span className="inline-block mt-2 text-xs uppercase tracking-wider text-neutral-400">
@@ -236,22 +241,30 @@ export default function MyClassesPage() {
                         {/* Bookings Preview */}
                         {confirmedBookings.length > 0 && (
                           <div className="mt-6 pt-6 border-t border-neutral-100">
-                            <div className="text-xs uppercase tracking-wider text-neutral-400 mb-3">
-                              Registered ({confirmedBookings.length})
-                            </div>
+                            <button
+                              onClick={() => setParticipantsModal({ classId: yogaClass.id, title: yogaClass.title })}
+                              className="text-xs uppercase tracking-wider text-neutral-400 mb-3 hover:text-charcoal transition-colors flex items-center gap-2"
+                            >
+                              <UsersIcon className="w-4 h-4" />
+                              Registered ({confirmedBookings.length}) — View All
+                            </button>
                             <div className="flex flex-wrap gap-2">
                               {confirmedBookings.slice(0, 6).map((booking) => (
-                                <div 
+                                <button
                                   key={booking.id}
-                                  className="px-3 py-1 bg-neutral-50 text-neutral-600 text-sm font-light"
+                                  onClick={() => setParticipantsModal({ classId: yogaClass.id, title: yogaClass.title })}
+                                  className="px-3 py-1 bg-neutral-50 text-neutral-600 text-sm font-light hover:bg-neutral-100 transition-colors"
                                 >
                                   {booking.guest_first_name || 'Guest'} {booking.guest_last_name?.[0] || ''}.
-                                </div>
+                                </button>
                               ))}
                               {confirmedBookings.length > 6 && (
-                                <div className="px-3 py-1 bg-neutral-100 text-neutral-500 text-sm font-light">
+                                <button
+                                  onClick={() => setParticipantsModal({ classId: yogaClass.id, title: yogaClass.title })}
+                                  className="px-3 py-1 bg-neutral-100 text-neutral-500 text-sm font-light hover:bg-neutral-200 transition-colors"
+                                >
                                   +{confirmedBookings.length - 6} more
-                                </div>
+                                </button>
                               )}
                             </div>
                           </div>
@@ -291,6 +304,16 @@ export default function MyClassesPage() {
               </section>
             )}
           </div>
+        )}
+
+        {/* Participants Modal */}
+        {participantsModal && (
+          <ParticipantsModal
+            classId={participantsModal.classId}
+            classTitle={participantsModal.title}
+            isOwner={true}
+            onClose={() => setParticipantsModal(null)}
+          />
         )}
       </main>
     </div>
