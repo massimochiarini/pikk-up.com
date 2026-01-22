@@ -73,6 +73,10 @@ function PublicBookingContent() {
   const [loadingCredits, setLoadingCredits] = useState(false)
   const [purchasingPackage, setPurchasingPackage] = useState<string | null>(null)
   const [useCredit, setUseCredit] = useState(false)
+  
+  // Already booked check
+  const [isAlreadyBooked, setIsAlreadyBooked] = useState(false)
+  const [checkingBooking, setCheckingBooking] = useState(true)
 
   const copyBookingLink = () => {
     const url = window.location.href
@@ -184,6 +188,62 @@ function PublicBookingContent() {
       isCancelled = true
     }
   }, [classId])
+
+  // Check if user is already booked for this class
+  useEffect(() => {
+    if (!classId) {
+      setCheckingBooking(false)
+      return
+    }
+
+    const checkIfBooked = async () => {
+      setCheckingBooking(true)
+      try {
+        // Check by user_id if logged in
+        if (user?.id) {
+          const { data: userBooking } = await supabase
+            .from('bookings')
+            .select('id')
+            .eq('class_id', classId)
+            .eq('user_id', user.id)
+            .eq('status', 'confirmed')
+            .single()
+          
+          if (userBooking) {
+            setIsAlreadyBooked(true)
+            setCheckingBooking(false)
+            return
+          }
+        }
+        
+        // Check by phone if profile has one
+        if (profile?.phone) {
+          const { data: phoneBooking } = await supabase
+            .from('bookings')
+            .select('id')
+            .eq('class_id', classId)
+            .eq('guest_phone', profile.phone)
+            .eq('status', 'confirmed')
+            .single()
+          
+          if (phoneBooking) {
+            setIsAlreadyBooked(true)
+            setCheckingBooking(false)
+            return
+          }
+        }
+        
+        setIsAlreadyBooked(false)
+      } catch (err) {
+        // No booking found is fine
+        setIsAlreadyBooked(false)
+      } finally {
+        setCheckingBooking(false)
+      }
+    }
+
+    checkIfBooked()
+  }, [classId, user?.id, profile?.phone])
 
   const fetchParticipants = async () => {
     if (loadingParticipants || participants.length > 0) return
@@ -960,7 +1020,47 @@ function PublicBookingContent() {
                   <div className="text-neutral-500 text-sm font-light mt-1">per person</div>
                 </div>
 
-                {isFull ? (
+                {isAlreadyBooked ? (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 border border-green-200 bg-green-50 flex items-center justify-center mx-auto mb-6">
+                      <CheckIcon className="w-8 h-8 text-green-600" />
+                    </div>
+                    <h3 className="text-xl font-light text-charcoal mb-2">You&apos;re Registered</h3>
+                    <p className="text-neutral-500 font-light mb-6">
+                      You&apos;re already signed up for this class. We&apos;ll see you there!
+                    </p>
+                    
+                    <div className="border border-neutral-200 p-4 text-left mb-6">
+                      <div className="flex items-center gap-3 text-sm mb-2">
+                        <CalendarDaysIcon className="w-5 h-5 text-neutral-400" />
+                        <span className="text-charcoal font-light">
+                          {format(parseISO(yogaClass.time_slot.date), 'EEEE, MMM d, yyyy')}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm mb-2">
+                        <ClockIcon className="w-5 h-5 text-neutral-400" />
+                        <span className="text-charcoal font-light">
+                          {formatTime(yogaClass.time_slot.start_time)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm">
+                        <MapPinIcon className="w-5 h-5 text-neutral-400" />
+                        <span className="text-charcoal font-light">
+                          PikkUp Studio, 2500 South Miami Ave
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <Link href="/my-classes" className="btn-primary w-full block text-center">
+                        View My Classes
+                      </Link>
+                      <Link href="/classes" className="btn-secondary w-full block text-center">
+                        Browse More Classes
+                      </Link>
+                    </div>
+                  </div>
+                ) : isFull ? (
                   <div className="text-center py-8">
                     <h3 className="text-xl font-light text-charcoal mb-2">Class Full</h3>
                     <p className="text-neutral-500 font-light mb-6">

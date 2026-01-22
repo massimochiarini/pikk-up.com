@@ -8,7 +8,8 @@ import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/sup
 import { format, parseISO, isToday, isTomorrow } from 'date-fns'
 import Link from 'next/link'
 import Image from 'next/image'
-import { CalendarDaysIcon, ClockIcon, ExclamationTriangleIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, ClockIcon, ExclamationTriangleIcon, UsersIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid'
 
 type ClassWithDetails = YogaClass & {
   time_slot: TimeSlot
@@ -94,29 +95,48 @@ export default function ClassesPage() {
     fetchClasses()
   }, [fetchClasses])
 
+  // Fetch user's bookings when logged in (for showing "Booked" badge)
   useEffect(() => {
-    if (!user || filter !== 'my-classes') return
+    if (!user) return
     if (hasFetchedBookings.current === user.id) return
     hasFetchedBookings.current = user.id
     
     const fetchMyBookings = async () => {
       try {
-        const { data, error } = await supabase
+        // Fetch by user_id
+        const { data: userBookings, error: userError } = await supabase
           .from('bookings')
           .select('class_id')
           .eq('status', 'confirmed')
           .eq('user_id', user.id)
         
-        if (!error && data) {
-          setMyClassIds(new Set(data.map(b => b.class_id)))
+        let allClassIds = new Set<string>()
+        
+        if (!userError && userBookings) {
+          userBookings.forEach(b => allClassIds.add(b.class_id))
         }
+        
+        // Also fetch by phone if profile has one
+        if (profile?.phone) {
+          const { data: phoneBookings, error: phoneError } = await supabase
+            .from('bookings')
+            .select('class_id')
+            .eq('status', 'confirmed')
+            .eq('guest_phone', profile.phone)
+          
+          if (!phoneError && phoneBookings) {
+            phoneBookings.forEach(b => allClassIds.add(b.class_id))
+          }
+        }
+        
+        setMyClassIds(allClassIds)
       } catch (error) {
         console.error('Error fetching my bookings:', error)
       }
     }
     
     fetchMyBookings()
-  }, [user, filter])
+  }, [user, profile?.phone])
 
   const handleCancelBooking = async (classId: string, e: React.MouseEvent) => {
     e.preventDefault()
@@ -297,6 +317,7 @@ export default function ClassesPage() {
             {filteredClasses.map((yogaClass) => {
               const spotsLeft = yogaClass.max_capacity - yogaClass.booking_count
               const isFull = spotsLeft <= 0
+              const isBooked = myClassIds.has(yogaClass.id)
               
               return (
                 <div key={yogaClass.id} className="relative group">
@@ -305,7 +326,19 @@ export default function ClassesPage() {
                     className="block"
                   >
                     {/* Card */}
-                    <div className="border border-neutral-200 p-6 transition-all duration-300 hover:border-charcoal">
+                    <div className={`border p-6 transition-all duration-300 ${
+                      isBooked 
+                        ? 'border-green-200 bg-green-50/30' 
+                        : 'border-neutral-200 hover:border-charcoal'
+                    }`}>
+                      {/* Booked Badge */}
+                      {isBooked && (
+                        <div className="flex items-center gap-1.5 text-green-600 text-sm font-medium mb-3">
+                          <CheckCircleSolidIcon className="w-5 h-5" />
+                          You&apos;re registered
+                        </div>
+                      )}
+                      
                       {/* Header */}
                       <div className="flex items-start justify-between mb-4">
                         <div>
