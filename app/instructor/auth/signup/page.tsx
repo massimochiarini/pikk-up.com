@@ -498,7 +498,7 @@ export default function InstructorSignupPage() {
             </div>
 
             <div className="bg-neutral-50 border border-neutral-200 p-4 text-sm text-neutral-500 font-light">
-              Your application will be reviewed by our team. Once approved, you'll be able to create and manage classes.
+              Your application will be reviewed by our team. Once approved, you will be able to create and manage classes.
             </div>
 
             <button
