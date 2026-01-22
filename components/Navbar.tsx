@@ -65,6 +65,16 @@ export function Navbar() {
                     >
                       My Classes
                     </Link>
+                    <Link
+                      href="/instructor/packages"
+                      className={`font-light transition-colors ${
+                        pathname === '/instructor/packages' 
+                          ? 'text-charcoal' 
+                          : 'text-neutral-500 hover:text-charcoal'
+                      }`}
+                    >
+                      Packages
+                    </Link>
                   </>
                 ) : !isInstructor ? (
                   <Link
@@ -198,6 +208,17 @@ export function Navbar() {
                   }`}
                 >
                   My Classes
+                </Link>
+                <Link
+                  href="/instructor/packages"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block py-3 px-2 font-light transition-colors ${
+                    pathname === '/instructor/packages' 
+                      ? 'text-charcoal' 
+                      : 'text-neutral-500 hover:text-charcoal'
+                  }`}
+                >
+                  Packages
                 </Link>
               </>
             ) : !isInstructor ? (
