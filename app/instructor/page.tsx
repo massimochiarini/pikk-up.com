@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import Link from 'next/link'
 import Image from 'next/image'
-import { CalendarDaysIcon, RectangleStackIcon, MapPinIcon, ArrowRightIcon, TicketIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, RectangleStackIcon, MapPinIcon, ArrowRightIcon, TicketIcon, ClockIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
 export default function InstructorDashboardPage() {
   const { user, profile, loading } = useAuth()
@@ -75,7 +75,71 @@ export default function InstructorDashboardPage() {
     )
   }
 
-  // Logged in but profile not loaded yet or not an instructor
+  // Logged in but pending approval
+  if (profile && profile.instructor_status === 'pending') {
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
+          <div className="text-center max-w-lg">
+            <div className="w-16 h-16 border border-yellow-200 bg-yellow-50 flex items-center justify-center mx-auto mb-6">
+              <ClockIcon className="w-8 h-8 text-yellow-600" />
+            </div>
+            <h1 className="text-3xl font-light text-charcoal mb-4">Application Under Review</h1>
+            <p className="text-neutral-500 font-light mb-2">
+              Hi {profile.first_name}! Thanks for applying to teach at PikkUp.
+            </p>
+            <p className="text-neutral-500 font-light mb-8">
+              Your instructor application is being reviewed. We'll notify you once it's approved.
+              In the meantime, you can browse and book classes as a student.
+            </p>
+            <div className="space-y-3">
+              <Link href="/classes" className="btn-primary w-full block text-center py-4">
+                Browse Classes
+              </Link>
+              <Link href="/my-classes" className="btn-secondary w-full block text-center py-4">
+                My Bookings
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Logged in but request was rejected
+  if (profile && profile.instructor_status === 'rejected') {
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
+          <div className="text-center max-w-lg">
+            <div className="w-16 h-16 border border-neutral-200 flex items-center justify-center mx-auto mb-6">
+              <XCircleIcon className="w-8 h-8 text-neutral-400" />
+            </div>
+            <h1 className="text-3xl font-light text-charcoal mb-4">Application Not Approved</h1>
+            <p className="text-neutral-500 font-light mb-2">
+              Hi {profile.first_name}, unfortunately your instructor application was not approved at this time.
+            </p>
+            <p className="text-neutral-500 font-light mb-8">
+              If you believe this was a mistake or have questions, please contact us.
+              You can still browse and book classes as a student.
+            </p>
+            <div className="space-y-3">
+              <Link href="/classes" className="btn-primary w-full block text-center py-4">
+                Browse Classes
+              </Link>
+              <Link href="/my-classes" className="btn-secondary w-full block text-center py-4">
+                My Bookings
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Logged in but profile not loaded yet or not an instructor (hasn't applied)
   if (!profile || !profile.is_instructor) {
     return (
       <div className="min-h-screen bg-white">
@@ -90,14 +154,11 @@ export default function InstructorDashboardPage() {
               {profile ? `Hi ${profile.first_name}! Your current account is set up for booking classes.` : 'Welcome!'}
             </p>
             <p className="text-neutral-500 font-light mb-8">
-              To teach classes at PikkUp, you need an instructor account.
+              Want to teach yoga at PikkUp? Apply to become an instructor and start sharing your practice.
             </p>
             <div className="space-y-3">
               <Link href="/instructor/auth/signup" className="btn-primary w-full block text-center py-4">
-                Create Instructor Account
-              </Link>
-              <Link href="/instructor/auth/login" className="btn-secondary w-full block text-center py-4">
-                Sign In as Instructor
+                Apply to Teach
               </Link>
             </div>
             <Link href="/classes" className="text-neutral-400 hover:text-charcoal text-sm mt-8 inline-block transition-colors">

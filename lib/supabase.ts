@@ -70,6 +70,8 @@ export type Profile = {
   phone?: string
   avatar_url?: string
   is_instructor: boolean
+  instructor_status: 'none' | 'pending' | 'approved' | 'rejected'
+  is_admin: boolean
   bio?: string
   instagram?: string
   created_at: string

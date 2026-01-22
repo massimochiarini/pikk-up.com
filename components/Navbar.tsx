@@ -26,7 +26,8 @@ export function Navbar() {
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {!isInstructor && (
+            {/* Classes link - show for everyone except when on instructor pages (unless they're an instructor) */}
+            {(!isInstructor || profile?.is_instructor) && (
               <Link
                 href="/classes"
                 className={`font-light transition-colors ${
@@ -35,7 +36,7 @@ export function Navbar() {
                     : 'text-neutral-500 hover:text-charcoal'
                 }`}
               >
-                Classes
+                Browse Classes
               </Link>
             )}
             
@@ -43,51 +44,85 @@ export function Navbar() {
               <div className="w-8 h-8 bg-neutral-100 animate-pulse"></div>
             ) : user ? (
               <div className="flex items-center gap-6">
-                {isInstructor && profile?.is_instructor ? (
+                {/* My Bookings - show for all logged-in users */}
+                <Link
+                  href="/my-classes"
+                  className={`font-light transition-colors ${
+                    pathname === '/my-classes' 
+                      ? 'text-charcoal' 
+                      : 'text-neutral-500 hover:text-charcoal'
+                  }`}
+                >
+                  My Bookings
+                </Link>
+                
+                {/* Instructor-specific links */}
+                {profile?.is_instructor && (
                   <>
+                    <div className="w-px h-4 bg-neutral-200" />
                     <Link
-                      href="/instructor/schedule"
+                      href="/instructor"
                       className={`font-light transition-colors ${
-                        pathname === '/instructor/schedule' 
+                        pathname === '/instructor' && !pathname.includes('/instructor/') 
                           ? 'text-charcoal' 
                           : 'text-neutral-500 hover:text-charcoal'
                       }`}
                     >
-                      Schedule
+                      Instructor
                     </Link>
+                    {isInstructor && (
+                      <>
+                        <Link
+                          href="/instructor/schedule"
+                          className={`font-light transition-colors ${
+                            pathname === '/instructor/schedule' 
+                              ? 'text-charcoal' 
+                              : 'text-neutral-500 hover:text-charcoal'
+                          }`}
+                        >
+                          Schedule
+                        </Link>
+                        <Link
+                          href="/instructor/my-classes"
+                          className={`font-light transition-colors ${
+                            pathname === '/instructor/my-classes' 
+                              ? 'text-charcoal' 
+                              : 'text-neutral-500 hover:text-charcoal'
+                          }`}
+                        >
+                          My Classes
+                        </Link>
+                        <Link
+                          href="/instructor/packages"
+                          className={`font-light transition-colors ${
+                            pathname === '/instructor/packages' 
+                              ? 'text-charcoal' 
+                              : 'text-neutral-500 hover:text-charcoal'
+                          }`}
+                        >
+                          Packages
+                        </Link>
+                      </>
+                    )}
+                  </>
+                )}
+                
+                {/* Admin link */}
+                {profile?.is_admin && (
+                  <>
+                    <div className="w-px h-4 bg-neutral-200" />
                     <Link
-                      href="/instructor/my-classes"
+                      href="/admin"
                       className={`font-light transition-colors ${
-                        pathname === '/instructor/my-classes' 
+                        pathname === '/admin' 
                           ? 'text-charcoal' 
                           : 'text-neutral-500 hover:text-charcoal'
                       }`}
                     >
-                      My Classes
-                    </Link>
-                    <Link
-                      href="/instructor/packages"
-                      className={`font-light transition-colors ${
-                        pathname === '/instructor/packages' 
-                          ? 'text-charcoal' 
-                          : 'text-neutral-500 hover:text-charcoal'
-                      }`}
-                    >
-                      Packages
+                      Admin
                     </Link>
                   </>
-                ) : !isInstructor ? (
-                  <Link
-                    href="/my-classes"
-                    className={`font-light transition-colors ${
-                      pathname === '/my-classes' 
-                        ? 'text-charcoal' 
-                        : 'text-neutral-500 hover:text-charcoal'
-                    }`}
-                  >
-                    My Classes
-                  </Link>
-                ) : null}
+                )}
                 
                 <div className="flex items-center gap-4">
                   <Link
@@ -171,22 +206,49 @@ export function Navbar() {
         {/* Mobile Menu Dropdown */}
         {mobileMenuOpen && user && (
           <div className="md:hidden border-t border-neutral-100 py-4 space-y-1">
-            {!isInstructor && (
-              <Link
-                href="/classes"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`block py-3 px-2 font-light transition-colors ${
-                  pathname === '/classes' 
-                    ? 'text-charcoal' 
-                    : 'text-neutral-500 hover:text-charcoal'
-                }`}
-              >
-                Classes
-              </Link>
-            )}
+            {/* Browse Classes - available to all users */}
+            <Link
+              href="/classes"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`block py-3 px-2 font-light transition-colors ${
+                pathname === '/classes' 
+                  ? 'text-charcoal' 
+                  : 'text-neutral-500 hover:text-charcoal'
+              }`}
+            >
+              Browse Classes
+            </Link>
             
-            {isInstructor && profile?.is_instructor ? (
+            {/* My Bookings - available to all users */}
+            <Link
+              href="/my-classes"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`block py-3 px-2 font-light transition-colors ${
+                pathname === '/my-classes' 
+                  ? 'text-charcoal' 
+                  : 'text-neutral-500 hover:text-charcoal'
+              }`}
+            >
+              My Bookings
+            </Link>
+            
+            {/* Instructor section */}
+            {profile?.is_instructor && (
               <>
+                <div className="border-t border-neutral-100 pt-3 mt-3">
+                  <span className="block px-2 text-xs uppercase tracking-wider text-neutral-400 mb-2">Instructor</span>
+                </div>
+                <Link
+                  href="/instructor"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block py-3 px-2 font-light transition-colors ${
+                    pathname === '/instructor' 
+                      ? 'text-charcoal' 
+                      : 'text-neutral-500 hover:text-charcoal'
+                  }`}
+                >
+                  Dashboard
+                </Link>
                 <Link
                   href="/instructor/schedule"
                   onClick={() => setMobileMenuOpen(false)}
@@ -221,19 +283,27 @@ export function Navbar() {
                   Packages
                 </Link>
               </>
-            ) : !isInstructor ? (
-              <Link
-                href="/my-classes"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`block py-3 px-2 font-light transition-colors ${
-                  pathname === '/my-classes' 
-                    ? 'text-charcoal' 
-                    : 'text-neutral-500 hover:text-charcoal'
-                }`}
-              >
-                My Classes
-              </Link>
-            ) : null}
+            )}
+            
+            {/* Admin section */}
+            {profile?.is_admin && (
+              <>
+                <div className="border-t border-neutral-100 pt-3 mt-3">
+                  <span className="block px-2 text-xs uppercase tracking-wider text-neutral-400 mb-2">Admin</span>
+                </div>
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block py-3 px-2 font-light transition-colors ${
+                    pathname === '/admin' 
+                      ? 'text-charcoal' 
+                      : 'text-neutral-500 hover:text-charcoal'
+                  }`}
+                >
+                  Manage Users
+                </Link>
+              </>
+            )}
             
             <div className="border-t border-neutral-100 pt-3 mt-3">
               <button

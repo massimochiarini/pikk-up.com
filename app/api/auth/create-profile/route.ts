@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
       firstName, 
       lastName, 
       isInstructor = false,
+      instructorStatus = 'none',
       phone = null,
       instagram = null,
       bio = null 
@@ -38,6 +39,7 @@ export async function POST(request: NextRequest) {
         .from('profiles')
         .update({
           is_instructor: isInstructor,
+          instructor_status: instructorStatus,
           phone: phone || null,
           instagram: instagram || null,
           bio: bio || null,
@@ -61,6 +63,7 @@ export async function POST(request: NextRequest) {
           first_name: firstName,
           last_name: lastName,
           is_instructor: isInstructor,
+          instructor_status: instructorStatus,
           phone: phone || null,
           instagram: instagram || null,
           bio: bio || null,
