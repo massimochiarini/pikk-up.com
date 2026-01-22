@@ -18,7 +18,7 @@ type ClassWithDetails = YogaClass & {
 function PublicBookingContent() {
   const params = useParams()
   const classId = params.classId as string
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   
   // Check for payment cancelled using window.location instead of useSearchParams to avoid Suspense issues
   const [paymentCancelled, setPaymentCancelled] = useState(false)
@@ -43,6 +43,17 @@ function PublicBookingContent() {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [linkCopied, setLinkCopied] = useState(false)
+  const [profileFieldsSet, setProfileFieldsSet] = useState(false)
+  
+  // Pre-fill form fields from profile when logged in
+  useEffect(() => {
+    if (profile && !profileFieldsSet) {
+      if (profile.first_name) setFirstName(profile.first_name)
+      if (profile.last_name) setLastName(profile.last_name)
+      if (profile.phone) setPhone(profile.phone)
+      setProfileFieldsSet(true)
+    }
+  }, [profile, profileFieldsSet])
   
   // Optional account creation
   const [showAccountPrompt, setShowAccountPrompt] = useState(false)
@@ -227,11 +238,22 @@ function PublicBookingContent() {
     fetchPackages()
   }, [yogaClass?.instructor_id])
 
-  // Check for credits when phone number changes (debounced)
+  // Check for credits when user is logged in or phone number changes
   useEffect(() => {
-    if (!yogaClass?.instructor_id || !phone || phone.length < 10) {
+    if (!yogaClass?.instructor_id) {
+      return
+    }
+
+    // Need either a logged-in user OR a phone number with at least 10 chars
+    const enteredPhone = phone && phone.replace(/\D/g, '').length >= 10 ? phone : null
+    // Also use the user's profile phone if available
+    const profilePhone = profile?.phone || null
+    const phoneToCheck = enteredPhone || profilePhone
+    
+    if (!user?.id && !phoneToCheck) {
       setAvailableCredits(0)
       setUseCredit(false)
+      setLoadingCredits(false)
       return
     }
 
@@ -244,7 +266,7 @@ function PublicBookingContent() {
           body: JSON.stringify({
             instructorId: yogaClass.instructor_id,
             userId: user?.id || null,
-            phone: phone,
+            phone: phoneToCheck,
           }),
         })
         const data = await response.json()
@@ -261,7 +283,7 @@ function PublicBookingContent() {
     // Debounce the credit check
     const timer = setTimeout(checkCredits, 500)
     return () => clearTimeout(timer)
-  }, [yogaClass?.instructor_id, phone, user?.id])
+  }, [yogaClass?.instructor_id, phone, user?.id, profile?.phone])
 
   const handlePurchasePackage = async (pkg: InstructorPackage) => {
     if (!firstName || !lastName || !phone) {
@@ -358,8 +380,8 @@ function PublicBookingContent() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e) e.preventDefault()
     
     if (!yogaClass || !firstName || !lastName || !phone) {
       setErrorMessage('Please fill in all required fields')
@@ -948,7 +970,123 @@ function PublicBookingContent() {
                       Find Another Class
                     </Link>
                   </div>
+                ) : user && profile && profile.first_name && profile.last_name && profile.phone ? (
+                  /* Logged-in user with complete profile - simplified booking view */
+                  <>
+                    <h2 className="text-lg font-medium text-charcoal mb-6">Reserve Your Spot</h2>
+
+                    {paymentCancelled && (
+                      <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 mb-6 text-sm font-light">
+                        Payment was cancelled. You can try again when you&apos;re ready.
+                      </div>
+                    )}
+
+                    {errorMessage && (
+                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 mb-6 text-sm">
+                        {errorMessage}
+                      </div>
+                    )}
+
+                    {/* Show user info */}
+                    <div className="border border-neutral-100 p-4 mb-6 bg-neutral-50">
+                      <div className="text-sm text-neutral-500 font-light mb-1">Booking as</div>
+                      <div className="font-medium text-charcoal">
+                        {profile.first_name} {profile.last_name}
+                      </div>
+                      <div className="text-sm text-neutral-500 font-light">{profile.phone}</div>
+                    </div>
+
+                    <div className="space-y-5">
+                      {/* Available Credits Display */}
+                      {availableCredits > 0 && (
+                        <div className="border border-green-100 p-4 bg-green-50">
+                          <div className="flex items-center gap-2 mb-3">
+                            <TicketIcon className="w-5 h-5 text-green-600" />
+                            <span className="text-green-700 font-medium">
+                              You have {availableCredits} credit{availableCredits !== 1 ? 's' : ''} with {yogaClass.instructor.first_name}
+                            </span>
+                          </div>
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={useCredit}
+                              onChange={(e) => setUseCredit(e.target.checked)}
+                              className="w-5 h-5 rounded border-green-300 text-green-600 focus:ring-green-500"
+                            />
+                            <span className="text-sm text-charcoal">Use 1 credit for this class (instead of paying)</span>
+                          </label>
+                        </div>
+                      )}
+
+                      {/* Loading credits indicator */}
+                      {loadingCredits && (
+                        <div className="flex items-center gap-2 text-neutral-400 text-sm py-2">
+                          <div className="w-4 h-4 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
+                          Checking for package credits...
+                        </div>
+                      )}
+
+                      {/* Donation Amount Input for donation-based classes */}
+                      {yogaClass.is_donation && !useCredit && (
+                        <div className="border border-neutral-100 p-4 bg-neutral-50">
+                          <label htmlFor="donation" className="label">Donation Amount (Optional)</label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">$</span>
+                            <input
+                              type="number"
+                              id="donation"
+                              min="0"
+                              step="1"
+                              value={donationAmount}
+                              onChange={(e) => setDonationAmount(e.target.value)}
+                              className="input-field pl-7"
+                              placeholder="0"
+                            />
+                          </div>
+                          <p className="text-neutral-400 text-xs mt-2 font-light">
+                            This class is donation-based. Enter any amount you&apos;d like to contribute, or leave empty to attend for free.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Submit Button */}
+                      {useCredit ? (
+                        <button
+                          type="button"
+                          onClick={handleBookWithCredit}
+                          disabled={submitting}
+                          className="btn-primary w-full py-4"
+                        >
+                          {submitting ? 'Processing...' : 'Use Credit & Reserve'}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleSubmit}
+                          disabled={submitting}
+                          className="btn-primary w-full py-4"
+                        >
+                          {submitting
+                            ? 'Processing...'
+                            : yogaClass.is_donation
+                              ? parseFloat(donationAmount || '0') > 0
+                                ? `Donate $${parseFloat(donationAmount).toFixed(0)} & Reserve`
+                                : 'Reserve My Spot'
+                              : yogaClass.price_cents > 0
+                                ? `Pay ${formatPrice(yogaClass.price_cents)} & Reserve`
+                                : 'Reserve My Spot'}
+                        </button>
+                      )}
+
+                      {!useCredit && (yogaClass.price_cents > 0 || (yogaClass.is_donation && parseFloat(donationAmount || '0') > 0)) && (
+                        <p className="text-neutral-400 text-xs text-center font-light">
+                          Secure payment powered by Stripe
+                        </p>
+                      )}
+                    </div>
+                  </>
                 ) : (
+                  /* Guest or incomplete profile - show full form */
                   <>
                     <h2 className="text-lg font-medium text-charcoal mb-6">Reserve Your Spot</h2>
 
@@ -1008,36 +1146,31 @@ function PublicBookingContent() {
                       </div>
 
                       {/* Available Credits Display */}
-                      {phone && phone.length >= 10 && (
-                        <div className="border border-neutral-100 p-4 bg-neutral-50">
-                          {loadingCredits ? (
-                            <div className="flex items-center gap-2 text-neutral-400 text-sm">
-                              <div className="w-4 h-4 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
-                              Checking for credits...
-                            </div>
-                          ) : availableCredits > 0 ? (
-                            <div>
-                              <div className="flex items-center gap-2 mb-3">
-                                <TicketIcon className="w-5 h-5 text-green-600" />
-                                <span className="text-green-700 font-medium">
-                                  You have {availableCredits} credit{availableCredits !== 1 ? 's' : ''} with {yogaClass.instructor.first_name}
-                                </span>
-                              </div>
-                              <label className="flex items-center gap-3 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={useCredit}
-                                  onChange={(e) => setUseCredit(e.target.checked)}
-                                  className="w-5 h-5 rounded border-neutral-300 text-charcoal focus:ring-charcoal"
-                                />
-                                <span className="text-sm text-charcoal">Use 1 credit for this class</span>
-                              </label>
-                            </div>
-                          ) : (
-                            <p className="text-neutral-500 text-sm font-light">
-                              No package credits found for this instructor.
-                            </p>
-                          )}
+                      {availableCredits > 0 && (
+                        <div className="border border-green-100 p-4 bg-green-50">
+                          <div className="flex items-center gap-2 mb-3">
+                            <TicketIcon className="w-5 h-5 text-green-600" />
+                            <span className="text-green-700 font-medium">
+                              You have {availableCredits} credit{availableCredits !== 1 ? 's' : ''} with {yogaClass.instructor.first_name}
+                            </span>
+                          </div>
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={useCredit}
+                              onChange={(e) => setUseCredit(e.target.checked)}
+                              className="w-5 h-5 rounded border-green-300 text-green-600 focus:ring-green-500"
+                            />
+                            <span className="text-sm text-charcoal">Use 1 credit for this class (instead of paying)</span>
+                          </label>
+                        </div>
+                      )}
+                      
+                      {/* Loading credits indicator */}
+                      {loadingCredits && (user || (phone && phone.replace(/\D/g, '').length >= 10)) && (
+                        <div className="flex items-center gap-2 text-neutral-400 text-sm py-2">
+                          <div className="w-4 h-4 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
+                          Checking for package credits...
                         </div>
                       )}
 
