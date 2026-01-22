@@ -55,6 +55,7 @@ export default function InstructorPackagesPage() {
   useEffect(() => {
     if (!user || !profile?.is_instructor) return
     fetchPackages()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, profile])
 
   const fetchPackages = async () => {

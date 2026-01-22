@@ -144,7 +144,7 @@ export default function InstructorSignupPage() {
             <div className="w-16 h-16 border border-green-200 bg-green-50 flex items-center justify-center mx-auto mb-6">
               <CheckCircleIcon className="w-8 h-8 text-green-600" />
             </div>
-            <h1 className="text-3xl font-light text-charcoal mb-4">You're Already an Instructor</h1>
+            <h1 className="text-3xl font-light text-charcoal mb-4">You Are Already an Instructor</h1>
             <p className="text-neutral-500 font-light mb-8">
               Your instructor account is active. You can start creating classes.
             </p>
@@ -178,7 +178,7 @@ export default function InstructorSignupPage() {
             </div>
             <h1 className="text-3xl font-light text-charcoal mb-4">Request Pending</h1>
             <p className="text-neutral-500 font-light mb-8">
-              Your instructor request is being reviewed. We'll notify you once it's approved.
+              Your instructor request is being reviewed. We will notify you once it is approved.
             </p>
             <Link href="/classes" className="btn-secondary inline-block px-8 py-3">
               Browse Classes
@@ -246,7 +246,7 @@ export default function InstructorSignupPage() {
               Thank you for your interest in teaching at PikkUp!
             </p>
             <p className="text-neutral-500 font-light mb-8">
-              We'll review your application and get back to you soon. In the meantime, 
+              We will review your application and get back to you soon. In the meantime, 
               you can browse and book classes as a student.
             </p>
             <Link href="/classes" className="btn-primary inline-block px-8 py-3">

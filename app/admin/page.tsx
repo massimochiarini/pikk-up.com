@@ -78,6 +78,7 @@ export default function AdminPage() {
     if (user && profile?.is_admin) {
       fetchUsers()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, profile?.is_admin])
 
   const handleAction = async (userId: string, action: string) => {
@@ -150,7 +151,7 @@ export default function AdminPage() {
             </div>
             <h1 className="text-3xl font-light text-charcoal mb-4">Admin Access Required</h1>
             <p className="text-neutral-500 font-light">
-              You don't have permission to access this page.
+              You do not have permission to access this page.
             </p>
           </div>
         </div>

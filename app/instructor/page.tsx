@@ -90,7 +90,7 @@ export default function InstructorDashboardPage() {
               Hi {profile.first_name}! Thanks for applying to teach at PikkUp.
             </p>
             <p className="text-neutral-500 font-light mb-8">
-              Your instructor application is being reviewed. We'll notify you once it's approved.
+              Your instructor application is being reviewed. We will notify you once it is approved.
               In the meantime, you can browse and book classes as a student.
             </p>
             <div className="space-y-3">
