@@ -112,19 +112,22 @@ export default function CreateClassPage() {
   }, [date, fetchBookedSlots])
 
   // Check if a time slot would overlap with existing booked slots
+  // The stored end_time already includes the 30-min buffer, so we only add buffer to the new class
   const isTimeAvailable = useCallback((timeValue: string, durationMins: number) => {
     const [hours, minutes] = timeValue.split(':').map(Number)
-    const startMinutes = hours * 60 + minutes
-    const endMinutes = startMinutes + durationMins + BUFFER_MINUTES // Include buffer
+    const newStartMinutes = hours * 60 + minutes
+    const newEndMinutes = newStartMinutes + durationMins + BUFFER_MINUTES // New class needs buffer after
     
     return !bookedSlots.some(slot => {
       const [slotStartH, slotStartM] = slot.start_time.split(':').map(Number)
       const [slotEndH, slotEndM] = slot.end_time.split(':').map(Number)
-      const slotStartMinutes = slotStartH * 60 + slotStartM
-      const slotEndMinutes = slotEndH * 60 + slotEndM
+      const existingStartMinutes = slotStartH * 60 + slotStartM
+      const existingEndMinutes = slotEndH * 60 + slotEndM
       
-      // Check if time ranges overlap
-      return (startMinutes < slotEndMinutes && endMinutes > slotStartMinutes)
+      // Check if new class overlaps with existing class (including its buffer)
+      // New class cannot start before existing class ends (with buffer)
+      // New class (with buffer) cannot end after existing class starts
+      return (newStartMinutes < existingEndMinutes && newEndMinutes > existingStartMinutes)
     })
   }, [bookedSlots])
 
