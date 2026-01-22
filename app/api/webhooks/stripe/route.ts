@@ -92,8 +92,16 @@ async function handleCheckoutSessionCompleted(
 ) {
   console.log('Checkout session completed:', session.id)
 
-  const { classId, firstName, lastName, phone, customerName } =
-    session.metadata || {}
+  const metadata = session.metadata || {}
+
+  // Check if this is a package purchase
+  if (metadata.type === 'package') {
+    await handlePackagePurchase(session)
+    return
+  }
+
+  // Otherwise, handle as class booking
+  const { classId, firstName, lastName, phone, customerName } = metadata
 
   if (!classId || !firstName || !lastName || !phone) {
     console.error('Missing metadata in checkout session')
@@ -263,5 +271,130 @@ async function recordPayment(
     console.error('Error recording payment:', paymentError)
   } else {
     console.log('Payment recorded:', session.id)
+  }
+}
+
+async function handlePackagePurchase(session: Stripe.Checkout.Session) {
+  console.log('Processing package purchase:', session.id)
+
+  const {
+    packageId,
+    instructorId,
+    classCount,
+    firstName,
+    lastName,
+    phone,
+    userId,
+    customerName,
+  } = session.metadata || {}
+
+  if (!packageId || !instructorId || !classCount || !firstName || !lastName || !phone) {
+    console.error('Missing metadata in package purchase session')
+    return
+  }
+
+  const phoneNormalized = phone.replace(/\D/g, '')
+  const classCountNum = parseInt(classCount, 10)
+
+  try {
+    const supabase = getSupabaseAdmin()
+
+    // 1. Verify package exists
+    const { data: packageData, error: packageError } = await supabase
+      .from('instructor_packages')
+      .select('*')
+      .eq('id', packageId)
+      .single()
+
+    if (packageError || !packageData) {
+      console.error('Package not found:', packageError)
+      return
+    }
+
+    // 2. Try to find a user account with matching phone number or use provided userId
+    let matchedUserId: string | null = userId || null
+    if (!matchedUserId) {
+      const { data: matchedProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', phoneNormalized)
+        .single()
+
+      if (matchedProfile) {
+        matchedUserId = matchedProfile.id
+        console.log('Found matching user account:', matchedUserId)
+      }
+    }
+
+    // 3. Check for duplicate purchase (same session ID)
+    const { data: existingCredit } = await supabase
+      .from('package_credits')
+      .select('id')
+      .eq('stripe_checkout_session_id', session.id)
+      .single()
+
+    if (existingCredit) {
+      console.log('Package credit already exists, skipping duplicate')
+      return
+    }
+
+    // 4. Create package credit record
+    const { data: creditData, error: creditError } = await supabase
+      .from('package_credits')
+      .insert({
+        package_id: packageId,
+        instructor_id: instructorId,
+        user_id: matchedUserId,
+        guest_phone: phoneNormalized,
+        classes_remaining: classCountNum,
+        classes_total: classCountNum,
+        stripe_checkout_session_id: session.id,
+        stripe_payment_intent_id: session.payment_intent as string,
+        purchased_at: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    if (creditError) {
+      console.error('Error creating package credit:', creditError)
+      return
+    }
+
+    console.log('Created package credit:', creditData.id)
+
+    // 5. Get instructor details for SMS
+    const { data: instructor } = await supabase
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', instructorId)
+      .single()
+
+    // 6. Send SMS confirmation
+    try {
+      await supabase.functions.invoke('send-sms-confirmation', {
+        body: {
+          to: `+${phoneNormalized}`,
+          guestName: customerName || `${firstName} ${lastName}`,
+          sessionTitle: `${packageData.name} (${classCountNum} Classes)`,
+          sessionDate: 'Package Purchase',
+          sessionTime: '',
+          venueName: 'PikkUp Studio',
+          venueAddress: '',
+          cost: session.amount_total || 0,
+          bookingId: creditData.id,
+          isPackagePurchase: true,
+          instructorName: instructor
+            ? `${instructor.first_name} ${instructor.last_name}`
+            : 'Instructor',
+        },
+      })
+      console.log('Package purchase SMS sent successfully')
+    } catch (smsError) {
+      console.error('SMS error:', smsError)
+    }
+
+    console.log('Package purchase processing complete')
+  } catch (error) {
+    console.error('Error in handlePackagePurchase:', error)
   }
 }

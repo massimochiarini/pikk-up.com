@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import Link from 'next/link'
 import Image from 'next/image'
-import { CalendarDaysIcon, RectangleStackIcon, MapPinIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, RectangleStackIcon, MapPinIcon, ArrowRightIcon, TicketIcon } from '@heroicons/react/24/outline'
 
 export default function InstructorDashboardPage() {
   const { user, profile, loading } = useAuth()
@@ -177,19 +177,22 @@ export default function InstructorDashboardPage() {
             </div>
           </Link>
 
-          <div className="border border-neutral-200 p-6 bg-neutral-50">
+          <Link href="/instructor/packages" className="group block border border-neutral-200 p-6 hover:border-charcoal transition-colors">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 border border-neutral-300 flex items-center justify-center bg-white">
-                <span className="text-lg">*</span>
+              <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center group-hover:border-charcoal transition-colors">
+                <TicketIcon className="w-6 h-6 text-charcoal" />
               </div>
-              <div>
-                <h3 className="font-medium text-charcoal mb-1">Quick Tip</h3>
+              <div className="flex-1">
+                <h3 className="font-medium text-charcoal mb-1">
+                  Class Packages
+                </h3>
                 <p className="text-neutral-500 text-sm font-light">
-                  Claim a time slot to create your next class
+                  Create bundles for your students to save
                 </p>
               </div>
+              <ArrowRightIcon className="w-5 h-5 text-neutral-300 group-hover:text-charcoal transition-colors" />
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Studio Info */}

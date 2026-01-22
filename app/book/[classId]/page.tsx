@@ -7,7 +7,8 @@ import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/sup
 import { format, parseISO } from 'date-fns'
 import Link from 'next/link'
 import Image from 'next/image'
-import { CalendarDaysIcon, ClockIcon, MapPinIcon, UsersIcon, CheckIcon, LinkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, ClockIcon, MapPinIcon, UsersIcon, CheckIcon, LinkIcon, ChevronDownIcon, ChevronUpIcon, TicketIcon } from '@heroicons/react/24/outline'
+import type { InstructorPackage } from '@/lib/supabase'
 
 type ClassWithDetails = YogaClass & {
   time_slot: TimeSlot
@@ -54,6 +55,13 @@ function PublicBookingContent() {
   const [showParticipants, setShowParticipants] = useState(false)
   const [participants, setParticipants] = useState<{ first_name: string; last_initial: string }[]>([])
   const [loadingParticipants, setLoadingParticipants] = useState(false)
+  
+  // Package credits
+  const [availableCredits, setAvailableCredits] = useState(0)
+  const [instructorPackages, setInstructorPackages] = useState<InstructorPackage[]>([])
+  const [loadingCredits, setLoadingCredits] = useState(false)
+  const [purchasingPackage, setPurchasingPackage] = useState<string | null>(null)
+  const [useCredit, setUseCredit] = useState(false)
 
   const copyBookingLink = () => {
     const url = window.location.href
@@ -198,6 +206,156 @@ function PublicBookingContent() {
       fetchParticipants()
     }
     setShowParticipants(!showParticipants)
+  }
+
+  // Fetch instructor packages when class loads
+  useEffect(() => {
+    if (!yogaClass?.instructor_id) return
+
+    const fetchPackages = async () => {
+      try {
+        const response = await fetch(`/api/packages/${yogaClass.instructor_id}`)
+        const data = await response.json()
+        if (response.ok) {
+          setInstructorPackages(data.packages || [])
+        }
+      } catch (err) {
+        console.error('Error fetching packages:', err)
+      }
+    }
+
+    fetchPackages()
+  }, [yogaClass?.instructor_id])
+
+  // Check for credits when phone number changes (debounced)
+  useEffect(() => {
+    if (!yogaClass?.instructor_id || !phone || phone.length < 10) {
+      setAvailableCredits(0)
+      setUseCredit(false)
+      return
+    }
+
+    const checkCredits = async () => {
+      setLoadingCredits(true)
+      try {
+        const response = await fetch('/api/my-packages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            instructorId: yogaClass.instructor_id,
+            userId: user?.id || null,
+            phone: phone,
+          }),
+        })
+        const data = await response.json()
+        if (response.ok) {
+          setAvailableCredits(data.credits || 0)
+        }
+      } catch (err) {
+        console.error('Error checking credits:', err)
+      } finally {
+        setLoadingCredits(false)
+      }
+    }
+
+    // Debounce the credit check
+    const timer = setTimeout(checkCredits, 500)
+    return () => clearTimeout(timer)
+  }, [yogaClass?.instructor_id, phone, user?.id])
+
+  const handlePurchasePackage = async (pkg: InstructorPackage) => {
+    if (!firstName || !lastName || !phone) {
+      setErrorMessage('Please fill in your name and phone number first')
+      return
+    }
+
+    setPurchasingPackage(pkg.id)
+    setErrorMessage('')
+
+    try {
+      const response = await fetch('/api/packages/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageId: pkg.id,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          phone,
+          userId: user?.id || null,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to start purchase')
+      }
+
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to purchase package')
+    } finally {
+      setPurchasingPackage(null)
+    }
+  }
+
+  const handleBookWithCredit = async () => {
+    if (!yogaClass || !firstName || !lastName || !phone) {
+      setErrorMessage('Please fill in all required fields')
+      return
+    }
+
+    if (availableCredits < 1) {
+      setErrorMessage('No credits available')
+      return
+    }
+
+    setSubmitting(true)
+    setErrorMessage('')
+
+    try {
+      const response = await fetch('/api/book-with-credit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          classId,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          phone,
+          userId: user?.id || null,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to book with credit')
+      }
+
+      // Success!
+      setBookingState('success')
+      setAvailableCredits(data.creditsRemaining)
+
+      // Reload booking count
+      const { count } = await supabase
+        .from('bookings')
+        .select('*', { count: 'exact', head: true })
+        .eq('class_id', classId)
+        .eq('status', 'confirmed')
+      setBookingCount(count || 0)
+
+      // If user is not logged in, offer to create account
+      if (!user && data.booking) {
+        setBookingId(data.booking.id)
+        setShowAccountPrompt(true)
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to book with credit')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -849,8 +1007,42 @@ function PublicBookingContent() {
                         </p>
                       </div>
 
+                      {/* Available Credits Display */}
+                      {phone && phone.length >= 10 && (
+                        <div className="border border-neutral-100 p-4 bg-neutral-50">
+                          {loadingCredits ? (
+                            <div className="flex items-center gap-2 text-neutral-400 text-sm">
+                              <div className="w-4 h-4 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
+                              Checking for credits...
+                            </div>
+                          ) : availableCredits > 0 ? (
+                            <div>
+                              <div className="flex items-center gap-2 mb-3">
+                                <TicketIcon className="w-5 h-5 text-green-600" />
+                                <span className="text-green-700 font-medium">
+                                  You have {availableCredits} credit{availableCredits !== 1 ? 's' : ''} with {yogaClass.instructor.first_name}
+                                </span>
+                              </div>
+                              <label className="flex items-center gap-3 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={useCredit}
+                                  onChange={(e) => setUseCredit(e.target.checked)}
+                                  className="w-5 h-5 rounded border-neutral-300 text-charcoal focus:ring-charcoal"
+                                />
+                                <span className="text-sm text-charcoal">Use 1 credit for this class</span>
+                              </label>
+                            </div>
+                          ) : (
+                            <p className="text-neutral-500 text-sm font-light">
+                              No package credits found for this instructor.
+                            </p>
+                          )}
+                        </div>
+                      )}
+
                       {/* Donation Amount Input for donation-based classes */}
-                      {yogaClass.is_donation && (
+                      {yogaClass.is_donation && !useCredit && (
                         <div className="border border-neutral-100 p-4 bg-neutral-50">
                           <label htmlFor="donation" className="label">Donation Amount (Optional)</label>
                           <div className="relative">
@@ -872,23 +1064,35 @@ function PublicBookingContent() {
                         </div>
                       )}
 
-                      <button
-                        type="submit"
-                        disabled={submitting}
-                        className="btn-primary w-full py-4"
-                      >
-                        {submitting
-                          ? 'Processing...'
-                          : yogaClass.is_donation
-                            ? parseFloat(donationAmount || '0') > 0
-                              ? `Donate $${parseFloat(donationAmount).toFixed(0)} & Reserve`
-                              : 'Reserve My Spot'
-                            : yogaClass.price_cents > 0
-                              ? `Pay ${formatPrice(yogaClass.price_cents)} & Reserve`
-                              : 'Reserve My Spot'}
-                      </button>
+                      {/* Submit Button */}
+                      {useCredit ? (
+                        <button
+                          type="button"
+                          onClick={handleBookWithCredit}
+                          disabled={submitting}
+                          className="btn-primary w-full py-4"
+                        >
+                          {submitting ? 'Processing...' : 'Use Credit & Reserve'}
+                        </button>
+                      ) : (
+                        <button
+                          type="submit"
+                          disabled={submitting}
+                          className="btn-primary w-full py-4"
+                        >
+                          {submitting
+                            ? 'Processing...'
+                            : yogaClass.is_donation
+                              ? parseFloat(donationAmount || '0') > 0
+                                ? `Donate $${parseFloat(donationAmount).toFixed(0)} & Reserve`
+                                : 'Reserve My Spot'
+                              : yogaClass.price_cents > 0
+                                ? `Pay ${formatPrice(yogaClass.price_cents)} & Reserve`
+                                : 'Reserve My Spot'}
+                        </button>
+                      )}
 
-                      {(yogaClass.price_cents > 0 || (yogaClass.is_donation && parseFloat(donationAmount || '0') > 0)) && (
+                      {!useCredit && (yogaClass.price_cents > 0 || (yogaClass.is_donation && parseFloat(donationAmount || '0') > 0)) && (
                         <p className="text-neutral-400 text-xs text-center font-light">
                           Secure payment powered by Stripe
                         </p>
@@ -897,6 +1101,57 @@ function PublicBookingContent() {
                   </>
                 )}
               </div>
+
+              {/* Available Packages */}
+              {instructorPackages.length > 0 && !isFull && (
+                <div className="border border-neutral-200 p-6 mt-6">
+                  <h3 className="text-lg font-medium text-charcoal mb-4 flex items-center gap-2">
+                    <TicketIcon className="w-5 h-5" />
+                    Save with a Package
+                  </h3>
+                  <p className="text-neutral-500 text-sm font-light mb-4">
+                    Buy multiple classes from {yogaClass.instructor.first_name} and save.
+                  </p>
+                  <div className="space-y-3">
+                    {instructorPackages.map((pkg) => {
+                      const perClass = pkg.price_cents / pkg.class_count
+                      const regularPrice = yogaClass.price_cents || 2500 // Default to $25 for comparison
+                      const savings = regularPrice > perClass 
+                        ? Math.round(((regularPrice - perClass) / regularPrice) * 100)
+                        : 0
+
+                      return (
+                        <div
+                          key={pkg.id}
+                          className="flex items-center justify-between p-4 border border-neutral-100 hover:border-neutral-200 transition-colors"
+                        >
+                          <div>
+                            <div className="font-medium text-charcoal">{pkg.name}</div>
+                            <div className="text-sm text-neutral-500 font-light">
+                              {pkg.class_count} classes · ${(perClass / 100).toFixed(0)}/class
+                              {savings > 0 && (
+                                <span className="ml-2 text-green-600">Save {savings}%</span>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handlePurchasePackage(pkg)}
+                            disabled={purchasingPackage === pkg.id || !firstName || !lastName || !phone}
+                            className="px-4 py-2 border border-charcoal text-charcoal text-sm font-light hover:bg-charcoal hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {purchasingPackage === pkg.id ? 'Loading...' : `$${(pkg.price_cents / 100).toFixed(0)}`}
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {(!firstName || !lastName || !phone) && (
+                    <p className="text-neutral-400 text-xs mt-3 font-light">
+                      Enter your details above to purchase a package.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

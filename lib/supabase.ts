@@ -124,9 +124,43 @@ export type Payment = {
   created_at: string
 }
 
+export type InstructorPackage = {
+  id: string
+  instructor_id: string
+  name: string
+  description?: string
+  class_count: number
+  price_cents: number
+  is_active: boolean
+  created_at: string
+}
+
+export type PackageCredit = {
+  id: string
+  package_id: string
+  instructor_id: string
+  user_id?: string
+  guest_phone?: string
+  classes_remaining: number
+  classes_total: number
+  stripe_checkout_session_id?: string
+  stripe_payment_intent_id?: string
+  purchased_at: string
+  created_at: string
+}
+
 // Joined types for convenience
 export type ClassWithDetails = YogaClass & {
   instructor: Profile
   time_slot: TimeSlot
   booking_count: number
+}
+
+export type PackageWithInstructor = InstructorPackage & {
+  instructor: Profile
+}
+
+export type PackageCreditWithDetails = PackageCredit & {
+  package: InstructorPackage
+  instructor: Profile
 }

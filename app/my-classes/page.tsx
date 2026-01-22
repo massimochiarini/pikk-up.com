@@ -5,7 +5,8 @@ import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import { format, parseISO, isPast } from 'date-fns'
 import Link from 'next/link'
-import { CalendarDaysIcon, ClockIcon, MapPinIcon, CheckIcon, ChevronDownIcon, XMarkIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, ClockIcon, MapPinIcon, CheckIcon, ChevronDownIcon, XMarkIcon, UsersIcon, TicketIcon } from '@heroicons/react/24/outline'
+import type { PackageCreditWithDetails } from '@/lib/supabase'
 
 export default function StudentMyClassesPage() {
   const { user, profile, loading: authLoading } = useAuth()
@@ -15,6 +16,8 @@ export default function StudentMyClassesPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [cancellingId, setCancellingId] = useState<string | null>(null)
   const [showCancelConfirm, setShowCancelConfirm] = useState<string | null>(null)
+  const [packageCredits, setPackageCredits] = useState<PackageCreditWithDetails[]>([])
+  const [loadingCredits, setLoadingCredits] = useState(true)
 
   useEffect(() => {
     // Only redirect if we've finished loading and there's no user
@@ -51,6 +54,32 @@ export default function StudentMyClassesPage() {
     }
 
     fetchBookings()
+  }, [user, profile])
+
+  // Fetch package credits
+  useEffect(() => {
+    if (!user) return
+
+    const fetchCredits = async () => {
+      try {
+        const params = new URLSearchParams()
+        if (user.id) params.append('userId', user.id)
+        if (profile?.phone) params.append('phone', profile.phone)
+        
+        const response = await fetch(`/api/my-packages?${params.toString()}`)
+        
+        if (response.ok) {
+          const data = await response.json()
+          setPackageCredits(data.credits || [])
+        }
+      } catch (error) {
+        console.error('Error fetching package credits:', error)
+      } finally {
+        setLoadingCredits(false)
+      }
+    }
+
+    fetchCredits()
   }, [user, profile])
 
   const formatTime = (time: string) => {
@@ -136,7 +165,50 @@ export default function StudentMyClassesPage() {
           </Link>
         </div>
 
-        {bookings.length === 0 ? (
+        {/* Package Credits Section */}
+        {!loadingCredits && packageCredits.length > 0 && (
+          <div className="mb-10 pb-10 border-b border-neutral-100">
+            <h2 className="text-lg font-medium text-charcoal mb-6 flex items-center gap-3">
+              <div className="w-8 h-8 border border-charcoal flex items-center justify-center">
+                <TicketIcon className="w-4 h-4" />
+              </div>
+              My Package Credits
+            </h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {packageCredits.map((credit) => (
+                <div key={credit.id} className="border border-neutral-200 p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center flex-shrink-0 text-lg font-light text-charcoal">
+                      {credit.classes_remaining}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-charcoal truncate">
+                        {credit.package?.name || 'Class Package'}
+                      </h3>
+                      <p className="text-sm text-neutral-500 font-light mt-0.5">
+                        with {credit.instructor?.first_name} {credit.instructor?.last_name}
+                      </p>
+                      <div className="mt-3">
+                        <div className="flex items-center justify-between text-xs text-neutral-400 mb-1">
+                          <span>{credit.classes_remaining} remaining</span>
+                          <span>{credit.classes_total} total</span>
+                        </div>
+                        <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-charcoal rounded-full transition-all"
+                            style={{ width: `${(credit.classes_remaining / credit.classes_total) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {bookings.length === 0 && packageCredits.length === 0 ? (
           <div className="border border-neutral-200 p-12 text-center">
             <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center mx-auto mb-4">
               <CalendarDaysIcon className="w-6 h-6 text-neutral-400" />
