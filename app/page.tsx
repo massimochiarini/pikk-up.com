@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { HeroSection } from '@/components/HeroSection'
 import { ImageBreak } from '@/components/ImageBreak'
-import { CalendarDaysIcon, CreditCardIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, CreditCardIcon, SparklesIcon, UserGroupIcon, DevicePhoneMobileIcon, TicketIcon } from '@heroicons/react/24/outline'
 
 export default function LandingPage() {
   return (
@@ -66,7 +66,7 @@ export default function LandingPage() {
             Find your flow
           </h1>
           <p className="text-lg sm:text-xl text-neutral-600 max-w-2xl mx-auto mb-10 font-light">
-            Book yoga classes with local instructors in a studio space designed for connection and growth.
+            The yoga booking platform that connects you with local instructors and classes in your area.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/classes" className="btn-primary text-center px-8 py-4">
@@ -126,10 +126,10 @@ export default function LandingPage() {
       {/* Image Break */}
       <ImageBreak imageSrc="/gallery/5.jpg" imageNumber={5} height="large" />
 
-      {/* Gallery Preview Section */}
+      {/* What is PikkUp Section */}
       <section className="gallery-section px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
             <div className="order-2 md:order-1">
               <figure>
                 <div className="relative aspect-[4/5] overflow-hidden bg-neutral-100">
@@ -146,18 +146,55 @@ export default function LandingPage() {
                 </figcaption>
               </figure>
             </div>
-            <div className="order-1 md:order-2 space-y-6">
-              <h2 className="section-title">A space for practice</h2>
-              <p className="text-neutral-500 font-light leading-relaxed">
-                Our studio is more than a place to practice yoga. It&apos;s a curated space 
-                where art, movement, and community come together.
-              </p>
-              <p className="text-neutral-500 font-light leading-relaxed">
-                Original artwork adorns our walls, creating an environment that 
-                inspires presence and creativity in every session.
-              </p>
-              <Link href="/classes" className="btn-outline inline-block mt-4">
-                View Schedule
+            <div className="order-1 md:order-2 space-y-8">
+              <div>
+                <h2 className="section-title mb-4">The easiest way to find and book yoga</h2>
+                <p className="text-lg text-neutral-500 font-light leading-relaxed">
+                  PikkUp is a booking platform that connects you with certified local instructors. 
+                  Browse classes, book instantly, and build your practice.
+                </p>
+              </div>
+              
+              <div className="space-y-5">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center flex-shrink-0">
+                    <UserGroupIcon className="w-5 h-5 text-charcoal" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-charcoal mb-1">Discover local classes</h3>
+                    <p className="text-neutral-500 font-light text-sm">
+                      Find yoga classes taught by certified instructors in your area.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center flex-shrink-0">
+                    <DevicePhoneMobileIcon className="w-5 h-5 text-charcoal" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-charcoal mb-1">Book instantly</h3>
+                    <p className="text-neutral-500 font-light text-sm">
+                      Secure payment and instant SMS confirmation for every booking.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center flex-shrink-0">
+                    <TicketIcon className="w-5 h-5 text-charcoal" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-charcoal mb-1">Build your practice</h3>
+                    <p className="text-neutral-500 font-light text-sm">
+                      Save with class packages and credits from your favorite instructors.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <Link href="/classes" className="btn-primary inline-block px-8 py-4">
+                Browse Classes
               </Link>
             </div>
           </div>
