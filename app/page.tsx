@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { HeroSection } from '@/components/HeroSection'
 import { ImageBreak } from '@/components/ImageBreak'
 import { CalendarDaysIcon, CreditCardIcon, SparklesIcon, UserGroupIcon, DevicePhoneMobileIcon, TicketIcon } from '@heroicons/react/24/outline'
@@ -128,75 +127,57 @@ export default function LandingPage() {
 
       {/* What is PikkUp Section */}
       <section className="gallery-section px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
-            <div className="order-2 md:order-1">
-              <figure>
-                <div className="relative aspect-[4/5] overflow-hidden bg-neutral-100">
-                  <Image
-                    src="/gallery/6.jpg"
-                    alt="Untitled 06"
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover"
-                  />
-                </div>
-                <figcaption className="gallery-caption text-center">
-                  Untitled 06
-                </figcaption>
-              </figure>
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="space-y-8">
+            <div>
+              <h2 className="section-title mb-4">The easiest way to find and book yoga</h2>
+              <p className="text-lg text-neutral-500 font-light leading-relaxed">
+                PikkUp is a booking platform that connects you with certified local instructors. 
+                Browse classes, book instantly, and build your practice.
+              </p>
             </div>
-            <div className="order-1 md:order-2 space-y-8">
-              <div>
-                <h2 className="section-title mb-4">The easiest way to find and book yoga</h2>
-                <p className="text-lg text-neutral-500 font-light leading-relaxed">
-                  PikkUp is a booking platform that connects you with certified local instructors. 
-                  Browse classes, book instantly, and build your practice.
-                </p>
-              </div>
-              
-              <div className="space-y-5">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center flex-shrink-0">
-                    <UserGroupIcon className="w-5 h-5 text-charcoal" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-charcoal mb-1">Discover local classes</h3>
-                    <p className="text-neutral-500 font-light text-sm">
-                      Find yoga classes taught by certified instructors in your area.
-                    </p>
-                  </div>
+            
+            <div className="grid sm:grid-cols-3 gap-6 text-left">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center flex-shrink-0">
+                  <UserGroupIcon className="w-5 h-5 text-charcoal" />
                 </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center flex-shrink-0">
-                    <DevicePhoneMobileIcon className="w-5 h-5 text-charcoal" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-charcoal mb-1">Book instantly</h3>
-                    <p className="text-neutral-500 font-light text-sm">
-                      Secure payment and instant SMS confirmation for every booking.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center flex-shrink-0">
-                    <TicketIcon className="w-5 h-5 text-charcoal" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-charcoal mb-1">Build your practice</h3>
-                    <p className="text-neutral-500 font-light text-sm">
-                      Save with class packages and credits from your favorite instructors.
-                    </p>
-                  </div>
+                <div>
+                  <h3 className="font-medium text-charcoal mb-1">Discover local classes</h3>
+                  <p className="text-neutral-500 font-light text-sm">
+                    Find yoga classes taught by certified instructors in your area.
+                  </p>
                 </div>
               </div>
               
-              <Link href="/classes" className="btn-primary inline-block px-8 py-4">
-                Browse Classes
-              </Link>
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center flex-shrink-0">
+                  <DevicePhoneMobileIcon className="w-5 h-5 text-charcoal" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-charcoal mb-1">Book instantly</h3>
+                  <p className="text-neutral-500 font-light text-sm">
+                    Secure payment and instant SMS confirmation for every booking.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center flex-shrink-0">
+                  <TicketIcon className="w-5 h-5 text-charcoal" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-charcoal mb-1">Build your practice</h3>
+                  <p className="text-neutral-500 font-light text-sm">
+                    Save with class packages and credits from your favorite instructors.
+                  </p>
+                </div>
+              </div>
             </div>
+            
+            <Link href="/classes" className="btn-primary inline-block px-8 py-4">
+              Browse Classes
+            </Link>
           </div>
         </div>
       </section>
