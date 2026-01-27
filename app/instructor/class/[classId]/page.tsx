@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import { supabase, type YogaClass, type TimeSlot, type Booking } from '@/lib/supabase'
 import { format, parseISO } from 'date-fns'
 import Link from 'next/link'
-import { ArrowLeftIcon, CalendarDaysIcon, ClockIcon, LinkIcon, UsersIcon, ExclamationTriangleIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, CalendarDaysIcon, ClockIcon, LinkIcon, UsersIcon, ExclamationTriangleIcon, TrashIcon, PencilSquareIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/outline'
 
 type ClassWithDetails = YogaClass & {
   time_slot: TimeSlot
@@ -18,13 +18,26 @@ export default function InstructorClassDetailPage() {
   const { user, profile, loading: authLoading } = useAuth()
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const classId = params.classId as string
+  const shouldAutoEdit = searchParams.get('edit') === 'true'
 
   const [yogaClass, setYogaClass] = useState<ClassWithDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [copiedLink, setCopiedLink] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  
+  // Edit state
+  const [isEditing, setIsEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editPrice, setEditPrice] = useState('')
+  const [editMaxCapacity, setEditMaxCapacity] = useState('')
+  const [editSkillLevel, setEditSkillLevel] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [editError, setEditError] = useState('')
+  const [editSuccess, setEditSuccess] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -126,6 +139,88 @@ export default function InstructorClassDetailPage() {
     return bookings.filter(b => b.status === 'confirmed')
   }
 
+  const startEditing = () => {
+    if (!yogaClass) return
+    setEditTitle(yogaClass.title)
+    setEditDescription(yogaClass.description || '')
+    setEditPrice(yogaClass.price_cents ? (yogaClass.price_cents / 100).toString() : '')
+    setEditMaxCapacity(yogaClass.max_capacity.toString())
+    setEditSkillLevel(yogaClass.skill_level || 'all')
+    setEditError('')
+    setEditSuccess(false)
+    setIsEditing(true)
+  }
+
+  // Auto-open edit modal if ?edit=true is in the URL
+  useEffect(() => {
+    if (shouldAutoEdit && yogaClass && !isEditing) {
+      startEditing()
+      // Remove the edit param from URL to prevent re-opening on refresh
+      router.replace(`/instructor/class/${classId}`, { scroll: false })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldAutoEdit, yogaClass])
+
+  const cancelEditing = () => {
+    setIsEditing(false)
+    setEditError('')
+    setEditSuccess(false)
+  }
+
+  const handleSaveChanges = async () => {
+    if (!yogaClass || !user) return
+    
+    setSaving(true)
+    setEditError('')
+    setEditSuccess(false)
+
+    try {
+      const priceCents = Math.round(parseFloat(editPrice || '0') * 100)
+      
+      const response = await fetch('/api/update-class', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          classId: yogaClass.id,
+          instructorId: user.id,
+          title: editTitle,
+          description: editDescription,
+          priceCents,
+          maxCapacity: parseInt(editMaxCapacity),
+          skillLevel: editSkillLevel,
+          isDonation: priceCents === 0,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update class')
+      }
+
+      // Update local state with the new values
+      setYogaClass({
+        ...yogaClass,
+        title: editTitle.trim(),
+        description: editDescription.trim() || undefined,
+        price_cents: priceCents,
+        max_capacity: parseInt(editMaxCapacity),
+        skill_level: editSkillLevel as YogaClass['skill_level'],
+        is_donation: priceCents === 0,
+      })
+
+      setEditSuccess(true)
+      setTimeout(() => {
+        setIsEditing(false)
+        setEditSuccess(false)
+      }, 1500)
+    } catch (err: any) {
+      setEditError(err.message || 'Failed to save changes')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   // Show loading while auth is loading, data is loading, OR when we have a user but profile hasn't loaded
   if (authLoading || loading || (user && !profile)) {
     return (
@@ -207,8 +302,15 @@ export default function InstructorClassDetailPage() {
             
             <div className="flex items-center gap-2">
               <button
-                onClick={copyBookingLink}
+                onClick={startEditing}
                 className="btn-primary flex items-center gap-2 whitespace-nowrap"
+              >
+                <PencilSquareIcon className="w-4 h-4" />
+                Edit Class
+              </button>
+              <button
+                onClick={copyBookingLink}
+                className="px-4 py-3 border border-neutral-200 text-charcoal hover:bg-neutral-50 font-light text-sm transition-colors flex items-center gap-2 whitespace-nowrap"
               >
                 <LinkIcon className="w-4 h-4" />
                 {copiedLink ? 'Copied!' : 'Copy Link'}
@@ -294,6 +396,137 @@ export default function InstructorClassDetailPage() {
                 >
                   {deleting ? 'Deleting...' : 'Delete Class'}
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Class Modal */}
+        {isEditing && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white border border-neutral-200 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-neutral-100 p-6 flex items-center justify-between">
+                <h2 className="text-xl font-light text-charcoal">Edit Class</h2>
+                <button
+                  onClick={cancelEditing}
+                  className="p-2 hover:bg-neutral-100 transition-colors"
+                >
+                  <XMarkIcon className="w-5 h-5 text-neutral-500" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {editError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
+                    {editError}
+                  </div>
+                )}
+
+                {editSuccess && (
+                  <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 text-sm flex items-center gap-2">
+                    <CheckIcon className="w-4 h-4" />
+                    Changes saved successfully!
+                  </div>
+                )}
+
+                <div>
+                  <label htmlFor="editTitle" className="label">Class Title</label>
+                  <input
+                    id="editTitle"
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="input-field"
+                    placeholder="e.g., Sunrise Vinyasa Flow"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="editDescription" className="label">
+                    Description <span className="text-neutral-400 font-normal lowercase">(optional)</span>
+                  </label>
+                  <textarea
+                    id="editDescription"
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    className="input-field resize-none"
+                    rows={4}
+                    placeholder="Describe what students can expect from your class..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="editPrice" className="label">Price ($)</label>
+                    <input
+                      id="editPrice"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={editPrice}
+                      onChange={(e) => setEditPrice(e.target.value)}
+                      className="input-field"
+                      placeholder="0"
+                    />
+                    <p className="text-neutral-400 text-xs mt-2 font-light">Leave empty for free/donation</p>
+                  </div>
+                  <div>
+                    <label htmlFor="editCapacity" className="label">Max Capacity</label>
+                    <input
+                      id="editCapacity"
+                      type="number"
+                      min="1"
+                      max="50"
+                      value={editMaxCapacity}
+                      onChange={(e) => setEditMaxCapacity(e.target.value)}
+                      className="input-field"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="editSkillLevel" className="label">Skill Level</label>
+                  <select
+                    id="editSkillLevel"
+                    value={editSkillLevel}
+                    onChange={(e) => setEditSkillLevel(e.target.value)}
+                    className="input-field"
+                  >
+                    <option value="all">All Levels</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t border-neutral-100">
+                  <button
+                    onClick={cancelEditing}
+                    disabled={saving}
+                    className="flex-1 btn-secondary py-4"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveChanges}
+                    disabled={saving || !editTitle.trim()}
+                    className="flex-1 btn-primary py-4 flex items-center justify-center gap-2"
+                  >
+                    {saving ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <CheckIcon className="w-4 h-4" />
+                        Save Changes
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

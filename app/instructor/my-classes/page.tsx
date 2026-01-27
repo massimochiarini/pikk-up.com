@@ -8,7 +8,7 @@ import { ParticipantsModal } from '@/components/ParticipantsModal'
 import { supabase, type YogaClass, type TimeSlot, type Booking } from '@/lib/supabase'
 import { format, parseISO, isPast } from 'date-fns'
 import Link from 'next/link'
-import { CalendarDaysIcon, ClockIcon, UsersIcon, LinkIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, ClockIcon, UsersIcon, LinkIcon, ArrowRightIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
 
 type ClassWithDetails = YogaClass & {
   time_slot: TimeSlot
@@ -220,7 +220,14 @@ export default function MyClassesPage() {
                             </div>
                           </div>
                           
-                          <div className="flex items-center gap-3 flex-shrink-0">
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <Link 
+                              href={`/instructor/class/${yogaClass.id}?edit=true`}
+                              className="flex items-center gap-2 px-4 py-2 bg-charcoal text-white text-sm font-light hover:bg-neutral-800 transition-colors"
+                            >
+                              <PencilSquareIcon className="w-4 h-4" />
+                              Edit
+                            </Link>
                             <button
                               onClick={() => copyBookingLink(yogaClass.id)}
                               className="flex items-center gap-2 px-4 py-2 border border-neutral-200 text-sm font-light hover:border-charcoal transition-colors"
@@ -230,7 +237,7 @@ export default function MyClassesPage() {
                             </button>
                             <Link 
                               href={`/instructor/class/${yogaClass.id}`}
-                              className="flex items-center gap-2 px-4 py-2 bg-charcoal text-white text-sm font-light hover:bg-neutral-800 transition-colors"
+                              className="flex items-center gap-2 px-4 py-2 border border-neutral-200 text-sm font-light hover:border-charcoal transition-colors"
                             >
                               Details
                               <ArrowRightIcon className="w-4 h-4" />
