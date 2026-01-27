@@ -6,6 +6,7 @@ import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 import Image from 'next/image'
 import { CheckCircleIcon, ClockIcon } from '@heroicons/react/24/outline'
+import PasswordInput from '@/components/PasswordInput'
 
 export default function InstructorSignupPage() {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth()
@@ -485,12 +486,10 @@ export default function InstructorSignupPage() {
 
             <div>
               <label htmlFor="password" className="label">Password</label>
-              <input
+              <PasswordInput
                 id="password"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="input-field"
                 placeholder="At least 6 characters"
                 minLength={6}
                 required

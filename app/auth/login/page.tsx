@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
+import PasswordInput from '@/components/PasswordInput'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -84,12 +85,10 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="password" className="label">Password</label>
-              <input
+              <PasswordInput
                 id="password"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="input-field"
                 placeholder="Enter your password"
                 required
               />

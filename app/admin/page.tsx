@@ -194,8 +194,8 @@ export default function AdminPage() {
         )}
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex gap-2">
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible">
             {(['pending', 'instructors', 'students', 'all'] as FilterType[]).map((f) => (
               <button
                 key={f}
@@ -203,7 +203,7 @@ export default function AdminPage() {
                   setFilter(f)
                   fetchUsers(f)
                 }}
-                className={`px-4 py-2 text-sm font-light transition-colors ${
+                className={`px-4 py-2 text-sm font-light transition-colors whitespace-nowrap flex-shrink-0 ${
                   filter === f
                     ? 'bg-charcoal text-white'
                     : 'border border-neutral-200 text-neutral-600 hover:border-charcoal'
@@ -219,27 +219,29 @@ export default function AdminPage() {
             ))}
           </div>
           
-          <div className="flex-1 relative">
-            <MagnifyingGlassIcon className="w-5 h-5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search by name or email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-field pl-10"
-            />
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 relative">
+              <MagnifyingGlassIcon className="w-5 h-5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input-field pl-10"
+              />
+            </div>
+            
+            <button
+              onClick={() => fetchUsers()}
+              className="btn-secondary flex items-center justify-center gap-2 px-4 py-2"
+            >
+              <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
           </div>
-          
-          <button
-            onClick={() => fetchUsers()}
-            className="btn-secondary flex items-center gap-2 px-4 py-2"
-          >
-            <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
         </div>
 
-        {/* Users Table */}
+        {/* Users List - Mobile Cards / Desktop Table */}
         <div className="border border-neutral-200">
           {loading ? (
             <div className="p-8 text-center">
@@ -250,125 +252,247 @@ export default function AdminPage() {
               {filter === 'pending' ? 'No pending instructor requests' : 'No users found'}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-neutral-50 border-b border-neutral-200">
-                  <tr>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-charcoal">User</th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-charcoal">Status</th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-charcoal hidden md:table-cell">Bio</th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-charcoal">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-100">
-                  {filteredUsers.map((u) => (
-                    <tr key={u.id} className="hover:bg-neutral-50">
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center text-charcoal font-light">
-                            {u.first_name?.[0] || u.email[0].toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="font-medium text-charcoal">
-                              {u.first_name} {u.last_name}
-                            </div>
-                            <div className="text-sm text-neutral-500">{u.email}</div>
-                            {u.phone && (
-                              <div className="text-xs text-neutral-400">{u.phone}</div>
-                            )}
-                          </div>
+            <>
+              {/* Mobile Card Layout */}
+              <div className="md:hidden divide-y divide-neutral-100">
+                {filteredUsers.map((u) => (
+                  <div key={u.id} className="p-4 space-y-4">
+                    {/* User Info */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center text-charcoal font-light text-lg flex-shrink-0">
+                        {u.first_name?.[0] || u.email[0].toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-charcoal">
+                          {u.first_name} {u.last_name}
                         </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex flex-wrap gap-1">
-                          {u.is_admin && (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 text-xs">
-                              <ShieldCheckIcon className="w-3 h-3" />
-                              Admin
-                            </span>
-                          )}
-                          {u.is_instructor ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-charcoal text-white text-xs">
-                              <AcademicCapIcon className="w-3 h-3" />
-                              Instructor
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 border border-neutral-200 text-neutral-600 text-xs">
-                              <UserIcon className="w-3 h-3" />
-                              Student
-                            </span>
-                          )}
-                          {u.instructor_status === 'pending' && (
-                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs">
-                              Pending
-                            </span>
-                          )}
-                          {u.instructor_status === 'rejected' && (
-                            <span className="px-2 py-1 bg-red-100 text-red-700 text-xs">
-                              Rejected
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 hidden md:table-cell">
-                        <div className="text-sm text-neutral-500 max-w-xs truncate">
-                          {u.bio || '-'}
-                        </div>
-                        {u.instagram && (
-                          <div className="text-xs text-neutral-400">@{u.instagram}</div>
+                        <div className="text-sm text-neutral-500 truncate">{u.email}</div>
+                        {u.phone && (
+                          <div className="text-xs text-neutral-400">{u.phone}</div>
                         )}
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex gap-2">
-                          {u.instructor_status === 'pending' && (
+                      </div>
+                    </div>
+
+                    {/* Status Badges */}
+                    <div className="flex flex-wrap gap-2">
+                      {u.is_admin && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 text-xs">
+                          <ShieldCheckIcon className="w-3 h-3" />
+                          Admin
+                        </span>
+                      )}
+                      {u.is_instructor ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-charcoal text-white text-xs">
+                          <AcademicCapIcon className="w-3 h-3" />
+                          Instructor
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 border border-neutral-200 text-neutral-600 text-xs">
+                          <UserIcon className="w-3 h-3" />
+                          Student
+                        </span>
+                      )}
+                      {u.instructor_status === 'pending' && (
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {u.instructor_status === 'rejected' && (
+                        <span className="px-2 py-1 bg-red-100 text-red-700 text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Bio (if exists) */}
+                    {u.bio && (
+                      <div className="text-sm text-neutral-500 line-clamp-2">
+                        {u.bio}
+                      </div>
+                    )}
+                    {u.instagram && (
+                      <div className="text-xs text-neutral-400">@{u.instagram}</div>
+                    )}
+
+                    {/* Action Buttons - Full Width for Easy Tapping */}
+                    <div className="flex flex-col gap-2">
+                      {u.instructor_status === 'pending' && (
+                        <>
+                          <button
+                            onClick={() => handleAction(u.id, 'approve')}
+                            disabled={actionLoading === u.id}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white text-base font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+                          >
+                            {actionLoading === u.id ? (
+                              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            ) : (
+                              <>
+                                <CheckIcon className="w-5 h-5" />
+                                Approve Instructor
+                              </>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleAction(u.id, 'reject')}
+                            disabled={actionLoading === u.id}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white text-base font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+                          >
+                            <XMarkIcon className="w-5 h-5" />
+                            Reject Request
+                          </button>
+                        </>
+                      )}
+                      {!u.is_instructor && u.instructor_status !== 'pending' && (
+                        <button
+                          onClick={() => handleAction(u.id, 'make_instructor')}
+                          disabled={actionLoading === u.id}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-neutral-200 text-base hover:border-charcoal transition-colors disabled:opacity-50"
+                        >
+                          {actionLoading === u.id ? (
+                            <div className="w-5 h-5 border-2 border-neutral-300 border-t-charcoal rounded-full animate-spin"></div>
+                          ) : (
                             <>
-                              <button
-                                onClick={() => handleAction(u.id, 'approve')}
-                                disabled={actionLoading === u.id}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-sm hover:bg-green-700 transition-colors disabled:opacity-50"
-                              >
-                                <CheckIcon className="w-4 h-4" />
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => handleAction(u.id, 'reject')}
-                                disabled={actionLoading === u.id}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
-                              >
-                                <XMarkIcon className="w-4 h-4" />
-                                Reject
-                              </button>
+                              <AcademicCapIcon className="w-5 h-5" />
+                              Make Instructor
                             </>
                           )}
-                          {!u.is_instructor && u.instructor_status !== 'pending' && (
-                            <button
-                              onClick={() => handleAction(u.id, 'make_instructor')}
-                              disabled={actionLoading === u.id}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 border border-neutral-200 text-sm hover:border-charcoal transition-colors disabled:opacity-50"
-                            >
-                              <AcademicCapIcon className="w-4 h-4" />
-                              Make Instructor
-                            </button>
-                          )}
-                          {u.is_instructor && u.id !== user?.id && (
-                            <button
-                              onClick={() => handleAction(u.id, 'revoke')}
-                              disabled={actionLoading === u.id}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 border border-red-200 text-red-600 text-sm hover:bg-red-50 transition-colors disabled:opacity-50"
-                            >
-                              Revoke Instructor
-                            </button>
-                          )}
-                          {actionLoading === u.id && (
-                            <div className="w-5 h-5 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
-                          )}
-                        </div>
-                      </td>
+                        </button>
+                      )}
+                      {u.is_instructor && u.id !== user?.id && (
+                        <button
+                          onClick={() => handleAction(u.id, 'revoke')}
+                          disabled={actionLoading === u.id}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-red-200 text-red-600 text-base hover:bg-red-50 transition-colors disabled:opacity-50"
+                        >
+                          Revoke Instructor
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table Layout */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-neutral-50 border-b border-neutral-200">
+                    <tr>
+                      <th className="text-left px-4 py-3 text-sm font-medium text-charcoal">User</th>
+                      <th className="text-left px-4 py-3 text-sm font-medium text-charcoal">Status</th>
+                      <th className="text-left px-4 py-3 text-sm font-medium text-charcoal">Bio</th>
+                      <th className="text-left px-4 py-3 text-sm font-medium text-charcoal">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-100">
+                    {filteredUsers.map((u) => (
+                      <tr key={u.id} className="hover:bg-neutral-50">
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 border border-neutral-200 flex items-center justify-center text-charcoal font-light">
+                              {u.first_name?.[0] || u.email[0].toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="font-medium text-charcoal">
+                                {u.first_name} {u.last_name}
+                              </div>
+                              <div className="text-sm text-neutral-500">{u.email}</div>
+                              {u.phone && (
+                                <div className="text-xs text-neutral-400">{u.phone}</div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex flex-wrap gap-1">
+                            {u.is_admin && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 text-xs">
+                                <ShieldCheckIcon className="w-3 h-3" />
+                                Admin
+                              </span>
+                            )}
+                            {u.is_instructor ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-charcoal text-white text-xs">
+                                <AcademicCapIcon className="w-3 h-3" />
+                                Instructor
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 border border-neutral-200 text-neutral-600 text-xs">
+                                <UserIcon className="w-3 h-3" />
+                                Student
+                              </span>
+                            )}
+                            {u.instructor_status === 'pending' && (
+                              <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs">
+                                Pending
+                              </span>
+                            )}
+                            {u.instructor_status === 'rejected' && (
+                              <span className="px-2 py-1 bg-red-100 text-red-700 text-xs">
+                                Rejected
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="text-sm text-neutral-500 max-w-xs truncate">
+                            {u.bio || '-'}
+                          </div>
+                          {u.instagram && (
+                            <div className="text-xs text-neutral-400">@{u.instagram}</div>
+                          )}
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex gap-2">
+                            {u.instructor_status === 'pending' && (
+                              <>
+                                <button
+                                  onClick={() => handleAction(u.id, 'approve')}
+                                  disabled={actionLoading === u.id}
+                                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-sm hover:bg-green-700 transition-colors disabled:opacity-50"
+                                >
+                                  <CheckIcon className="w-4 h-4" />
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() => handleAction(u.id, 'reject')}
+                                  disabled={actionLoading === u.id}
+                                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
+                                >
+                                  <XMarkIcon className="w-4 h-4" />
+                                  Reject
+                                </button>
+                              </>
+                            )}
+                            {!u.is_instructor && u.instructor_status !== 'pending' && (
+                              <button
+                                onClick={() => handleAction(u.id, 'make_instructor')}
+                                disabled={actionLoading === u.id}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 border border-neutral-200 text-sm hover:border-charcoal transition-colors disabled:opacity-50"
+                              >
+                                <AcademicCapIcon className="w-4 h-4" />
+                                Make Instructor
+                              </button>
+                            )}
+                            {u.is_instructor && u.id !== user?.id && (
+                              <button
+                                onClick={() => handleAction(u.id, 'revoke')}
+                                disabled={actionLoading === u.id}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 border border-red-200 text-red-600 text-sm hover:bg-red-50 transition-colors disabled:opacity-50"
+                              >
+                                Revoke Instructor
+                              </button>
+                            )}
+                            {actionLoading === u.id && (
+                              <div className="w-5 h-5 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </main>
