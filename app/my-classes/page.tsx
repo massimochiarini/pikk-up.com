@@ -321,7 +321,7 @@ export default function StudentMyClassesPage() {
                               <div className="border border-neutral-100 p-4">
                                 <h4 className="text-xs uppercase tracking-wider text-neutral-400 mb-3 flex items-center gap-2">
                                   <UsersIcon className="w-4 h-4" />
-                                  Participants ({booking.class.booking_count} / {booking.class.max_capacity})
+                                  Participants
                                 </h4>
                                 {booking.class.participants && booking.class.participants.length > 0 ? (
                                   <div className="space-y-2">

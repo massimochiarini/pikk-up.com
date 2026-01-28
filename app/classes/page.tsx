@@ -380,21 +380,28 @@ export default function ClassesPage() {
                             {yogaClass.instructor.first_name} {yogaClass.instructor.last_name}
                           </span>
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            setParticipantsModal({
-                              classId: yogaClass.id,
-                              title: yogaClass.title,
-                              isOwner: user?.id === yogaClass.instructor_id
-                            })
-                          }}
-                          className={`flex items-center gap-1.5 text-sm font-light hover:underline ${isFull ? 'text-red-500' : spotsLeft <= 3 ? 'text-amber-600' : 'text-neutral-400'}`}
-                        >
-                          <UsersIcon className="w-4 h-4" />
-                          {isFull ? 'Full' : `${spotsLeft} spots`}
-                        </button>
+{/* Only show spots to instructor who created the class or admin */}
+                        {(profile?.is_admin || user?.id === yogaClass.instructor_id) ? (
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              setParticipantsModal({
+                                classId: yogaClass.id,
+                                title: yogaClass.title,
+                                isOwner: user?.id === yogaClass.instructor_id
+                              })
+                            }}
+                            className={`flex items-center gap-1.5 text-sm font-light hover:underline ${isFull ? 'text-red-500' : spotsLeft <= 3 ? 'text-amber-600' : 'text-neutral-400'}`}
+                          >
+                            <UsersIcon className="w-4 h-4" />
+                            {isFull ? 'Full' : `${spotsLeft} spots`}
+                          </button>
+                        ) : (
+                          <span className="text-neutral-400">
+                            <UsersIcon className="w-4 h-4" />
+                          </span>
+                        )}
                       </div>
 
                       {/* Full overlay */}

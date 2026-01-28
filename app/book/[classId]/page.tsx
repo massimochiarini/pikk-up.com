@@ -944,50 +944,58 @@ function PublicBookingContent() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <UsersIcon className="w-5 h-5 text-neutral-400 mt-0.5" />
-                  <div className="flex-1">
-                    <div className={`${isFull ? 'text-red-500' : 'text-charcoal'}`}>
-                      {isFull ? 'Class Full' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
-                    </div>
-                    <button
-                      onClick={toggleParticipants}
-                      className="text-neutral-500 text-sm font-light hover:text-charcoal transition-colors flex items-center gap-1"
-                    >
-                      {bookingCount} / {yogaClass.max_capacity} registered
-                      {bookingCount > 0 && (
-                        showParticipants ? (
-                          <ChevronUpIcon className="w-4 h-4" />
-                        ) : (
-                          <ChevronDownIcon className="w-4 h-4" />
-                        )
-                      )}
-                    </button>
-                    
-                    {/* Participants list */}
-                    {showParticipants && bookingCount > 0 && (
-                      <div className="mt-3 pt-3 border-t border-neutral-100">
-                        {loadingParticipants ? (
-                          <div className="flex items-center gap-2 text-sm text-neutral-400">
-                            <div className="w-4 h-4 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
-                            Loading...
-                          </div>
-                        ) : (
-                          <div className="flex flex-wrap gap-2">
-                            {participants.map((p, i) => (
-                              <span
-                                key={i}
-                                className="px-2 py-1 bg-neutral-50 text-neutral-600 text-sm font-light"
-                              >
-                                {p.first_name} {p.last_initial}.
-                              </span>
-                            ))}
-                          </div>
-                        )}
+{/* Only show spots/capacity to instructor who created the class or admin */}
+                {(profile?.is_admin || user?.id === yogaClass.instructor_id) ? (
+                  <div className="flex items-start gap-4">
+                    <UsersIcon className="w-5 h-5 text-neutral-400 mt-0.5" />
+                    <div className="flex-1">
+                      <div className={`${isFull ? 'text-red-500' : 'text-charcoal'}`}>
+                        {isFull ? 'Class Full' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
                       </div>
-                    )}
+                      <button
+                        onClick={toggleParticipants}
+                        className="text-neutral-500 text-sm font-light hover:text-charcoal transition-colors flex items-center gap-1"
+                      >
+                        {bookingCount} / {yogaClass.max_capacity} registered
+                        {bookingCount > 0 && (
+                          showParticipants ? (
+                            <ChevronUpIcon className="w-4 h-4" />
+                          ) : (
+                            <ChevronDownIcon className="w-4 h-4" />
+                          )
+                        )}
+                      </button>
+                      
+                      {/* Participants list */}
+                      {showParticipants && bookingCount > 0 && (
+                        <div className="mt-3 pt-3 border-t border-neutral-100">
+                          {loadingParticipants ? (
+                            <div className="flex items-center gap-2 text-sm text-neutral-400">
+                              <div className="w-4 h-4 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
+                              Loading...
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              {participants.map((p, i) => (
+                                <span
+                                  key={i}
+                                  className="px-2 py-1 bg-neutral-50 text-neutral-600 text-sm font-light"
+                                >
+                                  {p.first_name} {p.last_initial}.
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-4">
+                    <UsersIcon className="w-5 h-5 text-neutral-400" />
+                    <div className="text-charcoal">Group class</div>
+                  </div>
+                )}
               </div>
 
               {/* Description */}
