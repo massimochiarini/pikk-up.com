@@ -10,7 +10,11 @@ ALTER TABLE package_credits ADD COLUMN IF NOT EXISTS guest_email TEXT;
 -- Add index for package_credits guest_email lookups
 CREATE INDEX IF NOT EXISTS idx_package_credits_guest_email ON package_credits(guest_email);
 
--- Update get_available_credits function to use email instead of phone
+-- Drop existing functions first (they have the old p_phone parameter)
+DROP FUNCTION IF EXISTS get_available_credits(uuid, uuid, text);
+DROP FUNCTION IF EXISTS use_package_credit(uuid, uuid, text);
+
+-- Recreate get_available_credits function with email instead of phone
 CREATE OR REPLACE FUNCTION get_available_credits(
   p_instructor_id UUID,
   p_user_id UUID DEFAULT NULL,
@@ -33,7 +37,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update use_package_credit function to use email instead of phone
+-- Recreate use_package_credit function with email instead of phone
 CREATE OR REPLACE FUNCTION use_package_credit(
   p_instructor_id UUID,
   p_user_id UUID DEFAULT NULL,
