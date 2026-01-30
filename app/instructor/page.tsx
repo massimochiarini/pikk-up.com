@@ -196,9 +196,6 @@ export default function InstructorDashboardPage() {
             </p>
           </div>
         </div>
-        <div className="absolute bottom-4 right-4">
-          <span className="text-sm text-charcoal/50 tracking-wide">Untitled 04</span>
-        </div>
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

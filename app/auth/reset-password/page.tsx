@@ -100,9 +100,6 @@ export default function ResetPasswordPage() {
           priority
           className="object-cover"
         />
-        <div className="absolute bottom-8 left-8">
-          <span className="text-sm text-white/80 tracking-wide">Untitled 04</span>
-        </div>
       </div>
 
       {/* Right side - Form */}

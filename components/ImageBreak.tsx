@@ -14,7 +14,7 @@ export function ImageBreak({
   imageSrc,
   imageNumber,
   height = 'medium',
-  showCaption = true,
+  showCaption = false,
 }: ImageBreakProps) {
   const [loaded, setLoaded] = useState(false)
   

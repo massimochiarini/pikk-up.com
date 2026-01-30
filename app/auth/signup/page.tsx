@@ -196,9 +196,6 @@ export default function SignupPage() {
           priority
           className="object-cover"
         />
-        <div className="absolute bottom-8 right-8">
-          <span className="text-sm text-white/80 tracking-wide">Untitled 02</span>
-        </div>
       </div>
     </div>
   )

@@ -97,9 +97,6 @@ function BookingSuccessContent() {
           className="object-cover"
         />
         <div className="absolute inset-0 bg-white/60" />
-        <div className="absolute bottom-4 right-4">
-          <span className="text-sm text-charcoal/50 tracking-wide">Untitled 08</span>
-        </div>
       </div>
 
       <div className="max-w-md mx-auto px-4 -mt-16 relative z-10">

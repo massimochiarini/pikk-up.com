@@ -19,7 +19,7 @@ export function HeroSection({
   children,
   overlay = 'light',
   height = 'large',
-  showCaption = true,
+  showCaption = false,
 }: HeroSectionProps) {
   const [loaded, setLoaded] = useState(false)
   
