@@ -101,7 +101,7 @@ async function handleCheckoutSessionCompleted(
   }
 
   // Otherwise, handle as class booking
-  const { classId, firstName, lastName, email, phone, customerName } = metadata
+  const { classId, firstName, lastName, email, customerName } = metadata
 
   if (!classId || !firstName || !lastName || !email) {
     console.error('Missing metadata in checkout session')
@@ -109,7 +109,6 @@ async function handleCheckoutSessionCompleted(
   }
 
   const emailNormalized = email.toLowerCase().trim()
-  const phoneNormalized = phone ? phone.replace(/\D/g, '') : null
 
   try {
     const supabase = getSupabaseAdmin()
@@ -181,7 +180,6 @@ async function handleCheckoutSessionCompleted(
         guest_first_name: firstName.trim(),
         guest_last_name: lastName.trim(),
         guest_email: emailNormalized,
-        guest_phone: phoneNormalized,
         status: 'confirmed',
       })
       .select()
@@ -204,7 +202,7 @@ async function handleCheckoutSessionCompleted(
     // 5. Record payment
     await recordPayment(session, classId, bookingData.id)
 
-    // 6. Send SMS confirmation (if phone provided)
+    // 6. Send email confirmation to guest email
     const formatTime = (time: string) => {
       const [hours, minutes] = time.split(':')
       const hour = parseInt(hours)
@@ -212,32 +210,6 @@ async function handleCheckoutSessionCompleted(
       const displayHour = hour % 12 || 12
       return `${displayHour}:${minutes} ${period}`
     }
-
-    if (phoneNormalized) {
-      try {
-        await supabase.functions.invoke('send-sms-confirmation', {
-          body: {
-            to: `+${phoneNormalized}`,
-            guestName: customerName || `${firstName} ${lastName}`,
-            sessionTitle: yogaClass.title,
-            sessionDate: format(
-              parseISO(yogaClass.time_slot.date),
-              'EEEE, MMM d, yyyy'
-            ),
-            sessionTime: formatTime(yogaClass.time_slot.start_time),
-            venueName: 'PickUp Studio',
-            venueAddress: '2500 South Miami Avenue',
-            cost: yogaClass.price_cents,
-            bookingId: bookingData.id,
-          },
-        })
-        console.log('SMS sent successfully')
-      } catch (smsError) {
-        console.error('SMS error:', smsError)
-      }
-    }
-
-    // 7. Send email confirmation to guest email
     try {
       await supabase.functions.invoke('send-email-confirmation', {
         body: {
@@ -273,8 +245,7 @@ async function recordPayment(
   status: string = 'succeeded',
   errorMessage?: string
 ) {
-  const { firstName, lastName, email, phone } = session.metadata || {}
-  const phoneNormalized = phone ? phone.replace(/\D/g, '') : ''
+  const { firstName, lastName, email } = session.metadata || {}
 
   const paymentData = {
     booking_id: bookingId,
@@ -286,7 +257,6 @@ async function recordPayment(
     status,
     customer_name: `${firstName} ${lastName}`,
     customer_email: email?.toLowerCase().trim() || '',
-    customer_phone: phoneNormalized,
     error_message: errorMessage,
     paid_at: status === 'succeeded' ? new Date().toISOString() : null,
   }
@@ -311,17 +281,17 @@ async function handlePackagePurchase(session: Stripe.Checkout.Session) {
     classCount,
     firstName,
     lastName,
-    phone,
+    email,
     userId,
     customerName,
   } = session.metadata || {}
 
-  if (!packageId || !instructorId || !classCount || !firstName || !lastName || !phone) {
+  if (!packageId || !instructorId || !classCount || !firstName || !lastName || !email) {
     console.error('Missing metadata in package purchase session')
     return
   }
 
-  const phoneNormalized = phone.replace(/\D/g, '')
+  const emailNormalized = email.toLowerCase().trim()
   const classCountNum = parseInt(classCount, 10)
 
   try {
@@ -339,13 +309,13 @@ async function handlePackagePurchase(session: Stripe.Checkout.Session) {
       return
     }
 
-    // 2. Try to find a user account with matching phone number or use provided userId
+    // 2. Try to find a user account with matching email or use provided userId
     let matchedUserId: string | null = userId || null
     if (!matchedUserId) {
       const { data: matchedProfile } = await supabase
         .from('profiles')
         .select('id')
-        .eq('phone', phoneNormalized)
+        .eq('email', emailNormalized)
         .single()
 
       if (matchedProfile) {
@@ -373,7 +343,7 @@ async function handlePackagePurchase(session: Stripe.Checkout.Session) {
         package_id: packageId,
         instructor_id: instructorId,
         user_id: matchedUserId,
-        guest_phone: phoneNormalized,
+        guest_email: emailNormalized,
         classes_remaining: classCountNum,
         classes_total: classCountNum,
         stripe_checkout_session_id: session.id,
@@ -390,65 +360,29 @@ async function handlePackagePurchase(session: Stripe.Checkout.Session) {
 
     console.log('Created package credit:', creditData.id)
 
-    // 5. Get instructor details for SMS
+    // 5. Get instructor details for email
     const { data: instructor } = await supabase
       .from('profiles')
       .select('first_name, last_name')
       .eq('id', instructorId)
       .single()
 
-    // 6. Send SMS confirmation
+    // 6. Send email confirmation for package purchase
     try {
-      await supabase.functions.invoke('send-sms-confirmation', {
+      await supabase.functions.invoke('send-email-confirmation', {
         body: {
-          to: `+${phoneNormalized}`,
+          to: emailNormalized,
           guestName: customerName || `${firstName} ${lastName}`,
           sessionTitle: `${packageData.name} (${classCountNum} Classes)`,
           sessionDate: 'Package Purchase',
-          sessionTime: '',
-          venueName: 'PikkUp Studio',
-          venueAddress: '',
+          sessionTime: `${classCountNum} class credits with ${instructor ? `${instructor.first_name} ${instructor.last_name}` : 'Instructor'}`,
+          venueName: 'PickUp Studio',
+          venueAddress: '2500 South Miami Avenue',
           cost: session.amount_total || 0,
           bookingId: creditData.id,
-          isPackagePurchase: true,
-          instructorName: instructor
-            ? `${instructor.first_name} ${instructor.last_name}`
-            : 'Instructor',
         },
       })
-      console.log('Package purchase SMS sent successfully')
-    } catch (smsError) {
-      console.error('SMS error:', smsError)
-    }
-
-    // 7. Send email confirmation for package purchase (if we have an email)
-    try {
-      let userEmail: string | null = null
-      if (matchedUserId) {
-        const { data: userProfile } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('id', matchedUserId)
-          .single()
-        userEmail = userProfile?.email || null
-      }
-
-      if (userEmail) {
-        await supabase.functions.invoke('send-email-confirmation', {
-          body: {
-            to: userEmail,
-            guestName: customerName || `${firstName} ${lastName}`,
-            sessionTitle: `${packageData.name} (${classCountNum} Classes)`,
-            sessionDate: 'Package Purchase',
-            sessionTime: `${classCountNum} class credits with ${instructor ? `${instructor.first_name} ${instructor.last_name}` : 'Instructor'}`,
-            venueName: 'PikkUp Studio',
-            venueAddress: '2500 South Miami Avenue',
-            cost: session.amount_total || 0,
-            bookingId: creditData.id,
-          },
-        })
-        console.log('Package purchase email sent successfully')
-      }
+      console.log('Package purchase email sent to:', emailNormalized)
     } catch (emailError) {
       console.error('Package email error:', emailError)
     }

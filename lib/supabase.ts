@@ -145,7 +145,7 @@ export type PackageCredit = {
   package_id: string
   instructor_id: string
   user_id?: string
-  guest_phone?: string
+  guest_email?: string
   classes_remaining: number
   classes_total: number
   stripe_checkout_session_id?: string

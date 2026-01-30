@@ -28,10 +28,10 @@ function getSupabaseAdmin() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { packageId, firstName, lastName, phone, userId } = body
+    const { packageId, firstName, lastName, email, userId } = body
 
     // Validation
-    if (!packageId || !firstName || !lastName || !phone) {
+    if (!packageId || !firstName || !lastName || !email) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -59,12 +59,13 @@ export async function POST(request: NextRequest) {
     }
 
     const customerName = `${firstName.trim()} ${lastName.trim()}`
-    const phoneNormalized = phone.replace(/\D/g, '')
+    const emailNormalized = email.toLowerCase().trim()
     const instructorName = `${packageData.instructor.first_name} ${packageData.instructor.last_name}`
 
     // Create Stripe Checkout Session
     const session = await getStripe().checkout.sessions.create({
       payment_method_types: ['card'],
+      customer_email: emailNormalized,
       line_items: [
         {
           price_data: {
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
         classCount: packageData.class_count.toString(),
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        phone: phoneNormalized,
+        email: emailNormalized,
         customerName,
         userId: userId || '',
       },

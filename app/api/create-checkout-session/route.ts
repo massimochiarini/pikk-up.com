@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
       firstName,
       lastName,
       email,
-      phone,
       priceCents,
       isDonation,
       sessionTitle,
@@ -54,7 +53,6 @@ export async function POST(request: NextRequest) {
 
     const customerName = `${firstName.trim()} ${lastName.trim()}`
     const emailNormalized = email.toLowerCase().trim()
-    const phoneNormalized = phone ? phone.replace(/\D/g, '') : null
 
     // Determine product name based on whether it's a donation
     const productName = isDonation 
@@ -84,7 +82,6 @@ export async function POST(request: NextRequest) {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: emailNormalized,
-        phone: phoneNormalized || '',
         customerName,
         isDonation: isDonation ? 'true' : 'false',
       },

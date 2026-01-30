@@ -40,7 +40,6 @@ function PublicBookingContent() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
   const [donationAmount, setDonationAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -53,7 +52,6 @@ function PublicBookingContent() {
       if (profile.first_name) setFirstName(profile.first_name)
       if (profile.last_name) setLastName(profile.last_name)
       if (profile.email) setEmail(profile.email)
-      if (profile.phone) setPhone(profile.phone)
       setProfileFieldsSet(true)
     }
   }, [profile, profileFieldsSet])
@@ -301,19 +299,19 @@ function PublicBookingContent() {
     fetchPackages()
   }, [yogaClass?.instructor_id])
 
-  // Check for credits when user is logged in or phone number changes
+  // Check for credits when user is logged in or email changes
   useEffect(() => {
     if (!yogaClass?.instructor_id) {
       return
     }
 
-    // Need either a logged-in user OR a phone number with at least 10 chars
-    const enteredPhone = phone && phone.replace(/\D/g, '').length >= 10 ? phone : null
-    // Also use the user's profile phone if available
-    const profilePhone = profile?.phone || null
-    const phoneToCheck = enteredPhone || profilePhone
+    // Need either a logged-in user OR a valid email
+    const enteredEmail = email && email.includes('@') ? email.toLowerCase().trim() : null
+    // Also use the user's profile email if available
+    const profileEmail = profile?.email || null
+    const emailToCheck = enteredEmail || profileEmail
     
-    if (!user?.id && !phoneToCheck) {
+    if (!user?.id && !emailToCheck) {
       setAvailableCredits(0)
       setUseCredit(false)
       setLoadingCredits(false)
@@ -329,7 +327,7 @@ function PublicBookingContent() {
           body: JSON.stringify({
             instructorId: yogaClass.instructor_id,
             userId: user?.id || null,
-            phone: phoneToCheck,
+            email: emailToCheck,
           }),
         })
         const data = await response.json()
@@ -346,11 +344,11 @@ function PublicBookingContent() {
     // Debounce the credit check
     const timer = setTimeout(checkCredits, 500)
     return () => clearTimeout(timer)
-  }, [yogaClass?.instructor_id, phone, user?.id, profile?.phone])
+  }, [yogaClass?.instructor_id, email, user?.id, profile?.email])
 
   const handlePurchasePackage = async (pkg: InstructorPackage) => {
-    if (!firstName || !lastName || !phone) {
-      setErrorMessage('Please fill in your name and phone number first')
+    if (!firstName || !lastName || !email) {
+      setErrorMessage('Please fill in your name and email first')
       return
     }
 
@@ -365,7 +363,7 @@ function PublicBookingContent() {
           packageId: pkg.id,
           firstName: firstName.trim(),
           lastName: lastName.trim(),
-          phone,
+          email: email.toLowerCase().trim(),
           userId: user?.id || null,
         }),
       })
@@ -409,7 +407,6 @@ function PublicBookingContent() {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           email: email.toLowerCase().trim(),
-          phone: phone || null,
           userId: user?.id || null,
         }),
       })
@@ -518,23 +515,15 @@ function PublicBookingContent() {
       // Check if user has a profile before associating booking
       let userId = null
       if (user) {
-        const { data: profile } = await supabase
+        const { data: userProfile } = await supabase
           .from('profiles')
-          .select('id, phone')
+          .select('id')
           .eq('id', user.id)
           .single()
         
         // Only set user_id if profile exists
-        if (profile) {
+        if (userProfile) {
           userId = user.id
-          
-          // Update profile phone if not already set
-          if (!profile.phone && phone) {
-            await supabase
-              .from('profiles')
-              .update({ phone: phone.replace(/\D/g, '') })
-              .eq('id', user.id)
-          }
         }
       }
 
@@ -546,34 +535,12 @@ function PublicBookingContent() {
           guest_first_name: firstName.trim(),
           guest_last_name: lastName.trim(),
           guest_email: email.toLowerCase().trim(),
-          guest_phone: phone ? phone.replace(/\D/g, '') : null,
           status: 'confirmed',
         })
         .select()
         .single()
 
       if (bookingError) throw bookingError
-
-      // Send SMS confirmation if phone provided (best effort)
-      if (phone) {
-        try {
-          await supabase.functions.invoke('send-sms-confirmation', {
-            body: {
-              to: phone,
-              guestName: `${firstName.trim()} ${lastName.trim()}`,
-              sessionTitle: yogaClass!.title,
-              sessionDate: format(parseISO(yogaClass!.time_slot.date), 'EEEE, MMM d, yyyy'),
-              sessionTime: formatTime(yogaClass!.time_slot.start_time),
-              venueName: 'PickUp Studio',
-              venueAddress: '2500 South Miami Avenue',
-              cost: 0,
-              bookingId: bookingData.id,
-            }
-          })
-        } catch (smsError) {
-          console.error('SMS error:', smsError)
-        }
-      }
 
       // Send email confirmation to guest email
       const confirmationEmail = email.toLowerCase().trim()
@@ -627,23 +594,15 @@ function PublicBookingContent() {
       // Check if user has a profile before associating booking
       let userId = null
       if (user) {
-        const { data: profile } = await supabase
+        const { data: userProfile } = await supabase
           .from('profiles')
-          .select('id, phone')
+          .select('id')
           .eq('id', user.id)
           .single()
         
         // Only set user_id if profile exists
-        if (profile) {
+        if (userProfile) {
           userId = user.id
-          
-          // Update profile phone if not already set
-          if (!profile.phone && phone) {
-            await supabase
-              .from('profiles')
-              .update({ phone: phone.replace(/\D/g, '') })
-              .eq('id', user.id)
-          }
         }
       }
 
@@ -655,7 +614,6 @@ function PublicBookingContent() {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           email: email.toLowerCase().trim(),
-          phone: phone || null,
           priceCents,
           isDonation,
           sessionTitle: yogaClass!.title,
@@ -727,7 +685,6 @@ function PublicBookingContent() {
             firstName,
             lastName,
             isInstructor: false,
-            phone: phone.replace(/\D/g, '') || null,
           }),
         })
 
@@ -1203,7 +1160,7 @@ function PublicBookingContent() {
                       Find Another Class
                     </Link>
                   </div>
-                ) : user && profile && profile.first_name && profile.last_name && profile.phone ? (
+                ) : user && profile && profile.first_name && profile.last_name && profile.email ? (
                   /* Logged-in user with complete profile - simplified booking view */
                   <>
                     <h2 className="text-lg font-medium text-charcoal mb-6">Reserve Your Spot</h2>
@@ -1226,7 +1183,7 @@ function PublicBookingContent() {
                       <div className="font-medium text-charcoal">
                         {profile.first_name} {profile.last_name}
                       </div>
-                      <div className="text-sm text-neutral-500 font-light">{profile.phone}</div>
+                      <div className="text-sm text-neutral-500 font-light">{profile.email}</div>
                     </div>
 
                     <div className="space-y-5">
@@ -1378,18 +1335,6 @@ function PublicBookingContent() {
                         </p>
                       </div>
 
-                      <div>
-                        <label htmlFor="phone" className="label">Phone Number <span className="text-stone-300">(optional)</span></label>
-                        <input
-                          type="tel"
-                          id="phone"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          className="input-field"
-                          placeholder="+1 (555) 123-4567"
-                        />
-                      </div>
-
                       {/* Available Credits Display */}
                       {availableCredits > 0 && (
                         <div className="border border-green-100 p-4 bg-green-50">
@@ -1412,7 +1357,7 @@ function PublicBookingContent() {
                       )}
                       
                       {/* Loading credits indicator */}
-                      {loadingCredits && (user || (phone && phone.replace(/\D/g, '').length >= 10)) && (
+                      {loadingCredits && (user || (email && email.includes('@'))) && (
                         <div className="flex items-center gap-2 text-neutral-400 text-sm py-2">
                           <div className="w-4 h-4 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
                           Checking for package credits...
@@ -1514,7 +1459,7 @@ function PublicBookingContent() {
                           </div>
                           <button
                             onClick={() => handlePurchasePackage(pkg)}
-                            disabled={purchasingPackage === pkg.id || !firstName || !lastName || !phone}
+                            disabled={purchasingPackage === pkg.id || !firstName || !lastName || !email}
                             className="px-4 py-2 border border-charcoal text-charcoal text-sm font-light hover:bg-charcoal hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {purchasingPackage === pkg.id ? 'Loading...' : `$${(pkg.price_cents / 100).toFixed(0)}`}
@@ -1523,7 +1468,7 @@ function PublicBookingContent() {
                       )
                     })}
                   </div>
-                  {(!firstName || !lastName || !phone) && (
+                  {(!firstName || !lastName || !email) && (
                     <p className="text-neutral-400 text-xs mt-3 font-light">
                       Enter your details above to purchase a package.
                     </p>

@@ -18,11 +18,11 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
-    const phone = searchParams.get('phone')
+    const email = searchParams.get('email')
 
-    if (!userId && !phone) {
+    if (!userId && !email) {
       return NextResponse.json(
-        { error: 'Either userId or phone is required' },
+        { error: 'Either userId or email is required' },
         { status: 400 }
       )
     }
@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
 
     if (userId) {
       query = query.eq('user_id', userId)
-    } else if (phone) {
-      query = query.eq('guest_phone', phone.replace(/\D/g, ''))
+    } else if (email) {
+      query = query.eq('guest_email', email.toLowerCase().trim())
     }
 
     const { data: credits, error } = await query
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { instructorId, userId, phone } = body
+    const { instructorId, userId, email } = body
 
     if (!instructorId) {
       return NextResponse.json(
@@ -79,9 +79,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!userId && !phone) {
+    if (!userId && !email) {
       return NextResponse.json(
-        { error: 'Either userId or phone is required' },
+        { error: 'Either userId or email is required' },
         { status: 400 }
       )
     }
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       .rpc('get_available_credits', {
         p_instructor_id: instructorId,
         p_user_id: userId || null,
-        p_phone: phone ? phone.replace(/\D/g, '') : null,
+        p_email: email ? email.toLowerCase().trim() : null,
       })
 
     if (error) {

@@ -23,7 +23,7 @@ function getSupabaseAdmin() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { classId, firstName, lastName, email, phone, userId } = body
+    const { classId, firstName, lastName, email, userId } = body
 
     // Validation
     if (!classId || !firstName || !lastName || !email) {
@@ -34,7 +34,6 @@ export async function POST(request: NextRequest) {
     }
 
     const emailNormalized = email.toLowerCase().trim()
-    const phoneNormalized = phone ? phone.replace(/\D/g, '') : null
     const supabase = getSupabaseAdmin()
 
     // 1. Fetch class details
@@ -60,7 +59,7 @@ export async function POST(request: NextRequest) {
       .rpc('get_available_credits', {
         p_instructor_id: yogaClass.instructor_id,
         p_user_id: userId || null,
-        p_phone: phoneNormalized,
+        p_email: emailNormalized,
       })
 
     if (creditsError) {
@@ -113,7 +112,7 @@ export async function POST(request: NextRequest) {
       .rpc('use_package_credit', {
         p_instructor_id: yogaClass.instructor_id,
         p_user_id: userId || null,
-        p_phone: phoneNormalized,
+        p_email: emailNormalized,
       })
 
     if (useError || !usedCreditId) {
@@ -133,7 +132,6 @@ export async function POST(request: NextRequest) {
         guest_first_name: firstName.trim(),
         guest_last_name: lastName.trim(),
         guest_email: emailNormalized,
-        guest_phone: phoneNormalized,
         status: 'confirmed',
       })
       .select()
@@ -148,7 +146,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 7. Send SMS confirmation (if phone provided)
+    // 7. Send email confirmation to guest email
     const formatTime = (time: string) => {
       const [hours, minutes] = time.split(':')
       const hour = parseInt(hours)
@@ -156,32 +154,6 @@ export async function POST(request: NextRequest) {
       const displayHour = hour % 12 || 12
       return `${displayHour}:${minutes} ${period}`
     }
-
-    if (phoneNormalized) {
-      try {
-        await supabase.functions.invoke('send-sms-confirmation', {
-          body: {
-            to: `+${phoneNormalized}`,
-            guestName: `${firstName.trim()} ${lastName.trim()}`,
-            sessionTitle: yogaClass.title,
-            sessionDate: format(
-              parseISO(yogaClass.time_slot.date),
-              'EEEE, MMM d, yyyy'
-            ),
-            sessionTime: formatTime(yogaClass.time_slot.start_time),
-            venueName: 'PickUp Studio',
-            venueAddress: '2500 South Miami Avenue',
-            cost: 0, // Paid via package credit
-            bookingId: bookingData.id,
-            paidWithCredit: true,
-          },
-        })
-      } catch (smsError) {
-        console.error('SMS error:', smsError)
-      }
-    }
-
-    // 8. Send email confirmation to guest email
     try {
       await supabase.functions.invoke('send-email-confirmation', {
         body: {
