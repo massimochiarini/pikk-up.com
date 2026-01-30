@@ -74,6 +74,7 @@ export type Profile = {
   is_admin: boolean
   bio?: string
   instagram?: string
+  instructor_application_note?: string
   created_at: string
 }
 

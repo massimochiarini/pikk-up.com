@@ -14,6 +14,7 @@ export default function InstructorSignupPage() {
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [applicationNote, setApplicationNote] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -60,6 +61,7 @@ export default function InstructorSignupPage() {
             lastName,
             isInstructor: false, // Not approved yet
             instructorStatus: 'pending',
+            instructorApplicationNote: applicationNote,
           }),
         })
 
@@ -95,7 +97,9 @@ export default function InstructorSignupPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({}),
+        body: JSON.stringify({
+          instructorApplicationNote: applicationNote,
+        }),
       })
 
       const result = await response.json()
@@ -287,6 +291,21 @@ export default function InstructorSignupPage() {
                 <div className="font-medium text-charcoal">{profile.email}</div>
               </div>
 
+              <div>
+                <label htmlFor="applicationNoteExisting" className="label">About You & Your Qualifications</label>
+                <textarea
+                  id="applicationNoteExisting"
+                  value={applicationNote}
+                  onChange={(e) => setApplicationNote(e.target.value)}
+                  className="input-field min-h-[120px] resize-y"
+                  placeholder="Tell us about yourself, your teaching experience, certifications, and why you'd like to teach at PikkUp..."
+                  required
+                />
+                <p className="text-xs text-neutral-400 mt-1.5 font-light">
+                  This helps us understand your background and qualifications.
+                </p>
+              </div>
+
               <div className="bg-neutral-50 border border-neutral-200 p-4 text-sm text-neutral-500 font-light">
                 Your request will be reviewed by our team. Once approved, you can complete your instructor profile with additional details.
               </div>
@@ -403,6 +422,21 @@ export default function InstructorSignupPage() {
                 minLength={6}
                 required
               />
+            </div>
+
+            <div>
+              <label htmlFor="applicationNote" className="label">About You & Your Qualifications</label>
+              <textarea
+                id="applicationNote"
+                value={applicationNote}
+                onChange={(e) => setApplicationNote(e.target.value)}
+                className="input-field min-h-[120px] resize-y"
+                placeholder="Tell us about yourself, your teaching experience, certifications, and why you'd like to teach at PikkUp..."
+                required
+              />
+              <p className="text-xs text-neutral-400 mt-1.5 font-light">
+                This helps us understand your background and qualifications.
+              </p>
             </div>
 
             <div className="bg-neutral-50 border border-neutral-200 p-4 text-sm text-neutral-500 font-light">

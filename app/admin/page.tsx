@@ -304,6 +304,16 @@ export default function AdminPage() {
                       )}
                     </div>
 
+                    {/* Application Note (for pending requests) */}
+                    {u.instructor_status === 'pending' && u.instructor_application_note && (
+                      <div className="bg-yellow-50 border border-yellow-200 p-3 rounded">
+                        <div className="text-xs font-medium text-yellow-800 uppercase tracking-wide mb-1">Application Note</div>
+                        <div className="text-sm text-yellow-900 whitespace-pre-wrap">
+                          {u.instructor_application_note}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Bio (if exists) */}
                     {u.bio && (
                       <div className="text-sm text-neutral-500 line-clamp-2">
@@ -434,11 +444,20 @@ export default function AdminPage() {
                           </div>
                         </td>
                         <td className="px-4 py-4">
-                          <div className="text-sm text-neutral-500 max-w-xs truncate">
-                            {u.bio || '-'}
-                          </div>
+                          {u.instructor_status === 'pending' && u.instructor_application_note ? (
+                            <div className="bg-yellow-50 border border-yellow-200 p-2 max-w-sm">
+                              <div className="text-xs font-medium text-yellow-800 uppercase tracking-wide mb-1">Application Note</div>
+                              <div className="text-sm text-yellow-900 whitespace-pre-wrap line-clamp-4">
+                                {u.instructor_application_note}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-sm text-neutral-500 max-w-xs truncate">
+                              {u.bio || '-'}
+                            </div>
+                          )}
                           {u.instagram && (
-                            <div className="text-xs text-neutral-400">@{u.instagram}</div>
+                            <div className="text-xs text-neutral-400 mt-1">@{u.instagram}</div>
                           )}
                         </td>
                         <td className="px-4 py-4">

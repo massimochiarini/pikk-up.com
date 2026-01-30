@@ -13,7 +13,8 @@ export async function POST(request: NextRequest) {
       instructorStatus = 'none',
       phone = null,
       instagram = null,
-      bio = null 
+      bio = null,
+      instructorApplicationNote = null
     } = body
 
     if (!userId || !email || !firstName || !lastName) {
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
           phone: phone || null,
           instagram: instagram || null,
           bio: bio || null,
+          instructor_application_note: instructorApplicationNote || null,
         })
         .eq('id', userId)
 
@@ -67,6 +69,7 @@ export async function POST(request: NextRequest) {
           phone: phone || null,
           instagram: instagram || null,
           bio: bio || null,
+          instructor_application_note: instructorApplicationNote || null,
         })
 
       if (insertError) {

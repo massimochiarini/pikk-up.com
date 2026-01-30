@@ -569,9 +569,11 @@ function PublicBookingContent() {
       }
 
       // Send email confirmation (if user is logged in and has email)
+      console.log('Checking for email confirmation. Profile email:', profile?.email)
       if (profile?.email) {
         try {
-          await supabase.functions.invoke('send-email-confirmation', {
+          console.log('Sending email confirmation to:', profile.email)
+          const { data: emailResult, error: emailFuncError } = await supabase.functions.invoke('send-email-confirmation', {
             body: {
               to: profile.email,
               guestName: `${firstName.trim()} ${lastName.trim()}`,
@@ -584,9 +586,16 @@ function PublicBookingContent() {
               bookingId: bookingData.id,
             }
           })
+          if (emailFuncError) {
+            console.error('Email function error:', emailFuncError)
+          } else {
+            console.log('Email confirmation result:', emailResult)
+          }
         } catch (emailError) {
           console.error('Email error:', emailError)
         }
+      } else {
+        console.log('No email in profile, skipping email confirmation')
       }
 
       // If user is not logged in, offer to create account

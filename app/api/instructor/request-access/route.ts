@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { bio, instagram, phone } = body
+    const { bio, instagram, phone, instructorApplicationNote } = body
 
     const serverClient = createServerClient()
 
@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
         bio: bio || null,
         instagram: instagram || null,
         phone: phone || null,
+        instructor_application_note: instructorApplicationNote || null,
       })
       .eq('id', user.id)
 

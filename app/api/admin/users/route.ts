@@ -104,10 +104,12 @@ export async function PATCH(request: NextRequest) {
 
     switch (action) {
       case 'approve':
-        updateData = { is_instructor: true, instructor_status: 'approved' }
+        // Clear the application note after approval (it's temporary)
+        updateData = { is_instructor: true, instructor_status: 'approved', instructor_application_note: null }
         break
       case 'reject':
-        updateData = { is_instructor: false, instructor_status: 'rejected' }
+        // Clear the application note after rejection (it's temporary)
+        updateData = { is_instructor: false, instructor_status: 'rejected', instructor_application_note: null }
         break
       case 'revoke':
         updateData = { is_instructor: false, instructor_status: 'none' }

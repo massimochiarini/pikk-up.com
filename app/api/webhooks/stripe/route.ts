@@ -203,15 +203,15 @@ async function handleCheckoutSessionCompleted(
     await recordPayment(session, classId, bookingData.id)
 
     // 6. Send SMS confirmation
-    try {
-      const formatTime = (time: string) => {
-        const [hours, minutes] = time.split(':')
-        const hour = parseInt(hours)
-        const period = hour >= 12 ? 'PM' : 'AM'
-        const displayHour = hour % 12 || 12
-        return `${displayHour}:${minutes} ${period}`
-      }
+    const formatTime = (time: string) => {
+      const [hours, minutes] = time.split(':')
+      const hour = parseInt(hours)
+      const period = hour >= 12 ? 'PM' : 'AM'
+      const displayHour = hour % 12 || 12
+      return `${displayHour}:${minutes} ${period}`
+    }
 
+    try {
       await supabase.functions.invoke('send-sms-confirmation', {
         body: {
           to: `+${phoneNormalized}`,
@@ -231,6 +231,42 @@ async function handleCheckoutSessionCompleted(
       console.log('SMS sent successfully')
     } catch (smsError) {
       console.error('SMS error:', smsError)
+    }
+
+    // 7. Send email confirmation (if we have an email)
+    try {
+      // Try to find user's email from profile
+      let userEmail: string | null = null
+      if (matchedUserId) {
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', matchedUserId)
+          .single()
+        userEmail = userProfile?.email || null
+      }
+
+      if (userEmail) {
+        await supabase.functions.invoke('send-email-confirmation', {
+          body: {
+            to: userEmail,
+            guestName: customerName || `${firstName} ${lastName}`,
+            sessionTitle: yogaClass.title,
+            sessionDate: format(
+              parseISO(yogaClass.time_slot.date),
+              'EEEE, MMM d, yyyy'
+            ),
+            sessionTime: formatTime(yogaClass.time_slot.start_time),
+            venueName: 'PikkUp Studio',
+            venueAddress: '2500 South Miami Avenue',
+            cost: yogaClass.price_cents,
+            bookingId: bookingData.id,
+          },
+        })
+        console.log('Email confirmation sent successfully')
+      }
+    } catch (emailError) {
+      console.error('Email confirmation error:', emailError)
     }
 
     console.log('Checkout session processing complete')
@@ -391,6 +427,38 @@ async function handlePackagePurchase(session: Stripe.Checkout.Session) {
       console.log('Package purchase SMS sent successfully')
     } catch (smsError) {
       console.error('SMS error:', smsError)
+    }
+
+    // 7. Send email confirmation for package purchase (if we have an email)
+    try {
+      let userEmail: string | null = null
+      if (matchedUserId) {
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', matchedUserId)
+          .single()
+        userEmail = userProfile?.email || null
+      }
+
+      if (userEmail) {
+        await supabase.functions.invoke('send-email-confirmation', {
+          body: {
+            to: userEmail,
+            guestName: customerName || `${firstName} ${lastName}`,
+            sessionTitle: `${packageData.name} (${classCountNum} Classes)`,
+            sessionDate: 'Package Purchase',
+            sessionTime: `${classCountNum} class credits with ${instructor ? `${instructor.first_name} ${instructor.last_name}` : 'Instructor'}`,
+            venueName: 'PikkUp Studio',
+            venueAddress: '2500 South Miami Avenue',
+            cost: session.amount_total || 0,
+            bookingId: creditData.id,
+          },
+        })
+        console.log('Package purchase email sent successfully')
+      }
+    } catch (emailError) {
+      console.error('Package email error:', emailError)
     }
 
     console.log('Package purchase processing complete')

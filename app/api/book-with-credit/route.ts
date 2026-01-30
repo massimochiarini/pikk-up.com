@@ -147,15 +147,15 @@ export async function POST(request: NextRequest) {
     }
 
     // 7. Send SMS confirmation
-    try {
-      const formatTime = (time: string) => {
-        const [hours, minutes] = time.split(':')
-        const hour = parseInt(hours)
-        const period = hour >= 12 ? 'PM' : 'AM'
-        const displayHour = hour % 12 || 12
-        return `${displayHour}:${minutes} ${period}`
-      }
+    const formatTime = (time: string) => {
+      const [hours, minutes] = time.split(':')
+      const hour = parseInt(hours)
+      const period = hour >= 12 ? 'PM' : 'AM'
+      const displayHour = hour % 12 || 12
+      return `${displayHour}:${minutes} ${period}`
+    }
 
+    try {
       await supabase.functions.invoke('send-sms-confirmation', {
         body: {
           to: `+${phoneNormalized}`,
@@ -175,6 +175,42 @@ export async function POST(request: NextRequest) {
       })
     } catch (smsError) {
       console.error('SMS error:', smsError)
+    }
+
+    // 8. Send email confirmation (if we have an email)
+    try {
+      let userEmail: string | null = null
+      if (userId) {
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', userId)
+          .single()
+        userEmail = userProfile?.email || null
+      }
+
+      if (userEmail) {
+        await supabase.functions.invoke('send-email-confirmation', {
+          body: {
+            to: userEmail,
+            guestName: `${firstName.trim()} ${lastName.trim()}`,
+            sessionTitle: yogaClass.title,
+            sessionDate: format(
+              parseISO(yogaClass.time_slot.date),
+              'EEEE, MMM d, yyyy'
+            ),
+            sessionTime: formatTime(yogaClass.time_slot.start_time),
+            venueName: 'PikkUp Studio',
+            venueAddress: '2500 South Miami Avenue',
+            cost: 0,
+            bookingId: bookingData.id,
+            paidWithCredit: true,
+          },
+        })
+        console.log('Email confirmation sent successfully')
+      }
+    } catch (emailError) {
+      console.error('Email confirmation error:', emailError)
     }
 
     return NextResponse.json({
