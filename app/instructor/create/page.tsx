@@ -7,7 +7,7 @@ import { Navbar } from '@/components/Navbar'
 import { supabase } from '@/lib/supabase'
 import { format, addDays } from 'date-fns'
 import Link from 'next/link'
-import { ArrowLeftIcon, CalendarDaysIcon, ClockIcon, CheckIcon, LinkIcon, ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, CalendarDaysIcon, ClockIcon, CheckIcon, LinkIcon, ArrowPathIcon, ExclamationTriangleIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 // 30-minute buffer after each class
 const BUFFER_MINUTES = 30
@@ -66,6 +66,11 @@ export default function CreateClassPage() {
   // Booked time slots for the selected date
   const [bookedSlots, setBookedSlots] = useState<{ start_time: string; end_time: string }[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
+  
+  // Image upload
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -111,6 +116,63 @@ export default function CreateClassPage() {
     }
   }, [date, fetchBookedSlots])
 
+  // Handle image selection
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please select an image file')
+        return
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image must be less than 5MB')
+        return
+      }
+      setImageFile(file)
+      setImagePreview(URL.createObjectURL(file))
+      setError('')
+    }
+  }
+
+  const removeImage = () => {
+    setImageFile(null)
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview)
+      setImagePreview(null)
+    }
+  }
+
+  // Upload image to Supabase Storage
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile || !user) return null
+    
+    setUploadingImage(true)
+    try {
+      const fileExt = imageFile.name.split('.').pop()
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`
+      
+      const { data, error: uploadError } = await supabase.storage
+        .from('class-images')
+        .upload(fileName, imageFile)
+      
+      if (uploadError) throw uploadError
+      
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('class-images')
+        .getPublicUrl(fileName)
+      
+      return urlData.publicUrl
+    } catch (err) {
+      console.error('Image upload error:', err)
+      return null
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
   // Check if a time slot would overlap with existing booked slots
   // The stored end_time already includes the 30-min buffer, so we only add buffer to the new class
   const isTimeAvailable = useCallback((timeValue: string, durationMins: number) => {
@@ -147,6 +209,12 @@ export default function CreateClassPage() {
     setError('')
 
     try {
+      // Upload image first if one is selected
+      let imageUrl: string | null = null
+      if (imageFile) {
+        imageUrl = await uploadImage()
+      }
+
       const priceCents = Math.round(parseFloat(price || '0') * 100)
       // If no price or price is 0, treat as donation-based
       const isDonation = priceCents === 0
@@ -167,6 +235,7 @@ export default function CreateClassPage() {
           durationMinutes: duration,
           recurring,
           recurrenceWeeks: recurring ? recurrenceWeeks : 1,
+          imageUrl,
         }),
       })
 
@@ -271,19 +340,20 @@ export default function CreateClassPage() {
               <Link href="/instructor/my-classes" className="btn-secondary py-4">
                 View My Classes
               </Link>
-              <button 
-                onClick={() => {
-                  setSuccess(false)
-                  setCreatedClasses([])
-                  setTitle('')
-                  setDescription('')
-                  setPrice('')
-                  setRecurring(false)
-                }}
-                className="btn-primary py-4"
-              >
-                Create Another Class
-              </button>
+                <button 
+                  onClick={() => {
+                    setSuccess(false)
+                    setCreatedClasses([])
+                    setTitle('')
+                    setDescription('')
+                    setPrice('')
+                    setRecurring(false)
+                    removeImage()
+                  }}
+                  className="btn-primary py-4"
+                >
+                  Create Another Class
+                </button>
             </div>
           </div>
         </main>
@@ -351,6 +421,47 @@ export default function CreateClassPage() {
                 rows={3}
                 placeholder="Describe what students can expect from your class..."
               />
+            </div>
+
+            {/* Image Upload Section */}
+            <div>
+              <label className="label">
+                Event Photo/Flyer <span className="text-neutral-400 font-normal lowercase">(optional)</span>
+              </label>
+              
+              {imagePreview ? (
+                <div className="relative">
+                  <div className="relative aspect-[4/3] border border-neutral-200 overflow-hidden bg-neutral-100">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 p-1 bg-white border border-neutral-200 hover:bg-neutral-50 transition-colors"
+                  >
+                    <XMarkIcon className="w-5 h-5 text-neutral-600" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-neutral-200 cursor-pointer hover:border-neutral-300 transition-colors">
+                  <PhotoIcon className="w-10 h-10 text-neutral-300 mb-2" />
+                  <span className="text-sm text-neutral-500 font-light">Click to upload an image</span>
+                  <span className="text-xs text-neutral-400 font-light mt-1">PNG, JPG up to 5MB</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
+              <p className="text-neutral-400 text-xs mt-2 font-light">
+                This image will be shown on your class booking page
+              </p>
             </div>
 
             {/* Date and Time Section */}

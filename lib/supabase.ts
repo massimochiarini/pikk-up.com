@@ -97,6 +97,7 @@ export type YogaClass = {
   skill_level?: 'beginner' | 'intermediate' | 'advanced' | 'all'
   status: 'upcoming' | 'in_progress' | 'completed' | 'cancelled'
   is_donation?: boolean
+  image_url?: string
   created_at: string
 }
 

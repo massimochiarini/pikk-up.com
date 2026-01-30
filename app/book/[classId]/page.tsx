@@ -568,6 +568,27 @@ function PublicBookingContent() {
         console.error('SMS error:', smsError)
       }
 
+      // Send email confirmation (if user is logged in and has email)
+      if (profile?.email) {
+        try {
+          await supabase.functions.invoke('send-email-confirmation', {
+            body: {
+              to: profile.email,
+              guestName: `${firstName.trim()} ${lastName.trim()}`,
+              sessionTitle: yogaClass!.title,
+              sessionDate: format(parseISO(yogaClass!.time_slot.date), 'EEEE, MMM d, yyyy'),
+              sessionTime: formatTime(yogaClass!.time_slot.start_time),
+              venueName: 'PikkUp Studio',
+              venueAddress: '2500 South Miami Avenue',
+              cost: 0,
+              bookingId: bookingData.id,
+            }
+          })
+        } catch (emailError) {
+          console.error('Email error:', emailError)
+        }
+      }
+
       // If user is not logged in, offer to create account
       if (!user && bookingData) {
         setBookingId(bookingData.id)
@@ -868,19 +889,22 @@ function PublicBookingContent() {
 
       <main className="max-w-6xl mx-auto px-4 py-12">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
-          {/* Left side - Artwork + Class Details */}
+          {/* Left side - Image + Class Details */}
           <div>
-            {/* Artwork Header */}
-            <div className="relative aspect-[4/3] mb-6 overflow-hidden bg-neutral-100">
-              <Image
-                src="/gallery/3.jpg"
-                alt="Untitled 03"
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-              />
-            </div>
-            <p className="gallery-caption text-center mb-8">Untitled 03</p>
+            {/* Event Image (only show if one is set) */}
+            {yogaClass.image_url && (
+              <>
+                <div className="relative aspect-[4/3] mb-6 overflow-hidden bg-neutral-100">
+                  <Image
+                    src={yogaClass.image_url}
+                    alt={yogaClass.title}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                </div>
+              </>
+            )}
 
             {/* Class Info */}
             <div className="space-y-6">

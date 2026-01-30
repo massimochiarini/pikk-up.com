@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
       recurring,
       recurrenceWeeks,
       isDonation,
+      imageUrl,
     } = await request.json()
     
     // Determine if this is a donation-based class
@@ -139,6 +140,7 @@ export async function POST(request: NextRequest) {
           skill_level: skillLevel || 'all',
           status: 'upcoming',
           is_donation: finalIsDonation,
+          image_url: imageUrl || null,
         })
         .select()
         .single()
