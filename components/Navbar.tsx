@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useAuth } from './AuthProvider'
 import { usePathname } from 'next/navigation'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 export function Navbar() {
   const { user, profile, signOut, loading } = useAuth()
@@ -14,43 +13,44 @@ export function Navbar() {
   const isInstructor = pathname.startsWith('/instructor')
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-neutral-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-14 sm:h-16">
+    <nav className="sticky top-0 z-50 bg-white border-b border-stone-100">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
+          {/* Logo - understated wordmark */}
           <Link 
             href={isInstructor ? '/instructor' : '/'} 
-            className="text-xl sm:text-2xl font-light tracking-tight text-charcoal flex-shrink-0"
+            className="text-gray tracking-wide text-lg"
           >
             PickUp
           </Link>
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {/* Classes link - show for everyone except when on instructor pages (unless they're an instructor) */}
+          <div className="hidden md:flex items-center gap-10">
+            {/* Classes link */}
             {(!isInstructor || profile?.is_instructor) && (
               <Link
                 href="/classes"
-                className={`font-light transition-colors ${
+                className={`tracking-wide transition-colors duration-300 ${
                   pathname === '/classes' 
-                    ? 'text-charcoal' 
-                    : 'text-neutral-500 hover:text-charcoal'
+                    ? 'text-gray' 
+                    : 'text-stone-400 hover:text-gray'
                 }`}
               >
-                Browse Classes
+                Classes
               </Link>
             )}
             
             {loading ? (
-              <div className="w-8 h-8 bg-neutral-100 animate-pulse"></div>
+              <div className="w-8 h-8 bg-stone-100 animate-pulse" />
             ) : user ? (
-              <div className="flex items-center gap-6">
-                {/* My Bookings - show for all logged-in users */}
+              <div className="flex items-center gap-8">
+                {/* My Bookings */}
                 <Link
                   href="/my-classes"
-                  className={`font-light transition-colors ${
+                  className={`tracking-wide transition-colors duration-300 ${
                     pathname === '/my-classes' 
-                      ? 'text-charcoal' 
-                      : 'text-neutral-500 hover:text-charcoal'
+                      ? 'text-gray' 
+                      : 'text-stone-400 hover:text-gray'
                   }`}
                 >
                   My Bookings
@@ -59,45 +59,45 @@ export function Navbar() {
                 {/* Instructor-specific links */}
                 {profile?.is_instructor && (
                   <>
-                    <div className="w-px h-4 bg-neutral-200" />
+                    <span className="w-px h-4 bg-stone-200" />
                     <Link
                       href="/instructor"
-                      className={`font-light transition-colors ${
+                      className={`tracking-wide transition-colors duration-300 ${
                         pathname === '/instructor' && !pathname.includes('/instructor/') 
-                          ? 'text-charcoal' 
-                          : 'text-neutral-500 hover:text-charcoal'
+                          ? 'text-gray' 
+                          : 'text-stone-400 hover:text-gray'
                       }`}
                     >
-                      Instructor
+                      Dashboard
                     </Link>
                     {isInstructor && (
                       <>
                         <Link
                           href="/instructor/schedule"
-                          className={`font-light transition-colors ${
+                          className={`tracking-wide transition-colors duration-300 ${
                             pathname === '/instructor/schedule' 
-                              ? 'text-charcoal' 
-                              : 'text-neutral-500 hover:text-charcoal'
+                              ? 'text-gray' 
+                              : 'text-stone-400 hover:text-gray'
                           }`}
                         >
                           Schedule
                         </Link>
                         <Link
                           href="/instructor/my-classes"
-                          className={`font-light transition-colors ${
+                          className={`tracking-wide transition-colors duration-300 ${
                             pathname === '/instructor/my-classes' 
-                              ? 'text-charcoal' 
-                              : 'text-neutral-500 hover:text-charcoal'
+                              ? 'text-gray' 
+                              : 'text-stone-400 hover:text-gray'
                           }`}
                         >
                           My Classes
                         </Link>
                         <Link
                           href="/instructor/packages"
-                          className={`font-light transition-colors ${
+                          className={`tracking-wide transition-colors duration-300 ${
                             pathname === '/instructor/packages' 
-                              ? 'text-charcoal' 
-                              : 'text-neutral-500 hover:text-charcoal'
+                              ? 'text-gray' 
+                              : 'text-stone-400 hover:text-gray'
                           }`}
                         >
                           Packages
@@ -110,13 +110,13 @@ export function Navbar() {
                 {/* Admin link */}
                 {profile?.is_admin && (
                   <>
-                    <div className="w-px h-4 bg-neutral-200" />
+                    <span className="w-px h-4 bg-stone-200" />
                     <Link
                       href="/admin"
-                      className={`font-light transition-colors ${
+                      className={`tracking-wide transition-colors duration-300 ${
                         pathname === '/admin' 
-                          ? 'text-charcoal' 
-                          : 'text-neutral-500 hover:text-charcoal'
+                          ? 'text-gray' 
+                          : 'text-stone-400 hover:text-gray'
                       }`}
                     >
                       Admin
@@ -124,10 +124,10 @@ export function Navbar() {
                   </>
                 )}
                 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-6">
                   <Link
                     href={isInstructor ? '/instructor/profile' : '/profile'}
-                    className="w-9 h-9 border border-neutral-200 flex items-center justify-center text-charcoal font-light text-sm hover:border-charcoal transition-colors"
+                    className="w-9 h-9 border border-stone-200 flex items-center justify-center text-gray text-sm tracking-wide hover:border-gray transition-colors duration-300"
                     title="View Profile"
                   >
                     {profile?.first_name?.[0] || user.email?.[0]?.toUpperCase() || 'U'}
@@ -137,22 +137,25 @@ export function Navbar() {
                       e.preventDefault()
                       signOut().catch(console.error)
                     }}
-                    className="text-neutral-500 hover:text-charcoal text-sm font-light transition-colors"
+                    className="text-stone-400 hover:text-gray text-sm tracking-wide transition-colors duration-300"
                   >
                     Sign Out
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-8">
                 <Link
                   href={isInstructor ? '/instructor/auth/login' : '/auth/login'}
-                  className="text-neutral-500 hover:text-charcoal font-light transition-colors"
+                  className="text-stone-400 hover:text-gray tracking-wide transition-colors duration-300"
                 >
-                  Sign In
+                  Sign in
                 </Link>
                 {!isInstructor && (
-                  <Link href="/instructor" className="btn-primary text-sm px-4 py-2">
+                  <Link 
+                    href="/instructor" 
+                    className="text-gray border border-gray px-5 py-2.5 tracking-wide hover:bg-stone-50 transition-colors duration-300"
+                  >
                     Teach
                   </Link>
                 )}
@@ -161,27 +164,31 @@ export function Navbar() {
           </div>
 
           {/* Mobile Navigation */}
-          <div className="flex md:hidden items-center gap-3">
+          <div className="flex md:hidden items-center gap-4">
             {loading ? (
-              <div className="w-8 h-8 bg-neutral-100 animate-pulse"></div>
+              <div className="w-8 h-8 bg-stone-100 animate-pulse" />
             ) : user ? (
               <>
                 <Link
                   href={isInstructor ? '/instructor/profile' : '/profile'}
-                  className="w-8 h-8 border border-neutral-200 flex items-center justify-center text-charcoal font-light text-xs hover:border-charcoal transition-colors"
+                  className="w-8 h-8 border border-stone-200 flex items-center justify-center text-gray text-xs tracking-wide hover:border-gray transition-colors duration-300"
                   title="View Profile"
                 >
                   {profile?.first_name?.[0] || user.email?.[0]?.toUpperCase() || 'U'}
                 </Link>
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="p-1 text-neutral-500 hover:text-charcoal"
+                  className="p-2 text-gray"
                   aria-label="Toggle menu"
                 >
                   {mobileMenuOpen ? (
-                    <XMarkIcon className="w-6 h-6" />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   ) : (
-                    <Bars3Icon className="w-6 h-6" />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
                   )}
                 </button>
               </>
@@ -189,12 +196,15 @@ export function Navbar() {
               <div className="flex items-center gap-4">
                 <Link
                   href={isInstructor ? '/instructor/auth/login' : '/auth/login'}
-                  className="text-neutral-500 hover:text-charcoal text-sm font-light transition-colors"
+                  className="text-stone-400 hover:text-gray text-sm tracking-wide transition-colors duration-300"
                 >
-                  Sign In
+                  Sign in
                 </Link>
                 {!isInstructor && (
-                  <Link href="/instructor" className="btn-primary text-xs px-3 py-2">
+                  <Link 
+                    href="/instructor" 
+                    className="text-gray text-sm border border-gray px-4 py-2 tracking-wide"
+                  >
                     Teach
                   </Link>
                 )}
@@ -205,28 +215,22 @@ export function Navbar() {
 
         {/* Mobile Menu Dropdown */}
         {mobileMenuOpen && user && (
-          <div className="md:hidden border-t border-neutral-100 py-4 space-y-1">
-            {/* Browse Classes - available to all users */}
+          <div className="md:hidden border-t border-stone-100 py-6 space-y-1">
             <Link
               href="/classes"
               onClick={() => setMobileMenuOpen(false)}
-              className={`block py-3 px-2 font-light transition-colors ${
-                pathname === '/classes' 
-                  ? 'text-charcoal' 
-                  : 'text-neutral-500 hover:text-charcoal'
+              className={`block py-3 tracking-wide transition-colors duration-300 ${
+                pathname === '/classes' ? 'text-gray' : 'text-stone-400 hover:text-gray'
               }`}
             >
-              Browse Classes
+              Classes
             </Link>
             
-            {/* My Bookings - available to all users */}
             <Link
               href="/my-classes"
               onClick={() => setMobileMenuOpen(false)}
-              className={`block py-3 px-2 font-light transition-colors ${
-                pathname === '/my-classes' 
-                  ? 'text-charcoal' 
-                  : 'text-neutral-500 hover:text-charcoal'
+              className={`block py-3 tracking-wide transition-colors duration-300 ${
+                pathname === '/my-classes' ? 'text-gray' : 'text-stone-400 hover:text-gray'
               }`}
             >
               My Bookings
@@ -235,16 +239,14 @@ export function Navbar() {
             {/* Instructor section */}
             {profile?.is_instructor && (
               <>
-                <div className="border-t border-neutral-100 pt-3 mt-3">
-                  <span className="block px-2 text-xs uppercase tracking-wider text-neutral-400 mb-2">Instructor</span>
+                <div className="border-t border-stone-100 pt-4 mt-4">
+                  <span className="block text-xs tracking-wider text-stone-400 mb-3">Instructor</span>
                 </div>
                 <Link
                   href="/instructor"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-3 px-2 font-light transition-colors ${
-                    pathname === '/instructor' 
-                      ? 'text-charcoal' 
-                      : 'text-neutral-500 hover:text-charcoal'
+                  className={`block py-3 tracking-wide transition-colors duration-300 ${
+                    pathname === '/instructor' ? 'text-gray' : 'text-stone-400 hover:text-gray'
                   }`}
                 >
                   Dashboard
@@ -252,10 +254,8 @@ export function Navbar() {
                 <Link
                   href="/instructor/schedule"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-3 px-2 font-light transition-colors ${
-                    pathname === '/instructor/schedule' 
-                      ? 'text-charcoal' 
-                      : 'text-neutral-500 hover:text-charcoal'
+                  className={`block py-3 tracking-wide transition-colors duration-300 ${
+                    pathname === '/instructor/schedule' ? 'text-gray' : 'text-stone-400 hover:text-gray'
                   }`}
                 >
                   Schedule
@@ -263,10 +263,8 @@ export function Navbar() {
                 <Link
                   href="/instructor/my-classes"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-3 px-2 font-light transition-colors ${
-                    pathname === '/instructor/my-classes' 
-                      ? 'text-charcoal' 
-                      : 'text-neutral-500 hover:text-charcoal'
+                  className={`block py-3 tracking-wide transition-colors duration-300 ${
+                    pathname === '/instructor/my-classes' ? 'text-gray' : 'text-stone-400 hover:text-gray'
                   }`}
                 >
                   My Classes
@@ -274,10 +272,8 @@ export function Navbar() {
                 <Link
                   href="/instructor/packages"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-3 px-2 font-light transition-colors ${
-                    pathname === '/instructor/packages' 
-                      ? 'text-charcoal' 
-                      : 'text-neutral-500 hover:text-charcoal'
+                  className={`block py-3 tracking-wide transition-colors duration-300 ${
+                    pathname === '/instructor/packages' ? 'text-gray' : 'text-stone-400 hover:text-gray'
                   }`}
                 >
                   Packages
@@ -288,16 +284,14 @@ export function Navbar() {
             {/* Admin section */}
             {profile?.is_admin && (
               <>
-                <div className="border-t border-neutral-100 pt-3 mt-3">
-                  <span className="block px-2 text-xs uppercase tracking-wider text-neutral-400 mb-2">Admin</span>
+                <div className="border-t border-stone-100 pt-4 mt-4">
+                  <span className="block text-xs tracking-wider text-stone-400 mb-3">Admin</span>
                 </div>
                 <Link
                   href="/admin"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-3 px-2 font-light transition-colors ${
-                    pathname === '/admin' 
-                      ? 'text-charcoal' 
-                      : 'text-neutral-500 hover:text-charcoal'
+                  className={`block py-3 tracking-wide transition-colors duration-300 ${
+                    pathname === '/admin' ? 'text-gray' : 'text-stone-400 hover:text-gray'
                   }`}
                 >
                   Manage Users
@@ -305,14 +299,14 @@ export function Navbar() {
               </>
             )}
             
-            <div className="border-t border-neutral-100 pt-3 mt-3">
+            <div className="border-t border-stone-100 pt-4 mt-4">
               <button
                 onClick={(e) => {
                   e.preventDefault()
                   setMobileMenuOpen(false)
                   signOut().catch(console.error)
                 }}
-                className="block w-full text-left py-3 px-2 text-neutral-500 hover:text-charcoal font-light transition-colors"
+                className="block w-full text-left py-3 text-stone-400 hover:text-gray tracking-wide transition-colors duration-300"
               >
                 Sign Out
               </button>

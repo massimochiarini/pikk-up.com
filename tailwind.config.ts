@@ -9,12 +9,27 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Gallery-minimal palette
-        'gallery': {
-          white: '#ffffff',
-          offwhite: '#fafafa',
-          light: '#f5f5f5',
+        // Calm minimal palette - inspired by YE reference
+        'stone': {
+          50: '#fafaf9',
+          100: '#f5f5f4',
+          200: '#e7e5e4',
+          300: '#d6d3d1',
+          400: '#a8a29e',
+          500: '#78716c',
+          600: '#57534e',
+          700: '#44403c',
+          800: '#292524',
+          900: '#1c1917',
         },
+        // Primary gray - matches YE logo tone (soft, neutral, not harsh)
+        'gray': {
+          DEFAULT: '#6b6b6b',
+          light: '#8a8a8a',
+          dark: '#4a4a4a',
+        },
+        // Legacy support
+        'charcoal': '#6b6b6b',
         'neutral': {
           50: '#fafafa',
           100: '#f5f5f5',
@@ -27,20 +42,20 @@ const config: Config = {
           800: '#262626',
           900: '#171717',
         },
-        'charcoal': '#2c2c2c',
-        // Keep muted versions for subtle accents if needed
-        'accent': {
-          sage: '#687b56',
-          warm: '#b08d62',
-        },
       },
       fontFamily: {
-        'display': ['var(--font-outfit)', 'system-ui', 'sans-serif'],
-        'body': ['var(--font-outfit)', 'system-ui', 'sans-serif'],
+        'sans': ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        'display': ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        'body': ['var(--font-inter)', 'system-ui', 'sans-serif'],
+      },
+      letterSpacing: {
+        'relaxed': '0.025em',
+        'wide': '0.05em',
+        'wider': '0.1em',
       },
       animation: {
-        'fade-in': 'fadeIn 0.5s ease-out',
-        'slide-up': 'slideUp 0.5s ease-out',
+        'fade-in': 'fadeIn 0.8s ease-out',
+        'slide-up': 'slideUp 0.6s ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -48,7 +63,7 @@ const config: Config = {
           '100%': { opacity: '1' },
         },
         slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },

@@ -4,28 +4,15 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import Link from 'next/link'
-import Image from 'next/image'
-import { CalendarDaysIcon, RectangleStackIcon, MapPinIcon, ArrowRightIcon, TicketIcon, ClockIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
 export default function InstructorDashboardPage() {
   const { user, profile, loading } = useAuth()
   const [showContent, setShowContent] = useState(false)
 
-  // Debug logging
-  useEffect(() => {
-    console.log('=== INSTRUCTOR PAGE STATE ===')
-    console.log('Loading:', loading)
-    console.log('User:', user?.email || 'null')
-    console.log('Profile:', profile ? `${profile.email} (instructor: ${profile.is_instructor})` : 'null')
-    console.log('localStorage supabase-auth:', localStorage.getItem('supabase-auth') ? 'EXISTS' : 'EMPTY')
-    console.log('=============================')
-  }, [loading, user, profile])
-
-  // Add a timeout to prevent infinite loading
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowContent(true)
-    }, 3000) // Show content after 3 seconds max
+    }, 3000)
 
     if (!loading) {
       setShowContent(true)
@@ -39,38 +26,118 @@ export default function InstructorDashboardPage() {
   if (loading && !showContent) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
+        <div className="w-6 h-6 border border-stone-300 border-t-gray rounded-full animate-spin"></div>
       </div>
     )
   }
 
-  // Not logged in - show login/signup options
+  // Not logged in - show landing for instructors
   if (!user) {
     return (
       <div className="min-h-screen bg-white">
-        <Navbar />
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-          <div className="text-center max-w-md">
-            <div className="w-16 h-16 border border-neutral-200 flex items-center justify-center mx-auto mb-6">
-              <CalendarDaysIcon className="w-8 h-8 text-charcoal" />
+        {/* Minimal Navigation */}
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white">
+          <div className="max-w-6xl mx-auto px-6 lg:px-8">
+            <div className="flex justify-between items-center h-20">
+              <Link href="/" className="text-gray tracking-wide text-lg">
+                PickUp
+              </Link>
+              <div className="flex items-center gap-8">
+                <Link
+                  href="/classes"
+                  className="text-stone-400 hover:text-gray transition-colors duration-300 tracking-wide"
+                >
+                  Classes
+                </Link>
+                <Link
+                  href="/instructor/auth/login"
+                  className="text-stone-400 hover:text-gray transition-colors duration-300 tracking-wide"
+                >
+                  Sign in
+                </Link>
+              </div>
             </div>
-            <h1 className="text-3xl font-light text-charcoal mb-4">Instructor Portal</h1>
-            <p className="text-neutral-500 font-light mb-8">
-              Sign in to access your dashboard and start teaching classes.
+          </div>
+        </nav>
+
+        {/* Hero */}
+        <section className="min-h-screen flex items-center justify-center px-6 pt-20">
+          <div className="max-w-2xl mx-auto text-center">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-normal tracking-tight text-gray leading-[1.1] mb-8">
+              Share your practice
+            </h1>
+            
+            <p className="text-lg md:text-xl text-stone-500 max-w-lg mx-auto mb-12 leading-relaxed tracking-wide">
+              Teach yoga at PickUp. Set your schedule, set your price, and get paid.
             </p>
-            <div className="space-y-3">
-              <Link href="/instructor/auth/login" className="btn-primary w-full block text-center py-4">
-                Sign In
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
+              <Link 
+                href="/instructor/auth/signup" 
+                className="btn-primary"
+              >
+                Apply to teach
               </Link>
-              <Link href="/instructor/auth/signup" className="btn-secondary w-full block text-center py-4">
-                Create Instructor Account
+              <Link 
+                href="/instructor/auth/login" 
+                className="btn-secondary"
+              >
+                Sign in
               </Link>
             </div>
-            <Link href="/" className="text-neutral-400 hover:text-charcoal text-sm mt-8 inline-block transition-colors">
+          </div>
+        </section>
+
+        {/* How it works */}
+        <section className="py-32 px-6 bg-stone-50">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-normal text-gray text-center mb-16 tracking-tight">
+              How it works
+            </h2>
+            
+            <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16">
+              <div className="text-center">
+                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Create</span>
+                <p className="text-stone-400 mt-2 tracking-wide">Claim a time slot</p>
+              </div>
+              <span className="hidden md:block text-stone-300">→</span>
+              <div className="text-center">
+                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Publish</span>
+                <p className="text-stone-400 mt-2 tracking-wide">Set your price</p>
+              </div>
+              <span className="hidden md:block text-stone-300">→</span>
+              <div className="text-center">
+                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Get paid</span>
+                <p className="text-stone-400 mt-2 tracking-wide">We handle the rest</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="py-32 px-6">
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-2xl md:text-3xl font-normal text-gray mb-6 tracking-tight">
+              Ready to begin?
+            </h2>
+            <p className="text-stone-500 mb-12 tracking-wide">
+              Apply to become an instructor and start teaching.
+            </p>
+            <Link href="/instructor/auth/signup" className="btn-primary">
+              Apply to teach
+            </Link>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="py-12 px-6 border-t border-stone-100">
+          <div className="max-w-5xl mx-auto flex items-center justify-between">
+            <span className="text-gray tracking-wide">PickUp</span>
+            <Link href="/" className="text-stone-400 hover:text-gray text-sm tracking-wide transition-colors duration-300">
               Back to home
             </Link>
           </div>
-        </div>
+        </footer>
       </div>
     )
   }
@@ -80,24 +147,25 @@ export default function InstructorDashboardPage() {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-          <div className="text-center max-w-lg">
-            <div className="w-16 h-16 border border-yellow-200 bg-yellow-50 flex items-center justify-center mx-auto mb-6">
-              <ClockIcon className="w-8 h-8 text-yellow-600" />
+        <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
+          <div className="text-center max-w-md">
+            <div className="w-16 h-16 border border-stone-200 flex items-center justify-center mx-auto mb-8">
+              <svg className="w-8 h-8 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
-            <h1 className="text-3xl font-light text-charcoal mb-4">Application Under Review</h1>
-            <p className="text-neutral-500 font-light mb-2">
+            <h1 className="text-2xl md:text-3xl font-normal text-gray mb-4 tracking-tight">Application under review</h1>
+            <p className="text-stone-500 mb-2 tracking-wide">
               Hi {profile.first_name}! Thanks for applying to teach at PickUp.
             </p>
-            <p className="text-neutral-500 font-light mb-8">
-              Your instructor application is being reviewed. We will notify you once it is approved.
-              In the meantime, you can browse and book classes as a student.
+            <p className="text-stone-400 mb-10 tracking-wide">
+              We will notify you once your application is approved.
             </p>
             <div className="space-y-3">
-              <Link href="/classes" className="btn-primary w-full block text-center py-4">
+              <Link href="/classes" className="btn-primary w-full block text-center">
                 Browse Classes
               </Link>
-              <Link href="/my-classes" className="btn-secondary w-full block text-center py-4">
+              <Link href="/my-classes" className="btn-secondary w-full block text-center">
                 My Bookings
               </Link>
             </div>
@@ -112,25 +180,18 @@ export default function InstructorDashboardPage() {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-          <div className="text-center max-w-lg">
-            <div className="w-16 h-16 border border-neutral-200 flex items-center justify-center mx-auto mb-6">
-              <XCircleIcon className="w-8 h-8 text-neutral-400" />
-            </div>
-            <h1 className="text-3xl font-light text-charcoal mb-4">Application Not Approved</h1>
-            <p className="text-neutral-500 font-light mb-2">
+        <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
+          <div className="text-center max-w-md">
+            <h1 className="text-2xl md:text-3xl font-normal text-gray mb-4 tracking-tight">Application not approved</h1>
+            <p className="text-stone-500 mb-2 tracking-wide">
               Hi {profile.first_name}, unfortunately your instructor application was not approved at this time.
             </p>
-            <p className="text-neutral-500 font-light mb-8">
-              If you believe this was a mistake or have questions, please contact us.
+            <p className="text-stone-400 mb-10 tracking-wide">
               You can still browse and book classes as a student.
             </p>
             <div className="space-y-3">
-              <Link href="/classes" className="btn-primary w-full block text-center py-4">
+              <Link href="/classes" className="btn-primary w-full block text-center">
                 Browse Classes
-              </Link>
-              <Link href="/my-classes" className="btn-secondary w-full block text-center py-4">
-                My Bookings
               </Link>
             </div>
           </div>
@@ -139,29 +200,26 @@ export default function InstructorDashboardPage() {
     )
   }
 
-  // Logged in but profile not loaded yet or not an instructor (hasn't applied)
+  // Logged in but not an instructor (hasn't applied)
   if (!profile || !profile.is_instructor) {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-          <div className="text-center max-w-lg">
-            <div className="w-16 h-16 border border-neutral-200 flex items-center justify-center mx-auto mb-6">
-              <span className="text-2xl">+</span>
-            </div>
-            <h1 className="text-3xl font-light text-charcoal mb-4">Become an Instructor</h1>
-            <p className="text-neutral-500 font-light mb-2">
-              {profile ? `Hi ${profile.first_name}! Your current account is set up for booking classes.` : 'Welcome!'}
+        <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
+          <div className="text-center max-w-md">
+            <h1 className="text-2xl md:text-3xl font-normal text-gray mb-4 tracking-tight">Become an instructor</h1>
+            <p className="text-stone-500 mb-2 tracking-wide">
+              {profile ? `Hi ${profile.first_name}! ` : ''}Want to teach yoga at PickUp?
             </p>
-            <p className="text-neutral-500 font-light mb-8">
-              Want to teach yoga at PickUp? Apply to become an instructor and start sharing your practice.
+            <p className="text-stone-400 mb-10 tracking-wide">
+              Apply to become an instructor and start sharing your practice.
             </p>
             <div className="space-y-3">
-              <Link href="/instructor/auth/signup" className="btn-primary w-full block text-center py-4">
-                Apply to Teach
+              <Link href="/instructor/auth/signup" className="btn-primary w-full block text-center">
+                Apply to teach
               </Link>
             </div>
-            <Link href="/classes" className="text-neutral-400 hover:text-charcoal text-sm mt-8 inline-block transition-colors">
+            <Link href="/classes" className="text-stone-400 hover:text-gray text-sm mt-8 inline-block transition-colors duration-300 tracking-wide">
               Browse classes instead
             </Link>
           </div>
@@ -175,135 +233,104 @@ export default function InstructorDashboardPage() {
     <div className="min-h-screen bg-white">
       <Navbar />
 
-      {/* Hero with Artwork */}
-      <div className="relative h-48 md:h-64 overflow-hidden">
-        <Image
-          src="/gallery/4.jpg"
-          alt="Untitled 04"
-          fill
-          sizes="100vw"
-          priority
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-white/70" />
-        <div className="absolute inset-0 flex items-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <h1 className="text-3xl md:text-4xl font-light text-charcoal">
-              Welcome back, {profile.first_name}
-            </h1>
-            <p className="text-neutral-500 mt-2 font-light">
-              Manage your classes and schedule
-            </p>
-          </div>
+      {/* Dashboard Header */}
+      <div className="pt-12 pb-8 px-6">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-3xl md:text-4xl font-normal text-gray tracking-tight">
+            Welcome back, {profile.first_name}
+          </h1>
+          <p className="text-stone-400 mt-3 tracking-wide">
+            Manage your classes and schedule
+          </p>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-5xl mx-auto px-6 pb-20">
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          <Link href="/instructor/schedule" className="group block border border-neutral-200 p-6 hover:border-charcoal transition-colors">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center group-hover:border-charcoal transition-colors">
-                <CalendarDaysIcon className="w-6 h-6 text-charcoal" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-medium text-charcoal mb-1">
-                  View Schedule
-                </h3>
-                <p className="text-neutral-500 text-sm font-light">
-                  Browse and claim available time slots
-                </p>
-              </div>
-              <ArrowRightIcon className="w-5 h-5 text-neutral-300 group-hover:text-charcoal transition-colors" />
-            </div>
+        <div className="grid md:grid-cols-3 gap-px bg-stone-200 mb-16">
+          <Link href="/instructor/schedule" className="bg-white p-8 group block">
+            <h3 className="font-normal text-gray mb-2 tracking-tight group-hover:text-gray-dark transition-colors duration-300">
+              View Schedule
+            </h3>
+            <p className="text-stone-400 text-sm tracking-wide mb-4">
+              Browse and claim available time slots
+            </p>
+            <span className="text-sm text-gray tracking-wide group-hover:border-b group-hover:border-gray transition-all duration-300">
+              Open schedule
+            </span>
           </Link>
 
-          <Link href="/instructor/my-classes" className="group block border border-neutral-200 p-6 hover:border-charcoal transition-colors">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center group-hover:border-charcoal transition-colors">
-                <RectangleStackIcon className="w-6 h-6 text-charcoal" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-medium text-charcoal mb-1">
-                  My Classes
-                </h3>
-                <p className="text-neutral-500 text-sm font-light">
-                  View and manage your scheduled classes
-                </p>
-              </div>
-              <ArrowRightIcon className="w-5 h-5 text-neutral-300 group-hover:text-charcoal transition-colors" />
-            </div>
+          <Link href="/instructor/my-classes" className="bg-white p-8 group block">
+            <h3 className="font-normal text-gray mb-2 tracking-tight group-hover:text-gray-dark transition-colors duration-300">
+              My Classes
+            </h3>
+            <p className="text-stone-400 text-sm tracking-wide mb-4">
+              View and manage your scheduled classes
+            </p>
+            <span className="text-sm text-gray tracking-wide group-hover:border-b group-hover:border-gray transition-all duration-300">
+              View classes
+            </span>
           </Link>
 
-          <Link href="/instructor/packages" className="group block border border-neutral-200 p-6 hover:border-charcoal transition-colors">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center group-hover:border-charcoal transition-colors">
-                <TicketIcon className="w-6 h-6 text-charcoal" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-medium text-charcoal mb-1">
-                  Class Packages
-                </h3>
-                <p className="text-neutral-500 text-sm font-light">
-                  Create bundles for your students to save
-                </p>
-              </div>
-              <ArrowRightIcon className="w-5 h-5 text-neutral-300 group-hover:text-charcoal transition-colors" />
-            </div>
+          <Link href="/instructor/packages" className="bg-white p-8 group block">
+            <h3 className="font-normal text-gray mb-2 tracking-tight group-hover:text-gray-dark transition-colors duration-300">
+              Class Packages
+            </h3>
+            <p className="text-stone-400 text-sm tracking-wide mb-4">
+              Create bundles for your students
+            </p>
+            <span className="text-sm text-gray tracking-wide group-hover:border-b group-hover:border-gray transition-all duration-300">
+              Manage packages
+            </span>
           </Link>
         </div>
 
         {/* Studio Info */}
-        <div className="border border-neutral-200 p-8 mb-16">
-          <h2 className="text-lg font-medium text-charcoal mb-6">Studio Location</h2>
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center">
-              <MapPinIcon className="w-6 h-6 text-charcoal" />
-            </div>
-            <div>
-              <h3 className="font-medium text-charcoal">PickUp Studio</h3>
-              <p className="text-neutral-500 font-light">2500 South Miami Avenue</p>
-              <a 
-                href="https://www.google.com/maps/search/?api=1&query=2500+South+Miami+Avenue"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-charcoal hover:underline text-sm mt-2 inline-block"
-              >
-                View on Maps
-              </a>
-            </div>
+        <div className="border border-stone-200 p-8 mb-16">
+          <h2 className="text-lg font-normal text-gray mb-6 tracking-tight">Studio Location</h2>
+          <div>
+            <h3 className="font-normal text-gray">PickUp Studio</h3>
+            <p className="text-stone-400 tracking-wide">2500 South Miami Avenue</p>
+            <a 
+              href="https://www.google.com/maps/search/?api=1&query=2500+South+Miami+Avenue"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray hover:text-gray-dark text-sm mt-3 inline-block tracking-wide transition-colors duration-300"
+            >
+              View on Maps
+            </a>
           </div>
         </div>
 
         {/* How It Works */}
         <div>
-          <h2 className="text-lg font-medium text-charcoal mb-8">How It Works</h2>
+          <h2 className="text-lg font-normal text-gray mb-12 tracking-tight">How it works</h2>
           <div className="grid md:grid-cols-3 gap-12">
             <div className="text-center">
-              <div className="w-10 h-10 bg-charcoal text-white flex items-center justify-center mx-auto mb-4 font-light">
+              <div className="w-10 h-10 bg-gray text-white flex items-center justify-center mx-auto mb-4 tracking-wide">
                 1
               </div>
-              <h3 className="font-medium text-charcoal mb-2">Claim a Time Slot</h3>
-              <p className="text-neutral-500 text-sm font-light">
-                Browse the schedule and pick an available slot that works for you.
+              <h3 className="font-normal text-gray mb-2 tracking-tight">Claim a Time Slot</h3>
+              <p className="text-stone-400 text-sm tracking-wide">
+                Browse the schedule and pick an available slot.
               </p>
             </div>
             <div className="text-center">
-              <div className="w-10 h-10 bg-charcoal text-white flex items-center justify-center mx-auto mb-4 font-light">
+              <div className="w-10 h-10 bg-gray text-white flex items-center justify-center mx-auto mb-4 tracking-wide">
                 2
               </div>
-              <h3 className="font-medium text-charcoal mb-2">Create Your Class</h3>
-              <p className="text-neutral-500 text-sm font-light">
-                Add your class details: title, description, price, and capacity.
+              <h3 className="font-normal text-gray mb-2 tracking-tight">Create Your Class</h3>
+              <p className="text-stone-400 text-sm tracking-wide">
+                Add your class details: title, price, and capacity.
               </p>
             </div>
             <div className="text-center">
-              <div className="w-10 h-10 bg-charcoal text-white flex items-center justify-center mx-auto mb-4 font-light">
+              <div className="w-10 h-10 bg-gray text-white flex items-center justify-center mx-auto mb-4 tracking-wide">
                 3
               </div>
-              <h3 className="font-medium text-charcoal mb-2">Share & Teach</h3>
-              <p className="text-neutral-500 text-sm font-light">
-                Get a booking link to share with students. We handle the rest.
+              <h3 className="font-normal text-gray mb-2 tracking-tight">Share & Teach</h3>
+              <p className="text-stone-400 text-sm tracking-wide">
+                Get a booking link to share. We handle the rest.
               </p>
             </div>
           </div>

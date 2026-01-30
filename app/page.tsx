@@ -2,23 +2,8 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { HeroSection } from '@/components/HeroSection'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
 import { format, parseISO, isToday, isTomorrow } from 'date-fns'
-import { 
-  CalendarDaysIcon, 
-  CreditCardIcon, 
-  SparklesIcon, 
-  UserGroupIcon, 
-  CurrencyDollarIcon,
-  CheckBadgeIcon,
-  MagnifyingGlassIcon,
-  ClockIcon,
-  ArrowRightIcon,
-  PlusCircleIcon,
-  MegaphoneIcon,
-  BanknotesIcon
-} from '@heroicons/react/24/outline'
 
 type ClassWithDetails = YogaClass & {
   time_slot: TimeSlot
@@ -26,12 +11,11 @@ type ClassWithDetails = YogaClass & {
   booking_count: number
 }
 
-export default function LandingPage() {
+export default function HomePage() {
   const [featuredClasses, setFeaturedClasses] = useState<ClassWithDetails[]>([])
   const [loadingClasses, setLoadingClasses] = useState(true)
-  const [activeTab, setActiveTab] = useState<'students' | 'teachers'>('students')
+  const [activeFlow, setActiveFlow] = useState<'student' | 'teacher'>('student')
 
-  // Fetch featured classes
   useEffect(() => {
     const fetchClasses = async () => {
       try {
@@ -60,9 +44,8 @@ export default function LandingPage() {
               const dateB = b.time_slot?.date + 'T' + b.time_slot?.start_time
               return dateA.localeCompare(dateB)
             })
-            .slice(0, 6)
+            .slice(0, 4)
 
-          // Fetch booking counts
           const classesWithCounts = await Promise.all(
             filteredData.map(async (c) => {
               try {
@@ -109,327 +92,250 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-neutral-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 sm:h-16">
-            <Link href="/" className="text-xl sm:text-2xl font-medium tracking-tight text-charcoal flex-shrink-0">
+      {/* Minimal Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20">
+            {/* Logo - understated wordmark */}
+            <Link 
+              href="/" 
+              className="text-gray tracking-wide text-lg"
+            >
               PickUp
             </Link>
-            {/* Desktop Navigation */}
-            <div className="hidden sm:flex items-center gap-6">
+            
+            {/* Desktop Navigation - minimal */}
+            <div className="hidden md:flex items-center gap-10">
               <Link
                 href="/classes"
-                className="text-neutral-600 hover:text-charcoal font-medium transition-colors"
+                className="text-gray hover:text-gray-dark transition-colors duration-300 tracking-wide"
               >
                 Classes
               </Link>
               <Link
                 href="/instructor"
-                className="text-charcoal font-medium px-4 py-2 border-2 border-charcoal hover:bg-charcoal hover:text-white transition-colors"
+                className="text-gray hover:text-gray-dark transition-colors duration-300 tracking-wide"
               >
                 Teach
               </Link>
               <Link
                 href="/auth/login"
-                className="text-neutral-500 hover:text-charcoal font-light transition-colors"
+                className="text-stone-400 hover:text-gray transition-colors duration-300 tracking-wide"
               >
-                Sign In
+                Sign in
               </Link>
             </div>
+
             {/* Mobile Navigation */}
-            <div className="flex sm:hidden items-center gap-3">
+            <div className="flex md:hidden items-center gap-6">
               <Link
                 href="/classes"
-                className="text-neutral-600 hover:text-charcoal text-sm font-medium transition-colors"
+                className="text-gray text-sm tracking-wide"
               >
                 Classes
               </Link>
               <Link
                 href="/instructor"
-                className="text-charcoal text-sm font-medium px-3 py-1.5 border-2 border-charcoal"
+                className="text-gray text-sm tracking-wide"
               >
                 Teach
               </Link>
               <Link
                 href="/auth/login"
-                className="text-neutral-500 hover:text-charcoal text-sm font-light transition-colors"
+                className="text-stone-400 text-sm tracking-wide"
               >
-                Sign In
+                Sign in
               </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section with Overlay Card */}
-      <HeroSection
-        imageSrc="/gallery/1.jpg"
-        imageNumber={1}
-        overlay="light"
-        height="screen"
-        showCaption={false}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-          <div className="bg-white/95 backdrop-blur-md p-8 md:p-12 lg:p-16 max-w-2xl w-full text-center shadow-sm">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-charcoal mb-4 md:mb-6">
-              Find and book yoga classes near you
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl text-neutral-600 mb-8 md:mb-10 font-light leading-relaxed">
-              PickUp connects students with local instructors and studios — book in seconds.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-              <Link href="/classes" className="btn-primary text-center px-8 py-4 text-base sm:text-lg">
-                Find a class
-              </Link>
-              <Link href="/instructor" className="btn-secondary text-center px-8 py-4 text-base sm:text-lg">
-                Teach a class
-              </Link>
-            </div>
-            <p className="text-sm text-neutral-500 font-light">
-              Instant booking · Secure payment · Text confirmation
-            </p>
+      {/* Hero Section - Pure white, centered, calm */}
+      <section className="min-h-screen flex items-center justify-center px-6 pt-20">
+        <div className="max-w-3xl mx-auto text-center">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-gray leading-[1.1] mb-8">
+            Find and book yoga classes near you
+          </h1>
+          
+          <p className="text-lg md:text-xl text-stone-500 max-w-xl mx-auto mb-12 leading-relaxed tracking-wide">
+            PickUp connects students with local instructors and studios — book in seconds.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
+            <Link 
+              href="/classes" 
+              className="btn-primary"
+            >
+              Find a class
+            </Link>
+            <Link 
+              href="/instructor" 
+              className="btn-secondary"
+            >
+              Teach a class
+            </Link>
           </div>
+          
+          <p className="text-sm text-stone-400 tracking-wider">
+            Instant booking · Secure payment · Text confirmation
+          </p>
         </div>
-      </HeroSection>
+      </section>
 
-      {/* What Brings You Here Section */}
-      <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-white">
+      {/* What Brings You Here - Yin/Yang Split */}
+      <section className="py-32 px-6">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-medium text-charcoal text-center mb-12 md:mb-16">
+          <h2 className="text-2xl md:text-3xl font-normal text-gray text-center mb-20 tracking-tight">
             What brings you here?
           </h2>
           
-          <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+          <div className="grid md:grid-cols-2 gap-px bg-stone-200">
             {/* Student Card */}
-            <div className="border border-neutral-200 p-8 md:p-10 hover:border-charcoal transition-colors group">
-              <div className="w-14 h-14 border border-neutral-200 flex items-center justify-center mb-6 group-hover:border-charcoal transition-colors">
-                <UserGroupIcon className="w-7 h-7 text-charcoal" />
-              </div>
-              <h3 className="text-xl md:text-2xl font-medium text-charcoal mb-4">I&apos;m a student</h3>
-              <ul className="space-y-3 mb-8 text-neutral-600 font-light">
-                <li className="flex items-center gap-3">
-                  <MagnifyingGlassIcon className="w-5 h-5 text-neutral-400 flex-shrink-0" />
-                  <span>Browse yoga classes in your area</span>
+            <div className="bg-white p-10 md:p-14 group">
+              <h3 className="text-xl md:text-2xl font-normal text-gray mb-8 tracking-tight">
+                Student
+              </h3>
+              <ul className="space-y-4 mb-10 text-stone-500">
+                <li className="flex items-start gap-3">
+                  <span className="text-stone-300 mt-1">—</span>
+                  <span>Discover local yoga classes</span>
                 </li>
-                <li className="flex items-center gap-3">
-                  <CreditCardIcon className="w-5 h-5 text-neutral-400 flex-shrink-0" />
-                  <span>Book instantly with secure payment</span>
+                <li className="flex items-start gap-3">
+                  <span className="text-stone-300 mt-1">—</span>
+                  <span>Book instantly</span>
                 </li>
-                <li className="flex items-center gap-3">
-                  <CheckBadgeIcon className="w-5 h-5 text-neutral-400 flex-shrink-0" />
-                  <span>Save with class packages and credits</span>
+                <li className="flex items-start gap-3">
+                  <span className="text-stone-300 mt-1">—</span>
+                  <span>Build a consistent practice</span>
                 </li>
               </ul>
-              <Link href="/classes" className="btn-primary inline-flex items-center gap-2 px-6 py-3">
+              <Link 
+                href="/classes" 
+                className="inline-block text-gray border-b border-gray pb-1 hover:border-gray-dark hover:text-gray-dark transition-colors duration-300 tracking-wide"
+              >
                 Browse classes
-                <ArrowRightIcon className="w-4 h-4" />
               </Link>
             </div>
 
             {/* Teacher Card */}
-            <div className="border border-neutral-200 p-8 md:p-10 hover:border-charcoal transition-colors group">
-              <div className="w-14 h-14 border border-neutral-200 flex items-center justify-center mb-6 group-hover:border-charcoal transition-colors">
-                <CalendarDaysIcon className="w-7 h-7 text-charcoal" />
-              </div>
-              <h3 className="text-xl md:text-2xl font-medium text-charcoal mb-4">I&apos;m a teacher</h3>
-              <ul className="space-y-3 mb-8 text-neutral-600 font-light">
-                <li className="flex items-center gap-3">
-                  <ClockIcon className="w-5 h-5 text-neutral-400 flex-shrink-0" />
-                  <span>Claim available time slots at our studio</span>
+            <div className="bg-white p-10 md:p-14 group">
+              <h3 className="text-xl md:text-2xl font-normal text-gray mb-8 tracking-tight">
+                Teacher
+              </h3>
+              <ul className="space-y-4 mb-10 text-stone-500">
+                <li className="flex items-start gap-3">
+                  <span className="text-stone-300 mt-1">—</span>
+                  <span>Host or teach classes</span>
                 </li>
-                <li className="flex items-center gap-3">
-                  <CurrencyDollarIcon className="w-5 h-5 text-neutral-400 flex-shrink-0" />
-                  <span>Set your own prices for each class</span>
+                <li className="flex items-start gap-3">
+                  <span className="text-stone-300 mt-1">—</span>
+                  <span>Set your price</span>
                 </li>
-                <li className="flex items-center gap-3">
-                  <CheckBadgeIcon className="w-5 h-5 text-neutral-400 flex-shrink-0" />
-                  <span>Get paid directly — we handle the rest</span>
+                <li className="flex items-start gap-3">
+                  <span className="text-stone-300 mt-1">—</span>
+                  <span>Get paid</span>
                 </li>
               </ul>
-              <Link href="/instructor" className="btn-secondary inline-flex items-center gap-2 px-6 py-3">
+              <Link 
+                href="/instructor" 
+                className="inline-block text-gray border-b border-gray pb-1 hover:border-gray-dark hover:text-gray-dark transition-colors duration-300 tracking-wide"
+              >
                 Start teaching
-                <ArrowRightIcon className="w-4 h-4" />
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works Section - Toggle between Students/Teachers */}
-      <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-neutral-50">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-medium text-charcoal text-center mb-6">
+      {/* How It Works - Minimal, calm */}
+      <section className="py-32 px-6 bg-stone-50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl md:text-3xl font-normal text-gray text-center mb-12 tracking-tight">
             How it works
           </h2>
           
           {/* Toggle */}
-          <div className="flex justify-center mb-12 md:mb-16">
-            <div className="inline-flex border border-neutral-200 p-1 bg-white">
+          <div className="flex justify-center mb-16">
+            <div className="inline-flex">
               <button
-                onClick={() => setActiveTab('students')}
-                className={`px-6 py-2 text-sm font-medium transition-colors ${
-                  activeTab === 'students'
-                    ? 'bg-charcoal text-white'
-                    : 'text-neutral-500 hover:text-charcoal'
+                onClick={() => setActiveFlow('student')}
+                className={`px-6 py-3 text-sm tracking-wider transition-colors duration-300 ${
+                  activeFlow === 'student'
+                    ? 'text-gray border-b-2 border-gray'
+                    : 'text-stone-400 border-b-2 border-transparent hover:text-gray'
                 }`}
               >
-                For Students
+                For students
               </button>
               <button
-                onClick={() => setActiveTab('teachers')}
-                className={`px-6 py-2 text-sm font-medium transition-colors ${
-                  activeTab === 'teachers'
-                    ? 'bg-charcoal text-white'
-                    : 'text-neutral-500 hover:text-charcoal'
+                onClick={() => setActiveFlow('teacher')}
+                className={`px-6 py-3 text-sm tracking-wider transition-colors duration-300 ${
+                  activeFlow === 'teacher'
+                    ? 'text-gray border-b-2 border-gray'
+                    : 'text-stone-400 border-b-2 border-transparent hover:text-gray'
                 }`}
               >
-                For Teachers
+                For teachers
               </button>
             </div>
           </div>
 
-          {/* Steps */}
-          {activeTab === 'students' ? (
-            <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+          {/* Flow Steps */}
+          {activeFlow === 'student' ? (
+            <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16">
               <div className="text-center">
-                <div className="w-16 h-16 bg-charcoal text-white flex items-center justify-center mx-auto mb-6 text-xl font-medium">
-                  1
-                </div>
-                <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center mx-auto mb-4">
-                  <MagnifyingGlassIcon className="w-6 h-6 text-charcoal" />
-                </div>
-                <h3 className="text-lg font-medium mb-3 text-charcoal">Browse</h3>
-                <p className="text-neutral-500 font-light leading-relaxed">
-                  Explore yoga classes taught by certified local instructors.
-                </p>
+                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Browse</span>
               </div>
-              
+              <span className="hidden md:block text-stone-300">→</span>
               <div className="text-center">
-                <div className="w-16 h-16 bg-charcoal text-white flex items-center justify-center mx-auto mb-6 text-xl font-medium">
-                  2
-                </div>
-                <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center mx-auto mb-4">
-                  <CreditCardIcon className="w-6 h-6 text-charcoal" />
-                </div>
-                <h3 className="text-lg font-medium mb-3 text-charcoal">Book</h3>
-                <p className="text-neutral-500 font-light leading-relaxed">
-                  Reserve your spot with secure payment. Get instant text confirmation.
-                </p>
+                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Book</span>
               </div>
-              
+              <span className="hidden md:block text-stone-300">→</span>
               <div className="text-center">
-                <div className="w-16 h-16 bg-charcoal text-white flex items-center justify-center mx-auto mb-6 text-xl font-medium">
-                  3
-                </div>
-                <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center mx-auto mb-4">
-                  <SparklesIcon className="w-6 h-6 text-charcoal" />
-                </div>
-                <h3 className="text-lg font-medium mb-3 text-charcoal">Show up</h3>
-                <p className="text-neutral-500 font-light leading-relaxed">
-                  Arrive at the studio ready to flow. We handle all the details.
-                </p>
+                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Flow</span>
               </div>
             </div>
           ) : (
-            <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16">
               <div className="text-center">
-                <div className="w-16 h-16 bg-charcoal text-white flex items-center justify-center mx-auto mb-6 text-xl font-medium">
-                  1
-                </div>
-                <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center mx-auto mb-4">
-                  <PlusCircleIcon className="w-6 h-6 text-charcoal" />
-                </div>
-                <h3 className="text-lg font-medium mb-3 text-charcoal">Create</h3>
-                <p className="text-neutral-500 font-light leading-relaxed">
-                  Claim a time slot and set up your class with title, price, and capacity.
-                </p>
+                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Create</span>
               </div>
-              
+              <span className="hidden md:block text-stone-300">→</span>
               <div className="text-center">
-                <div className="w-16 h-16 bg-charcoal text-white flex items-center justify-center mx-auto mb-6 text-xl font-medium">
-                  2
-                </div>
-                <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center mx-auto mb-4">
-                  <MegaphoneIcon className="w-6 h-6 text-charcoal" />
-                </div>
-                <h3 className="text-lg font-medium mb-3 text-charcoal">Publish</h3>
-                <p className="text-neutral-500 font-light leading-relaxed">
-                  Your class goes live on PickUp. Share your booking link with students.
-                </p>
+                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Publish</span>
               </div>
-              
+              <span className="hidden md:block text-stone-300">→</span>
               <div className="text-center">
-                <div className="w-16 h-16 bg-charcoal text-white flex items-center justify-center mx-auto mb-6 text-xl font-medium">
-                  3
-                </div>
-                <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center mx-auto mb-4">
-                  <BanknotesIcon className="w-6 h-6 text-charcoal" />
-                </div>
-                <h3 className="text-lg font-medium mb-3 text-charcoal">Get paid</h3>
-                <p className="text-neutral-500 font-light leading-relaxed">
-                  Students book and pay online. You focus on teaching — we handle the rest.
-                </p>
+                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Get paid</span>
               </div>
             </div>
           )}
-          
-          {/* CTA */}
-          <div className="text-center mt-12">
-            <Link 
-              href={activeTab === 'students' ? '/classes' : '/instructor'} 
-              className="btn-primary inline-flex items-center gap-2 px-8 py-4"
-            >
-              {activeTab === 'students' ? 'Find a class' : 'Start teaching'}
-              <ArrowRightIcon className="w-4 h-4" />
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* Featured Classes Section */}
-      <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-12">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-medium text-charcoal mb-2">
-                Featured classes this week
+      {/* Featured Classes - Clean, minimal */}
+      {featuredClasses.length > 0 && (
+        <section className="py-32 px-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-center justify-between mb-16">
+              <h2 className="text-2xl md:text-3xl font-normal text-gray tracking-tight">
+                Upcoming classes
               </h2>
-              <p className="text-neutral-500 font-light">
-                Book your next session with one of our amazing instructors
-              </p>
-            </div>
-            <Link 
-              href="/classes" 
-              className="hidden md:inline-flex items-center gap-2 text-charcoal font-medium hover:text-neutral-600 transition-colors mt-4 md:mt-0"
-            >
-              View all classes
-              <ArrowRightIcon className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {loadingClasses ? (
-            <div className="flex items-center justify-center py-16">
-              <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
-            </div>
-          ) : featuredClasses.length === 0 ? (
-            <div className="border border-neutral-200 p-12 text-center">
-              <div className="w-16 h-16 border border-neutral-200 flex items-center justify-center mx-auto mb-6">
-                <CalendarDaysIcon className="w-8 h-8 text-neutral-400" />
-              </div>
-              <h3 className="text-xl font-medium text-charcoal mb-3">
-                Classes dropping weekly
-              </h3>
-              <p className="text-neutral-500 font-light mb-6 max-w-md mx-auto">
-                New yoga sessions are added regularly. Check back tomorrow or browse our full schedule.
-              </p>
-              <Link href="/classes" className="btn-primary inline-block px-6 py-3">
-                Browse all classes
+              <Link 
+                href="/classes" 
+                className="hidden md:inline-block text-stone-400 hover:text-gray transition-colors duration-300 tracking-wide"
+              >
+                View all
               </Link>
             </div>
-          ) : (
-            <>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {loadingClasses ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="w-6 h-6 border border-stone-300 border-t-gray rounded-full animate-spin"></div>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-px bg-stone-200">
                 {featuredClasses.map((yogaClass) => {
                   const spotsLeft = yogaClass.max_capacity - yogaClass.booking_count
                   const isFull = spotsLeft <= 0
@@ -438,146 +344,126 @@ export default function LandingPage() {
                     <Link
                       key={yogaClass.id}
                       href={`/book/${yogaClass.id}`}
-                      className="group block"
+                      className={`bg-white p-8 block group ${isFull ? 'opacity-50' : ''}`}
                     >
-                      <div className={`border p-6 transition-all duration-300 h-full ${
-                        isFull 
-                          ? 'border-neutral-100 bg-neutral-50' 
-                          : 'border-neutral-200 hover:border-charcoal'
-                      }`}>
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <h3 className={`text-lg font-medium mb-1 ${
-                              isFull ? 'text-neutral-400' : 'text-charcoal group-hover:text-neutral-600'
-                            } transition-colors`}>
-                              {yogaClass.title}
-                            </h3>
-                            <p className="text-sm text-neutral-500 font-light">
-                              {yogaClass.instructor.first_name} {yogaClass.instructor.last_name}
-                            </p>
-                          </div>
-                          <div className={`text-lg font-medium ${isFull ? 'text-neutral-400' : 'text-charcoal'}`}>
-                            {formatPrice(yogaClass.price_cents, yogaClass.is_donation)}
-                          </div>
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="text-lg font-normal text-gray group-hover:text-gray-dark transition-colors duration-300 tracking-tight mb-1">
+                            {yogaClass.title}
+                          </h3>
+                          <p className="text-stone-400 text-sm tracking-wide">
+                            {yogaClass.instructor.first_name} {yogaClass.instructor.last_name}
+                          </p>
                         </div>
-                        
-                        <div className="flex items-center gap-4 text-sm text-neutral-500 mb-4">
-                          <div className="flex items-center gap-1.5">
-                            <CalendarDaysIcon className="w-4 h-4" />
-                            <span className="font-light">{formatDate(yogaClass.time_slot.date)}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <ClockIcon className="w-4 h-4" />
-                            <span className="font-light">{formatTime(yogaClass.time_slot.start_time)}</span>
-                          </div>
-                        </div>
-
-                        <div className="pt-4 border-t border-neutral-100">
-                          {isFull ? (
-                            <span className="text-sm text-neutral-400 font-medium">Class full</span>
-                          ) : (
-                            <span className="text-sm text-charcoal font-medium group-hover:underline">
-                              Book now →
-                            </span>
-                          )}
-                        </div>
+                        <span className="text-gray font-normal">
+                          {formatPrice(yogaClass.price_cents, yogaClass.is_donation)}
+                        </span>
                       </div>
+                      
+                      <div className="flex items-center gap-6 text-sm text-stone-400 tracking-wide">
+                        <span>{formatDate(yogaClass.time_slot.date)}</span>
+                        <span>{formatTime(yogaClass.time_slot.start_time)}</span>
+                      </div>
+                      
+                      {!isFull && (
+                        <div className="mt-6 pt-6 border-t border-stone-100">
+                          <span className="text-sm text-gray tracking-wide group-hover:border-b group-hover:border-gray transition-all duration-300">
+                            Book now
+                          </span>
+                        </div>
+                      )}
                     </Link>
                   )
                 })}
               </div>
-              
-              <div className="text-center mt-10 md:hidden">
-                <Link 
-                  href="/classes" 
-                  className="btn-secondary inline-flex items-center gap-2 px-6 py-3"
-                >
-                  View all classes
-                  <ArrowRightIcon className="w-4 h-4" />
-                </Link>
-              </div>
-            </>
-          )}
-        </div>
-      </section>
+            )}
+            
+            <div className="text-center mt-12 md:hidden">
+              <Link 
+                href="/classes" 
+                className="text-stone-400 hover:text-gray transition-colors duration-300 tracking-wide"
+              >
+                View all classes
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
-      {/* Final CTA Section */}
-      <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-neutral-50">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-medium text-charcoal mb-4">
-            Ready to start your practice?
+      {/* Final CTA - Simple, calm */}
+      <section className="py-32 px-6 bg-stone-50">
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-2xl md:text-3xl font-normal text-gray mb-6 tracking-tight">
+            Ready to begin?
           </h2>
-          <p className="text-lg text-neutral-500 font-light mb-10 max-w-2xl mx-auto">
-            Whether you&apos;re looking to take a class or teach one, PickUp makes it simple.
+          <p className="text-stone-500 mb-12 tracking-wide">
+            Find your next class or share your teaching with others.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/classes" className="btn-primary text-center px-8 py-4">
+            <Link href="/classes" className="btn-primary">
               Find a class
             </Link>
-            <Link href="/instructor" className="btn-secondary text-center px-8 py-4">
+            <Link href="/instructor" className="btn-secondary">
               Teach a class
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-charcoal text-white py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-12">
+      {/* Footer - Minimal */}
+      <footer className="py-20 px-6 border-t border-stone-200">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-12">
             <div>
-              <div className="text-2xl font-medium tracking-tight mb-4">
-                PickUp
-              </div>
-              <p className="text-neutral-400 text-sm font-light leading-relaxed">
-                A yoga studio where art, movement, and community come together.
+              <span className="text-gray tracking-wide text-lg">PickUp</span>
+              <p className="text-stone-400 text-sm mt-3 max-w-xs tracking-wide">
+                Find and book yoga classes near you.
               </p>
             </div>
             
-            <div>
-              <h4 className="text-sm uppercase tracking-wider mb-4 text-neutral-300">Students</h4>
-              <ul className="space-y-3 text-neutral-400 text-sm font-light">
-                <li><Link href="/classes" className="hover:text-white transition-colors">Browse Classes</Link></li>
-                <li><Link href="/auth/signup" className="hover:text-white transition-colors">Create Account</Link></li>
-                <li><Link href="/auth/login" className="hover:text-white transition-colors">Sign In</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="text-sm uppercase tracking-wider mb-4 text-neutral-300">Instructors</h4>
-              <ul className="space-y-3 text-neutral-400 text-sm font-light">
-                <li><Link href="/instructor" className="hover:text-white transition-colors">Start Teaching</Link></li>
-                <li><Link href="/instructor/auth/login" className="hover:text-white transition-colors">Instructor Login</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="text-sm uppercase tracking-wider mb-4 text-neutral-300">Legal</h4>
-              <ul className="space-y-3 text-neutral-400 text-sm font-light">
-                <li><Link href="/legal/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/legal/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-              </ul>
+            <div className="flex gap-16">
+              <div>
+                <h4 className="text-stone-400 text-sm tracking-wider mb-4">Students</h4>
+                <ul className="space-y-3 text-gray text-sm tracking-wide">
+                  <li><Link href="/classes" className="hover:text-gray-dark transition-colors duration-300">Browse Classes</Link></li>
+                  <li><Link href="/auth/signup" className="hover:text-gray-dark transition-colors duration-300">Create Account</Link></li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="text-stone-400 text-sm tracking-wider mb-4">Teachers</h4>
+                <ul className="space-y-3 text-gray text-sm tracking-wide">
+                  <li><Link href="/instructor" className="hover:text-gray-dark transition-colors duration-300">Start Teaching</Link></li>
+                  <li><Link href="/instructor/auth/login" className="hover:text-gray-dark transition-colors duration-300">Sign In</Link></li>
+                </ul>
+              </div>
             </div>
           </div>
           
-          <div className="border-t border-neutral-700 mt-12 pt-8 text-center text-neutral-500 text-sm font-light">
-            © {new Date().getFullYear()} PickUp. All rights reserved.
+          <div className="mt-16 pt-8 border-t border-stone-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <span className="text-stone-400 text-sm tracking-wide">
+              © {new Date().getFullYear()} PickUp
+            </span>
+            <div className="flex gap-6 text-stone-400 text-sm tracking-wide">
+              <Link href="/legal/privacy" className="hover:text-gray transition-colors duration-300">Privacy</Link>
+              <Link href="/legal/terms" className="hover:text-gray transition-colors duration-300">Terms</Link>
+            </div>
           </div>
         </div>
       </footer>
 
       {/* Mobile Sticky Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t border-neutral-200 p-4 z-40 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t border-stone-200 p-4 z-40">
         <div className="flex gap-3 max-w-lg mx-auto">
           <Link 
             href="/classes" 
-            className="flex-1 btn-primary text-center py-3 text-sm"
+            className="flex-1 bg-gray text-white text-center py-3 text-sm tracking-wide"
           >
             Find a class
           </Link>
           <Link 
             href="/instructor" 
-            className="flex-1 btn-secondary text-center py-3 text-sm"
+            className="flex-1 border border-gray text-gray text-center py-3 text-sm tracking-wide"
           >
             Teach
           </Link>

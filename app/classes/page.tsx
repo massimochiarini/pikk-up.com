@@ -7,9 +7,6 @@ import { ParticipantsModal } from '@/components/ParticipantsModal'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
 import { format, parseISO, isToday, isTomorrow } from 'date-fns'
 import Link from 'next/link'
-import Image from 'next/image'
-import { CalendarDaysIcon, ClockIcon, ExclamationTriangleIcon, UsersIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
-import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid'
 
 type ClassWithDetails = YogaClass & {
   time_slot: TimeSlot
@@ -31,7 +28,6 @@ export default function ClassesPage() {
   const hasFetchedBookings = useRef<string | null>(null)
 
   const fetchClasses = useCallback(async () => {
-    console.log('Fetching classes...')
     setError(null)
     
     try {
@@ -51,8 +47,6 @@ export default function ClassesPage() {
         setLoading(false)
         return
       }
-      
-      console.log('Classes fetched:', data?.length || 0)
 
       if (data) {
         const today = format(new Date(), 'yyyy-MM-dd')
@@ -65,7 +59,6 @@ export default function ClassesPage() {
             return dateA.localeCompare(dateB)
           })
 
-        // Fetch booking counts in parallel, with error handling for each
         const classesWithCounts = await Promise.all(
           filteredData.map(async (c) => {
             try {
@@ -90,12 +83,10 @@ export default function ClassesPage() {
     }
   }, [])
 
-  // Fetch classes on mount
   useEffect(() => {
     fetchClasses()
   }, [fetchClasses])
 
-  // Fetch user's bookings when logged in (for showing "Booked" badge)
   useEffect(() => {
     if (!user) return
     if (hasFetchedBookings.current === user.id) return
@@ -103,7 +94,6 @@ export default function ClassesPage() {
     
     const fetchMyBookings = async () => {
       try {
-        // Fetch by user_id
         const { data: userBookings, error: userError } = await supabase
           .from('bookings')
           .select('class_id')
@@ -116,7 +106,6 @@ export default function ClassesPage() {
           userBookings.forEach(b => allClassIds.add(b.class_id))
         }
         
-        // Also fetch by phone if profile has one
         if (profile?.phone) {
           const { data: phoneBookings, error: phoneError } = await supabase
             .from('bookings')
@@ -147,14 +136,12 @@ export default function ClassesPage() {
     setCancelling(classId)
     
     try {
-      // Cancel booking by user_id OR phone number
       let query = supabase
         .from('bookings')
         .update({ status: 'cancelled' })
         .eq('class_id', classId)
         .eq('status', 'confirmed')
 
-      // Match by user_id or phone number
       if (profile?.phone) {
         const { error } = await query.or(`user_id.eq.${user.id},guest_phone.eq.${profile.phone}`)
         if (error) throw error
@@ -163,10 +150,8 @@ export default function ClassesPage() {
         if (error) throw error
       }
 
-      // Reset booking fetch ref to allow refresh
       hasFetchedBookings.current = null
       
-      // Refresh data
       alert('Booking cancelled successfully!')
       window.location.reload()
     } catch (error) {
@@ -200,13 +185,8 @@ export default function ClassesPage() {
 
   const filteredClasses = classes.filter((c) => {
     if (!c.time_slot) return false
-    
-    // My Classes filter - only show classes user is registered for
     if (filter === 'my-classes' && !myClassIds.has(c.id)) return false
-    
-    // Skill filter
     if (skillFilter !== 'all' && c.skill_level !== skillFilter) return false
-    
     return true
   })
 
@@ -214,37 +194,26 @@ export default function ClassesPage() {
     <div className="min-h-screen bg-white">
       <Navbar />
 
-      {/* Hero Header with Artwork */}
-      <div className="relative h-48 md:h-64 overflow-hidden">
-        <Image
-          src="/gallery/2.jpg"
-          alt="Untitled 02"
-          fill
-          sizes="100vw"
-          priority
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-white/70" />
-        <div className="absolute inset-0 flex items-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <h1 className="text-3xl md:text-4xl font-light text-charcoal">Classes</h1>
-            <p className="text-neutral-500 mt-2 font-light">
-              Find and book your next session
-            </p>
-          </div>
+      {/* Page Header - Minimal */}
+      <div className="pt-12 pb-8 px-6">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Classes</h1>
+          <p className="text-stone-400 mt-3 tracking-wide">
+            Find and book your next session
+          </p>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-10 pb-10 border-b border-neutral-100">
+      <main className="max-w-5xl mx-auto px-6 pb-20">
+        {/* Filters - Minimal */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-12 pb-8 border-b border-stone-100">
           <div className="flex gap-2">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 text-sm font-light transition-colors ${
+              className={`px-5 py-2.5 text-sm tracking-wide transition-colors duration-300 ${
                 filter === 'all'
-                  ? 'bg-charcoal text-white'
-                  : 'bg-white text-neutral-500 border border-neutral-200 hover:border-charcoal'
+                  ? 'bg-gray text-white'
+                  : 'text-stone-400 border border-stone-200 hover:border-gray hover:text-gray'
               }`}
             >
               All Upcoming
@@ -252,10 +221,10 @@ export default function ClassesPage() {
             {user && (
               <button
                 onClick={() => setFilter('my-classes')}
-                className={`px-4 py-2 text-sm font-light transition-colors ${
+                className={`px-5 py-2.5 text-sm tracking-wide transition-colors duration-300 ${
                   filter === 'my-classes'
-                    ? 'bg-charcoal text-white'
-                    : 'bg-white text-neutral-500 border border-neutral-200 hover:border-charcoal'
+                    ? 'bg-gray text-white'
+                    : 'text-stone-400 border border-stone-200 hover:border-gray hover:text-gray'
                 }`}
               >
                 My Classes
@@ -266,7 +235,7 @@ export default function ClassesPage() {
           <select
             value={skillFilter}
             onChange={(e) => setSkillFilter(e.target.value)}
-            className="px-4 py-2 bg-white border border-neutral-200 text-sm text-neutral-600 font-light focus:outline-none focus:border-charcoal"
+            className="px-4 py-2.5 bg-white border border-stone-200 text-sm text-stone-500 tracking-wide focus:outline-none focus:border-gray transition-colors duration-300"
           >
             <option value="all">All Levels</option>
             <option value="beginner">Beginner</option>
@@ -277,14 +246,12 @@ export default function ClassesPage() {
 
         {/* Classes Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
+          <div className="flex items-center justify-center py-24">
+            <div className="w-6 h-6 border border-stone-300 border-t-gray rounded-full animate-spin"></div>
           </div>
         ) : error ? (
-          <div className="card text-center py-16">
-            <ExclamationTriangleIcon className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
-            <h3 className="text-xl font-light text-charcoal mb-2">Something went wrong</h3>
-            <p className="text-neutral-500 font-light mb-6">{error}</p>
+          <div className="text-center py-24">
+            <p className="text-stone-400 mb-6 tracking-wide">{error}</p>
             <button
               onClick={() => {
                 setLoading(true)
@@ -292,16 +259,13 @@ export default function ClassesPage() {
               }}
               className="btn-primary"
             >
-              Try Again
+              Try again
             </button>
           </div>
         ) : filteredClasses.length === 0 ? (
-          <div className="card text-center py-16">
-            <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center mx-auto mb-4">
-              <CalendarDaysIcon className="w-6 h-6 text-neutral-400" />
-            </div>
-            <h3 className="text-xl font-light text-charcoal mb-2">No classes found</h3>
-            <p className="text-neutral-500 font-light">
+          <div className="text-center py-24">
+            <h3 className="text-xl font-normal text-gray mb-3 tracking-tight">No classes found</h3>
+            <p className="text-stone-400 tracking-wide">
               {filter === 'my-classes'
                 ? 'You haven\'t registered for any classes yet.'
                 : filter !== 'all' || skillFilter !== 'all'
@@ -310,115 +274,95 @@ export default function ClassesPage() {
             </p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-px bg-stone-200">
             {filteredClasses.map((yogaClass) => {
               const spotsLeft = yogaClass.max_capacity - yogaClass.booking_count
               const isFull = spotsLeft <= 0
               const isBooked = myClassIds.has(yogaClass.id)
               
               return (
-                <div key={yogaClass.id} className="relative group">
+                <div key={yogaClass.id} className="bg-white relative">
                   <Link
                     href={`/book/${yogaClass.id}`}
-                    className="block"
+                    className={`block p-8 group ${isFull ? 'opacity-50' : ''}`}
                   >
-                    {/* Card */}
-                    <div className={`border p-6 transition-all duration-300 ${
-                      isBooked 
-                        ? 'border-green-200 bg-green-50/30' 
-                        : 'border-neutral-200 hover:border-charcoal'
-                    }`}>
-                      {/* Booked Badge */}
-                      {isBooked && (
-                        <div className="flex items-center gap-1.5 text-green-600 text-sm font-medium mb-3">
-                          <CheckCircleSolidIcon className="w-5 h-5" />
-                          You&apos;re registered
-                        </div>
+                    {/* Booked indicator */}
+                    {isBooked && (
+                      <div className="flex items-center gap-2 text-green-600 text-sm mb-4 tracking-wide">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Registered
+                      </div>
+                    )}
+                    
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-normal text-gray group-hover:text-gray-dark transition-colors duration-300 tracking-tight">
+                          {yogaClass.title}
+                        </h3>
+                        <p className="text-stone-400 text-sm mt-1 tracking-wide">
+                          {yogaClass.instructor.first_name} {yogaClass.instructor.last_name}
+                        </p>
+                      </div>
+                      <span className="text-gray font-normal">
+                        {formatPrice(yogaClass.price_cents, yogaClass.is_donation)}
+                      </span>
+                    </div>
+                    
+                    {/* Details */}
+                    <div className="flex items-center gap-6 text-sm text-stone-400 mb-6 tracking-wide">
+                      <span>{formatDate(yogaClass.time_slot.date)}</span>
+                      <span>{formatTime(yogaClass.time_slot.start_time)}</span>
+                      {yogaClass.skill_level && yogaClass.skill_level !== 'all' && (
+                        <span className="text-stone-300">{yogaClass.skill_level}</span>
+                      )}
+                    </div>
+                    
+                    {/* Footer */}
+                    <div className="flex items-center justify-between pt-6 border-t border-stone-100">
+                      {!isFull && (
+                        <span className="text-sm text-gray tracking-wide group-hover:border-b group-hover:border-gray transition-all duration-300">
+                          Book now
+                        </span>
+                      )}
+                      {isFull && (
+                        <span className="text-sm text-stone-400 tracking-wide">Class full</span>
                       )}
                       
-                      {/* Header */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h3 className="text-lg font-medium text-charcoal group-hover:text-neutral-600 transition-colors">
-                            {yogaClass.title}
-                          </h3>
-                          {yogaClass.skill_level && yogaClass.skill_level !== 'all' && (
-                            <span className="inline-block mt-1 text-xs uppercase tracking-wider text-neutral-400">
-                              {yogaClass.skill_level}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-medium text-charcoal">
-                            {formatPrice(yogaClass.price_cents, yogaClass.is_donation)}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Details */}
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-neutral-500">
-                          <CalendarDaysIcon className="w-4 h-4" />
-                          <span className="font-light">{formatDate(yogaClass.time_slot.date)}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-neutral-500">
-                          <ClockIcon className="w-4 h-4" />
-                          <span className="font-light">{formatTime(yogaClass.time_slot.start_time)}</span>
-                        </div>
-                      </div>
-                      
-                      {/* Footer */}
-                      <div className="flex items-center justify-between pt-4 border-t border-neutral-100">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 border border-neutral-200 flex items-center justify-center text-charcoal text-xs font-light">
-                            {yogaClass.instructor.first_name?.[0] || 'I'}
-                          </div>
-                          <span className="text-sm text-neutral-500 font-light">
-                            {yogaClass.instructor.first_name} {yogaClass.instructor.last_name}
-                          </span>
-                        </div>
-{/* Only show spots to instructor who created the class or admin */}
-                        {(profile?.is_admin || user?.id === yogaClass.instructor_id) ? (
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault()
-                              e.stopPropagation()
-                              setParticipantsModal({
-                                classId: yogaClass.id,
-                                title: yogaClass.title,
-                                isOwner: user?.id === yogaClass.instructor_id
-                              })
-                            }}
-                            className={`flex items-center gap-1.5 text-sm font-light hover:underline ${isFull ? 'text-red-500' : spotsLeft <= 3 ? 'text-amber-600' : 'text-neutral-400'}`}
-                          >
-                            <UsersIcon className="w-4 h-4" />
-                            {isFull ? 'Full' : `${spotsLeft} spots`}
-                          </button>
-                        ) : (
-                          <span className="text-neutral-400">
-                            <UsersIcon className="w-4 h-4" />
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Full overlay */}
-                      {isFull && (
-                        <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                          <span className="text-charcoal font-medium uppercase tracking-wider text-sm">Class Full</span>
-                        </div>
+                      {(profile?.is_admin || user?.id === yogaClass.instructor_id) && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setParticipantsModal({
+                              classId: yogaClass.id,
+                              title: yogaClass.title,
+                              isOwner: user?.id === yogaClass.instructor_id
+                            })
+                          }}
+                          className={`text-sm tracking-wide hover:underline ${
+                            isFull ? 'text-red-500' : spotsLeft <= 3 ? 'text-amber-600' : 'text-stone-400'
+                          }`}
+                        >
+                          {isFull ? 'Full' : `${spotsLeft} spots`}
+                        </button>
                       )}
                     </div>
                   </Link>
                   
                   {/* Cancel Button for My Classes */}
-                  {filter === 'my-classes' && (
-                    <button
-                      onClick={(e) => handleCancelBooking(yogaClass.id, e)}
-                      disabled={cancelling === yogaClass.id}
-                      className="w-full mt-2 px-4 py-2 border border-red-200 text-red-600 text-sm font-light transition-colors hover:bg-red-50 disabled:opacity-50"
-                    >
-                      {cancelling === yogaClass.id ? 'Cancelling...' : 'Cancel Booking'}
-                    </button>
+                  {filter === 'my-classes' && isBooked && (
+                    <div className="px-8 pb-8">
+                      <button
+                        onClick={(e) => handleCancelBooking(yogaClass.id, e)}
+                        disabled={cancelling === yogaClass.id}
+                        className="w-full py-3 border border-red-200 text-red-500 text-sm tracking-wide transition-colors duration-300 hover:bg-red-50 disabled:opacity-50"
+                      >
+                        {cancelling === yogaClass.id ? 'Cancelling...' : 'Cancel Booking'}
+                      </button>
+                    </div>
                   )}
                 </div>
               )
