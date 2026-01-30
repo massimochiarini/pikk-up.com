@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/components/AuthProvider'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
 import { format, parseISO } from 'date-fns'
@@ -750,128 +751,209 @@ function PublicBookingContent() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
+        <motion.div 
+          className="w-6 h-6 border-2 border-stone-200 border-t-stone-500 rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+        />
       </div>
     )
   }
 
   if (!yogaClass || bookingState === 'error') {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <motion.div 
+        className="min-h-screen bg-white flex items-center justify-center p-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="max-w-md w-full text-center">
-          <div className="w-16 h-16 border border-neutral-200 flex items-center justify-center mx-auto mb-6">
-            <span className="text-2xl text-neutral-400">?</span>
-          </div>
-          <h1 className="text-2xl font-light text-charcoal mb-2">Class Not Found</h1>
-          <p className="text-neutral-500 font-light mb-8">
-            {errorMessage || 'This booking link may be invalid or the class may have been cancelled.'}
-          </p>
-          <Link href="/classes" className="btn-primary">
-            Browse Classes
-          </Link>
+          <motion.div 
+            className="w-16 h-16 border border-stone-200 flex items-center justify-center mx-auto mb-6"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+          >
+            <span className="text-2xl text-stone-400">?</span>
+          </motion.div>
+          <motion.h1 
+            className="text-2xl font-normal text-stone-800 mb-2 tracking-tight"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
+            class not found
+          </motion.h1>
+          <motion.p 
+            className="text-stone-500 mb-8 tracking-wide"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+          >
+            {errorMessage || 'this booking link may be invalid or the class may have been cancelled.'}
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.4 }}
+          >
+            <Link href="/classes" className="btn-primary">
+              browse classes
+            </Link>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     )
   }
 
   if (bookingState === 'success') {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <motion.div 
+        className="min-h-screen bg-white flex items-center justify-center p-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="max-w-md w-full text-center">
-          <div className="w-16 h-16 border border-charcoal flex items-center justify-center mx-auto mb-6">
-            <CheckIcon className="w-8 h-8 text-charcoal" />
-          </div>
-          <h1 className="text-2xl font-light text-charcoal mb-2">You&apos;re All Set</h1>
-          <p className="text-neutral-500 font-light mb-8">
-            Your spot has been reserved. Check your phone for a confirmation text.
-          </p>
+          {/* Calm checkmark animation */}
+          <motion.div 
+            className="w-14 h-14 border border-stone-300 flex items-center justify-center mx-auto mb-8"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+          >
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
+              <CheckIcon className="w-6 h-6 text-stone-600" />
+            </motion.div>
+          </motion.div>
           
-          <div className="border border-neutral-200 p-6 text-left space-y-4 mb-8">
+          <motion.h1 
+            className="text-2xl font-normal text-stone-800 mb-3 tracking-tight"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            you&apos;re all set
+          </motion.h1>
+          <motion.p 
+            className="text-stone-500 mb-10 tracking-wide"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            your spot has been reserved. check your phone for a confirmation text.
+          </motion.p>
+          
+          <motion.div 
+            className="surface-card p-6 text-left space-y-4 mb-10"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
             <div className="flex items-center gap-3 text-sm">
-              <CalendarDaysIcon className="w-5 h-5 text-neutral-400" />
-              <span className="text-charcoal font-light">
-                {format(parseISO(yogaClass.time_slot.date), 'EEEE, MMM d, yyyy')}
+              <CalendarDaysIcon className="w-5 h-5 text-stone-400" />
+              <span className="text-stone-700 tracking-wide">
+                {format(parseISO(yogaClass.time_slot.date), 'EEEE, MMM d, yyyy').toLowerCase()}
               </span>
             </div>
             <div className="flex items-center gap-3 text-sm">
-              <ClockIcon className="w-5 h-5 text-neutral-400" />
-              <span className="text-charcoal font-light">
+              <ClockIcon className="w-5 h-5 text-stone-400" />
+              <span className="text-stone-700 tracking-wide">
                 {formatTime(yogaClass.time_slot.start_time)}
               </span>
             </div>
             <div className="flex items-center gap-3 text-sm">
-              <MapPinIcon className="w-5 h-5 text-neutral-400" />
-              <span className="text-charcoal font-light">
+              <MapPinIcon className="w-5 h-5 text-stone-400" />
+              <span className="text-stone-700 tracking-wide">
                 PickUp Studio, 2500 South Miami Ave
               </span>
             </div>
-          </div>
+          </motion.div>
 
           {/* Optional Account Creation */}
-          {showAccountPrompt && !user && (
-            <div className="border border-neutral-200 p-6 mb-8 text-left">
-              <h3 className="font-medium text-charcoal mb-2">Save your bookings</h3>
-              <p className="text-sm text-neutral-500 font-light mb-4">
-                Create an account to view and manage all your classes.
-              </p>
-              
-              <form onSubmit={handleCreateAccount} className="space-y-4">
-                {errorMessage && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 text-sm">
-                    {errorMessage}
+          <AnimatePresence>
+            {showAccountPrompt && !user && (
+              <motion.div 
+                className="surface-card p-6 mb-8 text-left"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <h3 className="font-normal text-stone-800 mb-2 tracking-tight">save your bookings</h3>
+                <p className="text-sm text-stone-500 mb-4 tracking-wide">
+                  create an account to view and manage all your classes.
+                </p>
+                
+                <form onSubmit={handleCreateAccount} className="space-y-4">
+                  {errorMessage && (
+                    <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 text-sm tracking-wide">
+                      {errorMessage}
+                    </div>
+                  )}
+                  
+                  <div>
+                    <label className="label">email</label>
+                    <input
+                      type="email"
+                      value={accountEmail}
+                      onChange={(e) => setAccountEmail(e.target.value)}
+                      className="input-field"
+                      placeholder="your@email.com"
+                      required
+                    />
                   </div>
-                )}
-                
-                <div>
-                  <label className="label">Email</label>
-                  <input
-                    type="email"
-                    value={accountEmail}
-                    onChange={(e) => setAccountEmail(e.target.value)}
-                    className="input-field"
-                    placeholder="your@email.com"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="label">Password</label>
-                  <input
-                    type="password"
-                    value={accountPassword}
-                    onChange={(e) => setAccountPassword(e.target.value)}
-                    className="input-field"
-                    placeholder="Min. 6 characters"
-                    minLength={6}
-                    required
-                  />
-                </div>
-                
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    disabled={creatingAccount}
-                    className="btn-primary flex-1"
-                  >
-                    {creatingAccount ? 'Creating...' : 'Create Account'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowAccountPrompt(false)}
-                    className="btn-secondary flex-1"
-                  >
-                    Skip
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
+                  
+                  <div>
+                    <label className="label">password</label>
+                    <input
+                      type="password"
+                      value={accountPassword}
+                      onChange={(e) => setAccountPassword(e.target.value)}
+                      className="input-field"
+                      placeholder="min. 6 characters"
+                      minLength={6}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      type="submit"
+                      disabled={creatingAccount}
+                      className="btn-primary flex-1"
+                    >
+                      {creatingAccount ? 'creating...' : 'create account'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowAccountPrompt(false)}
+                      className="btn-secondary flex-1"
+                    >
+                      skip
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          <Link href="/classes" className="btn-secondary">
-            Browse More Classes
-          </Link>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <Link href="/classes" className="btn-secondary">
+              browse more classes
+            </Link>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     )
   }
 
@@ -879,24 +961,31 @@ function PublicBookingContent() {
   const isFull = spotsLeft <= 0
 
   return (
-    <div className="min-h-screen bg-white">
+    <motion.div 
+      className="min-h-screen bg-white"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       {/* Header */}
-      <header className="border-b border-neutral-100">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-xl font-light tracking-tight text-charcoal">
+      <header className="border-b border-stone-100">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="text-stone-500 tracking-wide text-lg transition-colors duration-300 hover:text-stone-700">
             PickUp
           </Link>
-          <button
+          <motion.button
             onClick={copyBookingLink}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-500 hover:text-charcoal transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-stone-400 hover:text-stone-600 transition-colors duration-300 tracking-wide"
+            whileHover={{ y: -1 }}
+            whileTap={{ y: 0 }}
           >
             <LinkIcon className="w-4 h-4" />
-            {linkCopied ? 'Copied!' : 'Share'}
-          </button>
+            {linkCopied ? 'copied!' : 'share'}
+          </motion.button>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-12">
+      <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
           {/* Left side - Image + Class Details */}
           <div>
@@ -1430,14 +1519,18 @@ function PublicBookingContent() {
           </div>
         </div>
       </main>
-    </div>
+    </motion.div>
   )
 }
 
 function LoadingFallback() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
+      <motion.div 
+        className="w-6 h-6 border-2 border-stone-200 border-t-stone-500 rounded-full"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+      />
     </div>
   )
 }

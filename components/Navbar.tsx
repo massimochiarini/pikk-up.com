@@ -2,8 +2,62 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from './AuthProvider'
 import { usePathname } from 'next/navigation'
+
+// Nav link with underline reveal animation
+function NavLink({ href, active, children, onClick }: { 
+  href: string
+  active: boolean
+  children: React.ReactNode
+  onClick?: () => void 
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`relative tracking-wide transition-colors duration-300 ${
+        active ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'
+      }`}
+    >
+      {children}
+      <motion.span 
+        className="absolute left-0 -bottom-0.5 h-px bg-stone-700"
+        initial={{ width: 0 }}
+        animate={{ width: active ? '100%' : 0 }}
+        whileHover={{ width: '100%' }}
+        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+      />
+    </Link>
+  )
+}
+
+// Mobile nav link
+function MobileNavLink({ href, active, children, onClick }: { 
+  href: string
+  active: boolean
+  children: React.ReactNode
+  onClick?: () => void 
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -8 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Link
+        href={href}
+        onClick={onClick}
+        className={`block py-3 tracking-wide transition-colors duration-300 ${
+          active ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'
+        }`}
+      >
+        {children}
+      </Link>
+    </motion.div>
+  )
+}
 
 export function Navbar() {
   const { user, profile, signOut, loading } = useAuth()
@@ -13,13 +67,13 @@ export function Navbar() {
   const isInstructor = pathname.startsWith('/instructor')
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-stone-100">
+    <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-glass border-b border-stone-100/50">
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo - understated wordmark */}
           <Link 
             href={isInstructor ? '/instructor' : '/'} 
-            className="text-gray tracking-wide text-lg"
+            className="text-stone-500 tracking-wide text-lg transition-colors duration-300 hover:text-stone-700"
           >
             PickUp
           </Link>
@@ -28,80 +82,41 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-10">
             {/* Classes link */}
             {(!isInstructor || profile?.is_instructor) && (
-              <Link
-                href="/classes"
-                className={`tracking-wide transition-colors duration-300 ${
-                  pathname === '/classes' 
-                    ? 'text-gray' 
-                    : 'text-stone-400 hover:text-gray'
-                }`}
-              >
-                Classes
-              </Link>
+              <NavLink href="/classes" active={pathname === '/classes'}>
+                classes
+              </NavLink>
             )}
             
             {loading ? (
-              <div className="w-8 h-8 bg-stone-100 animate-pulse" />
+              <div className="w-8 h-8 bg-stone-100 animate-pulse rounded-sm" />
             ) : user ? (
               <div className="flex items-center gap-8">
                 {/* My Bookings */}
-                <Link
-                  href="/my-classes"
-                  className={`tracking-wide transition-colors duration-300 ${
-                    pathname === '/my-classes' 
-                      ? 'text-gray' 
-                      : 'text-stone-400 hover:text-gray'
-                  }`}
-                >
-                  My Bookings
-                </Link>
+                <NavLink href="/my-classes" active={pathname === '/my-classes'}>
+                  my bookings
+                </NavLink>
                 
                 {/* Instructor-specific links */}
                 {profile?.is_instructor && (
                   <>
                     <span className="w-px h-4 bg-stone-200" />
-                    <Link
-                      href="/instructor"
-                      className={`tracking-wide transition-colors duration-300 ${
-                        pathname === '/instructor' && !pathname.includes('/instructor/') 
-                          ? 'text-gray' 
-                          : 'text-stone-400 hover:text-gray'
-                      }`}
+                    <NavLink 
+                      href="/instructor" 
+                      active={pathname === '/instructor' && !pathname.includes('/instructor/')}
                     >
-                      Dashboard
-                    </Link>
+                      dashboard
+                    </NavLink>
                     {isInstructor && (
                       <>
-                        <Link
-                          href="/instructor/schedule"
-                          className={`tracking-wide transition-colors duration-300 ${
-                            pathname === '/instructor/schedule' 
-                              ? 'text-gray' 
-                              : 'text-stone-400 hover:text-gray'
-                          }`}
-                        >
-                          Schedule
-                        </Link>
-                        <Link
-                          href="/instructor/my-classes"
-                          className={`tracking-wide transition-colors duration-300 ${
-                            pathname === '/instructor/my-classes' 
-                              ? 'text-gray' 
-                              : 'text-stone-400 hover:text-gray'
-                          }`}
-                        >
-                          My Classes
-                        </Link>
-                        <Link
-                          href="/instructor/packages"
-                          className={`tracking-wide transition-colors duration-300 ${
-                            pathname === '/instructor/packages' 
-                              ? 'text-gray' 
-                              : 'text-stone-400 hover:text-gray'
-                          }`}
-                        >
-                          Packages
-                        </Link>
+                        <NavLink href="/instructor/schedule" active={pathname === '/instructor/schedule'}>
+                          schedule
+                        </NavLink>
+                        <NavLink href="/instructor/my-classes" active={pathname === '/instructor/my-classes'}>
+                          my classes
+                        </NavLink>
+                        <NavLink href="/instructor/packages" active={pathname === '/instructor/packages'}>
+                          packages
+                        </NavLink>
                       </>
                     )}
                   </>
@@ -111,35 +126,30 @@ export function Navbar() {
                 {profile?.is_admin && (
                   <>
                     <span className="w-px h-4 bg-stone-200" />
-                    <Link
-                      href="/admin"
-                      className={`tracking-wide transition-colors duration-300 ${
-                        pathname === '/admin' 
-                          ? 'text-gray' 
-                          : 'text-stone-400 hover:text-gray'
-                      }`}
-                    >
-                      Admin
-                    </Link>
+                    <NavLink href="/admin" active={pathname === '/admin'}>
+                      admin
+                    </NavLink>
                   </>
                 )}
                 
                 <div className="flex items-center gap-6">
-                  <Link
-                    href={isInstructor ? '/instructor/profile' : '/profile'}
-                    className="w-9 h-9 border border-stone-200 flex items-center justify-center text-gray text-sm tracking-wide hover:border-gray transition-colors duration-300"
-                    title="View Profile"
-                  >
-                    {profile?.first_name?.[0] || user.email?.[0]?.toUpperCase() || 'U'}
-                  </Link>
+                  <motion.div whileHover={{ y: -1 }} whileTap={{ y: 0 }}>
+                    <Link
+                      href={isInstructor ? '/instructor/profile' : '/profile'}
+                      className="w-9 h-9 border border-stone-200 flex items-center justify-center text-stone-600 text-sm tracking-wide hover:border-stone-400 transition-colors duration-300"
+                      title="View Profile"
+                    >
+                      {profile?.first_name?.[0]?.toLowerCase() || user.email?.[0]?.toLowerCase() || 'u'}
+                    </Link>
+                  </motion.div>
                   <button
                     onClick={(e) => {
                       e.preventDefault()
                       signOut().catch(console.error)
                     }}
-                    className="text-stone-400 hover:text-gray text-sm tracking-wide transition-colors duration-300"
+                    className="text-stone-400 hover:text-stone-600 text-sm tracking-wide transition-colors duration-300"
                   >
-                    Sign Out
+                    sign out
                   </button>
                 </div>
               </div>
@@ -147,17 +157,19 @@ export function Navbar() {
               <div className="flex items-center gap-8">
                 <Link
                   href={isInstructor ? '/instructor/auth/login' : '/auth/login'}
-                  className="text-stone-400 hover:text-gray tracking-wide transition-colors duration-300"
+                  className="text-stone-400 hover:text-stone-600 tracking-wide transition-colors duration-300"
                 >
-                  Sign in
+                  sign in
                 </Link>
                 {!isInstructor && (
-                  <Link 
-                    href="/instructor" 
-                    className="text-gray border border-gray px-5 py-2.5 tracking-wide hover:bg-stone-50 transition-colors duration-300"
-                  >
-                    Teach
-                  </Link>
+                  <motion.div whileHover={{ y: -1 }} whileTap={{ y: 0 }}>
+                    <Link 
+                      href="/instructor" 
+                      className="text-stone-700 border border-stone-300 px-5 py-2.5 tracking-wide hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
+                    >
+                      teach
+                    </Link>
+                  </motion.div>
                 )}
               </div>
             )}
@@ -166,46 +178,69 @@ export function Navbar() {
           {/* Mobile Navigation */}
           <div className="flex md:hidden items-center gap-4">
             {loading ? (
-              <div className="w-8 h-8 bg-stone-100 animate-pulse" />
+              <div className="w-8 h-8 bg-stone-100 animate-pulse rounded-sm" />
             ) : user ? (
               <>
                 <Link
                   href={isInstructor ? '/instructor/profile' : '/profile'}
-                  className="w-8 h-8 border border-stone-200 flex items-center justify-center text-gray text-xs tracking-wide hover:border-gray transition-colors duration-300"
+                  className="w-8 h-8 border border-stone-200 flex items-center justify-center text-stone-600 text-xs tracking-wide hover:border-stone-400 transition-colors duration-300"
                   title="View Profile"
                 >
-                  {profile?.first_name?.[0] || user.email?.[0]?.toUpperCase() || 'U'}
+                  {profile?.first_name?.[0]?.toLowerCase() || user.email?.[0]?.toLowerCase() || 'u'}
                 </Link>
-                <button
+                <motion.button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="p-2 text-gray"
+                  className="p-2 text-stone-600"
                   aria-label="Toggle menu"
+                  whileTap={{ scale: 0.95 }}
                 >
-                  {mobileMenuOpen ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                  )}
-                </button>
+                  <AnimatePresence mode="wait">
+                    {mobileMenuOpen ? (
+                      <motion.svg 
+                        key="close"
+                        className="w-5 h-5" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                        initial={{ rotate: -90, opacity: 0 }}
+                        animate={{ rotate: 0, opacity: 1 }}
+                        exit={{ rotate: 90, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                      </motion.svg>
+                    ) : (
+                      <motion.svg 
+                        key="menu"
+                        className="w-5 h-5" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                        initial={{ rotate: 90, opacity: 0 }}
+                        animate={{ rotate: 0, opacity: 1 }}
+                        exit={{ rotate: -90, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+                      </motion.svg>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
               </>
             ) : (
               <div className="flex items-center gap-4">
                 <Link
                   href={isInstructor ? '/instructor/auth/login' : '/auth/login'}
-                  className="text-stone-400 hover:text-gray text-sm tracking-wide transition-colors duration-300"
+                  className="text-stone-400 hover:text-stone-600 text-sm tracking-wide transition-colors duration-300"
                 >
-                  Sign in
+                  sign in
                 </Link>
                 {!isInstructor && (
                   <Link 
                     href="/instructor" 
-                    className="text-gray text-sm border border-gray px-4 py-2 tracking-wide"
+                    className="text-stone-700 text-sm border border-stone-300 px-4 py-2 tracking-wide hover:border-stone-400 transition-colors duration-300"
                   >
-                    Teach
+                    teach
                   </Link>
                 )}
               </div>
@@ -213,106 +248,115 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
-        {mobileMenuOpen && user && (
-          <div className="md:hidden border-t border-stone-100 py-6 space-y-1">
-            <Link
-              href="/classes"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block py-3 tracking-wide transition-colors duration-300 ${
-                pathname === '/classes' ? 'text-gray' : 'text-stone-400 hover:text-gray'
-              }`}
+        {/* Mobile Menu Dropdown with slide animation */}
+        <AnimatePresence>
+          {mobileMenuOpen && user && (
+            <motion.div 
+              className="md:hidden border-t border-stone-100 py-6 space-y-1 overflow-hidden"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
             >
-              Classes
-            </Link>
-            
-            <Link
-              href="/my-classes"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block py-3 tracking-wide transition-colors duration-300 ${
-                pathname === '/my-classes' ? 'text-gray' : 'text-stone-400 hover:text-gray'
-              }`}
-            >
-              My Bookings
-            </Link>
-            
-            {/* Instructor section */}
-            {profile?.is_instructor && (
-              <>
-                <div className="border-t border-stone-100 pt-4 mt-4">
-                  <span className="block text-xs tracking-wider text-stone-400 mb-3">Instructor</span>
-                </div>
-                <Link
-                  href="/instructor"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-3 tracking-wide transition-colors duration-300 ${
-                    pathname === '/instructor' ? 'text-gray' : 'text-stone-400 hover:text-gray'
-                  }`}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/instructor/schedule"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-3 tracking-wide transition-colors duration-300 ${
-                    pathname === '/instructor/schedule' ? 'text-gray' : 'text-stone-400 hover:text-gray'
-                  }`}
-                >
-                  Schedule
-                </Link>
-                <Link
-                  href="/instructor/my-classes"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-3 tracking-wide transition-colors duration-300 ${
-                    pathname === '/instructor/my-classes' ? 'text-gray' : 'text-stone-400 hover:text-gray'
-                  }`}
-                >
-                  My Classes
-                </Link>
-                <Link
-                  href="/instructor/packages"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-3 tracking-wide transition-colors duration-300 ${
-                    pathname === '/instructor/packages' ? 'text-gray' : 'text-stone-400 hover:text-gray'
-                  }`}
-                >
-                  Packages
-                </Link>
-              </>
-            )}
-            
-            {/* Admin section */}
-            {profile?.is_admin && (
-              <>
-                <div className="border-t border-stone-100 pt-4 mt-4">
-                  <span className="block text-xs tracking-wider text-stone-400 mb-3">Admin</span>
-                </div>
-                <Link
-                  href="/admin"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-3 tracking-wide transition-colors duration-300 ${
-                    pathname === '/admin' ? 'text-gray' : 'text-stone-400 hover:text-gray'
-                  }`}
-                >
-                  Manage Users
-                </Link>
-              </>
-            )}
-            
-            <div className="border-t border-stone-100 pt-4 mt-4">
-              <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  setMobileMenuOpen(false)
-                  signOut().catch(console.error)
-                }}
-                className="block w-full text-left py-3 text-stone-400 hover:text-gray tracking-wide transition-colors duration-300"
+              <MobileNavLink 
+                href="/classes" 
+                active={pathname === '/classes'}
+                onClick={() => setMobileMenuOpen(false)}
               >
-                Sign Out
-              </button>
-            </div>
-          </div>
-        )}
+                classes
+              </MobileNavLink>
+              
+              <MobileNavLink 
+                href="/my-classes" 
+                active={pathname === '/my-classes'}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                my bookings
+              </MobileNavLink>
+              
+              {/* Instructor section */}
+              {profile?.is_instructor && (
+                <>
+                  <motion.div 
+                    className="border-t border-stone-100 pt-4 mt-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <span className="block text-xs tracking-wider text-stone-400 mb-3">instructor</span>
+                  </motion.div>
+                  <MobileNavLink 
+                    href="/instructor" 
+                    active={pathname === '/instructor'}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    dashboard
+                  </MobileNavLink>
+                  <MobileNavLink 
+                    href="/instructor/schedule" 
+                    active={pathname === '/instructor/schedule'}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    schedule
+                  </MobileNavLink>
+                  <MobileNavLink 
+                    href="/instructor/my-classes" 
+                    active={pathname === '/instructor/my-classes'}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    my classes
+                  </MobileNavLink>
+                  <MobileNavLink 
+                    href="/instructor/packages" 
+                    active={pathname === '/instructor/packages'}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    packages
+                  </MobileNavLink>
+                </>
+              )}
+              
+              {/* Admin section */}
+              {profile?.is_admin && (
+                <>
+                  <motion.div 
+                    className="border-t border-stone-100 pt-4 mt-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.15 }}
+                  >
+                    <span className="block text-xs tracking-wider text-stone-400 mb-3">admin</span>
+                  </motion.div>
+                  <MobileNavLink 
+                    href="/admin" 
+                    active={pathname === '/admin'}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    manage users
+                  </MobileNavLink>
+                </>
+              )}
+              
+              <motion.div 
+                className="border-t border-stone-100 pt-4 mt-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setMobileMenuOpen(false)
+                    signOut().catch(console.error)
+                  }}
+                  className="block w-full text-left py-3 text-stone-400 hover:text-stone-600 tracking-wide transition-colors duration-300"
+                >
+                  sign out
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   )

@@ -53,19 +53,78 @@ const config: Config = {
         'wide': '0.05em',
         'wider': '0.1em',
       },
+      // Premium shadows - soft depth (spread > blur, low opacity)
+      boxShadow: {
+        'soft-xs': '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+        'soft-sm': '0 2px 8px -2px rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03)',
+        'soft': '0 4px 16px -4px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.03)',
+        'soft-md': '0 8px 24px -6px rgba(0, 0, 0, 0.08), 0 4px 8px -4px rgba(0, 0, 0, 0.04)',
+        'soft-lg': '0 16px 40px -8px rgba(0, 0, 0, 0.1), 0 8px 16px -6px rgba(0, 0, 0, 0.05)',
+        'glow': '0 0 20px -5px rgba(107, 107, 107, 0.15)',
+      },
+      // Premium timing functions
+      transitionTimingFunction: {
+        'ease-out-soft': 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+        'ease-out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
+      },
+      // Extended durations for slow, calm animations
+      transitionDuration: {
+        '250': '250ms',
+        '400': '400ms',
+        '600': '600ms',
+        '800': '800ms',
+      },
+      // Premium animations
       animation: {
-        'fade-in': 'fadeIn 0.8s ease-out',
-        'slide-up': 'slideUp 0.6s ease-out',
+        'fade-in': 'fadeIn 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
+        'fade-up': 'fadeUp 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
+        'blur-in': 'blurIn 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
+        'scale-in': 'scaleIn 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)',
+        'slide-up': 'slideUp 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
+        'slide-down': 'slideDown 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)',
+        'drift': 'drift 20s ease-in-out infinite',
+        'pulse-soft': 'pulseSoft 4s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
+        fadeUp: {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        blurIn: {
+          '0%': { opacity: '0', filter: 'blur(8px)', transform: 'scale(0.98)' },
+          '100%': { opacity: '1', filter: 'blur(0)', transform: 'scale(1)' },
+        },
+        scaleIn: {
+          '0%': { opacity: '0', transform: 'scale(0.96)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideDown: {
+          '0%': { opacity: '0', transform: 'translateY(-8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        drift: {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '25%': { transform: 'translate(10px, -10px) scale(1.02)' },
+          '50%': { transform: 'translate(-5px, 5px) scale(0.98)' },
+          '75%': { transform: 'translate(-10px, -5px) scale(1.01)' },
+        },
+        pulseSoft: {
+          '0%, 100%': { opacity: '0.4' },
+          '50%': { opacity: '0.6' },
+        },
+      },
+      // Backdrop blur presets
+      backdropBlur: {
+        'xs': '2px',
+        'glass': '12px',
       },
     },
   },

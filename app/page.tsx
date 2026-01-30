@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
 import { format, parseISO, isToday, isTomorrow } from 'date-fns'
+import { RevealSection, RevealItem } from '@/components/ui'
 
 type ClassWithDetails = YogaClass & {
   time_slot: TimeSlot
@@ -15,6 +17,7 @@ export default function HomePage() {
   const [featuredClasses, setFeaturedClasses] = useState<ClassWithDetails[]>([])
   const [loadingClasses, setLoadingClasses] = useState(true)
   const [activeFlow, setActiveFlow] = useState<'student' | 'teacher'>('student')
+  const [hoveredCard, setHoveredCard] = useState<'student' | 'teacher' | null>(null)
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -78,363 +81,387 @@ export default function HomePage() {
   }
 
   const formatPrice = (cents: number, isDonation?: boolean) => {
-    if (isDonation) return 'Donation'
-    if (cents === 0) return 'Free'
+    if (isDonation) return 'donation'
+    if (cents === 0) return 'free'
     return `$${(cents / 100).toFixed(0)}`
   }
 
   const formatDate = (dateStr: string) => {
     const date = parseISO(dateStr)
-    if (isToday(date)) return 'Today'
-    if (isTomorrow(date)) return 'Tomorrow'
-    return format(date, 'EEE, MMM d')
+    if (isToday(date)) return 'today'
+    if (isTomorrow(date)) return 'tomorrow'
+    return format(date, 'EEE, MMM d').toLowerCase()
+  }
+
+  // Flow steps data
+  const flowSteps = {
+    student: ['browse', 'book', 'flow'],
+    teacher: ['create', 'publish', 'get paid'],
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
+      {/* Ambient background orb */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div 
+          className="ambient-orb w-[800px] h-[600px] -top-48 -right-48 opacity-40"
+          style={{ filter: 'blur(80px)' }}
+        />
+        <div 
+          className="ambient-orb w-[600px] h-[400px] top-1/2 -left-48 opacity-30"
+          style={{ filter: 'blur(60px)', animationDelay: '-10s' }}
+        />
+      </div>
+
       {/* Minimal Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-glass border-b border-stone-100/50">
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            {/* Logo - understated wordmark */}
             <Link 
               href="/" 
-              className="text-gray tracking-wide text-lg"
+              className="text-stone-500 tracking-wide text-lg transition-colors duration-300 hover:text-stone-700"
             >
               PickUp
             </Link>
             
-            {/* Desktop Navigation - minimal */}
+            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-10">
-              <Link
-                href="/classes"
-                className="text-gray hover:text-gray-dark transition-colors duration-300 tracking-wide"
-              >
-                Classes
+              <Link href="/classes" className="link-underline text-stone-600 tracking-wide">
+                classes
               </Link>
-              <Link
-                href="/instructor"
-                className="text-gray hover:text-gray-dark transition-colors duration-300 tracking-wide"
-              >
-                Teach
+              <Link href="/instructor" className="link-underline text-stone-600 tracking-wide">
+                teach
               </Link>
-              <Link
-                href="/auth/login"
-                className="text-stone-400 hover:text-gray transition-colors duration-300 tracking-wide"
-              >
-                Sign in
+              <Link href="/auth/login" className="text-stone-400 hover:text-stone-600 transition-colors duration-300 tracking-wide">
+                sign in
               </Link>
             </div>
 
             {/* Mobile Navigation */}
             <div className="flex md:hidden items-center gap-6">
-              <Link
-                href="/classes"
-                className="text-gray text-sm tracking-wide"
-              >
-                Classes
+              <Link href="/classes" className="text-stone-600 text-sm tracking-wide">
+                classes
               </Link>
-              <Link
-                href="/instructor"
-                className="text-gray text-sm tracking-wide"
-              >
-                Teach
+              <Link href="/instructor" className="text-stone-600 text-sm tracking-wide">
+                teach
               </Link>
-              <Link
-                href="/auth/login"
-                className="text-stone-400 text-sm tracking-wide"
-              >
-                Sign in
+              <Link href="/auth/login" className="text-stone-400 text-sm tracking-wide">
+                sign in
               </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section - Pure white, centered, calm */}
-      <section className="min-h-screen flex items-center justify-center px-6 pt-20">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-gray leading-[1.1] mb-8">
-            Find and book yoga classes near you
-          </h1>
-          
-          <p className="text-lg md:text-xl text-stone-500 max-w-xl mx-auto mb-12 leading-relaxed tracking-wide">
-            PickUp connects students with local instructors and studios — book in seconds.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
-            <Link 
-              href="/classes" 
-              className="btn-primary"
+      {/* Hero Section - Blur resolve animation, slight left align */}
+      <section className="min-h-screen flex items-center px-6 pt-20">
+        <div className="max-w-6xl mx-auto w-full">
+          <div className="max-w-3xl">
+            {/* Signature moment: blur-resolve hero */}
+            <motion.h1 
+              className="text-headline mb-8"
+              initial={{ opacity: 0, filter: 'blur(12px)', scale: 0.98 }}
+              animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
+              transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
             >
-              Find a class
-            </Link>
-            <Link 
-              href="/instructor" 
-              className="btn-secondary"
+              find and book yoga classes near you
+            </motion.h1>
+            
+            <motion.p 
+              className="text-body-large max-w-xl mb-12"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
             >
-              Teach a class
-            </Link>
+              PickUp connects students with local instructors and studios — book in seconds.
+            </motion.p>
+            
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 mb-10"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              <Link href="/classes" className="btn-primary">
+                find a class
+              </Link>
+              <Link href="/instructor" className="btn-secondary">
+                teach a class
+              </Link>
+            </motion.div>
+            
+            <motion.p 
+              className="text-label"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              instant booking · secure payment · text confirmation
+            </motion.p>
           </div>
-          
-          <p className="text-sm text-stone-400 tracking-wider">
-            Instant booking · Secure payment · Text confirmation
-          </p>
         </div>
       </section>
 
-      {/* What Brings You Here - Yin/Yang Split */}
-      <section className="py-32 px-6">
+      {/* What Brings You Here - Yin/Yang with hover interplay */}
+      <RevealSection className="py-32 md:py-40 px-6">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-normal text-gray text-center mb-20 tracking-tight">
-            What brings you here?
+          <h2 className="text-section-title text-center mb-20">
+            what brings you here?
           </h2>
           
-          <div className="grid md:grid-cols-2 gap-px bg-stone-200">
+          <div className="grid md:grid-cols-2 gap-4 md:gap-6">
             {/* Student Card */}
-            <div className="bg-white p-10 md:p-14 group">
-              <h3 className="text-xl md:text-2xl font-normal text-gray mb-8 tracking-tight">
-                Student
+            <motion.div 
+              className="surface-card-hover p-10 md:p-14 cursor-pointer"
+              onMouseEnter={() => setHoveredCard('student')}
+              onMouseLeave={() => setHoveredCard(null)}
+              animate={{
+                opacity: hoveredCard === 'teacher' ? 0.6 : 1,
+                scale: hoveredCard === 'student' ? 1.01 : 1,
+              }}
+              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+              onClick={() => window.location.href = '/classes'}
+            >
+              <h3 className="text-xl md:text-2xl font-normal text-stone-800 mb-8 tracking-tight">
+                student
               </h3>
               <ul className="space-y-4 mb-10 text-stone-500">
                 <li className="flex items-start gap-3">
-                  <span className="text-stone-300 mt-1">—</span>
-                  <span>Discover local yoga classes</span>
+                  <span className="text-stone-300 mt-0.5">—</span>
+                  <span>discover local yoga classes</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-stone-300 mt-1">—</span>
-                  <span>Book instantly</span>
+                  <span className="text-stone-300 mt-0.5">—</span>
+                  <span>book instantly</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-stone-300 mt-1">—</span>
-                  <span>Build a consistent practice</span>
+                  <span className="text-stone-300 mt-0.5">—</span>
+                  <span>build a consistent practice</span>
                 </li>
               </ul>
-              <Link 
-                href="/classes" 
-                className="inline-block text-gray border-b border-gray pb-1 hover:border-gray-dark hover:text-gray-dark transition-colors duration-300 tracking-wide"
-              >
-                Browse classes
-              </Link>
-            </div>
+              <span className="link-underline text-stone-700 tracking-wide">
+                browse classes
+              </span>
+            </motion.div>
 
             {/* Teacher Card */}
-            <div className="bg-white p-10 md:p-14 group">
-              <h3 className="text-xl md:text-2xl font-normal text-gray mb-8 tracking-tight">
-                Teacher
+            <motion.div 
+              className="surface-card-hover p-10 md:p-14 cursor-pointer"
+              onMouseEnter={() => setHoveredCard('teacher')}
+              onMouseLeave={() => setHoveredCard(null)}
+              animate={{
+                opacity: hoveredCard === 'student' ? 0.6 : 1,
+                scale: hoveredCard === 'teacher' ? 1.01 : 1,
+              }}
+              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+              onClick={() => window.location.href = '/instructor'}
+            >
+              <h3 className="text-xl md:text-2xl font-normal text-stone-800 mb-8 tracking-tight">
+                teacher
               </h3>
               <ul className="space-y-4 mb-10 text-stone-500">
                 <li className="flex items-start gap-3">
-                  <span className="text-stone-300 mt-1">—</span>
-                  <span>Host or teach classes</span>
+                  <span className="text-stone-300 mt-0.5">—</span>
+                  <span>host or teach classes</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-stone-300 mt-1">—</span>
-                  <span>Set your price</span>
+                  <span className="text-stone-300 mt-0.5">—</span>
+                  <span>set your price</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="text-stone-300 mt-1">—</span>
-                  <span>Get paid</span>
+                  <span className="text-stone-300 mt-0.5">—</span>
+                  <span>get paid</span>
                 </li>
               </ul>
-              <Link 
-                href="/instructor" 
-                className="inline-block text-gray border-b border-gray pb-1 hover:border-gray-dark hover:text-gray-dark transition-colors duration-300 tracking-wide"
-              >
-                Start teaching
-              </Link>
-            </div>
+              <span className="link-underline text-stone-700 tracking-wide">
+                start teaching
+              </span>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </RevealSection>
 
-      {/* How It Works - Minimal, calm */}
-      <section className="py-32 px-6 bg-stone-50">
+      {/* How It Works - Animated toggle */}
+      <RevealSection className="py-32 md:py-40 px-6 bg-stone-50/50">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-normal text-gray text-center mb-12 tracking-tight">
-            How it works
+          <h2 className="text-section-title text-center mb-12">
+            how it works
           </h2>
           
-          {/* Toggle */}
+          {/* Segmented Control Toggle */}
           <div className="flex justify-center mb-16">
-            <div className="inline-flex">
+            <div className="segmented-control">
               <button
                 onClick={() => setActiveFlow('student')}
-                className={`px-6 py-3 text-sm tracking-wider transition-colors duration-300 ${
-                  activeFlow === 'student'
-                    ? 'text-gray border-b-2 border-gray'
-                    : 'text-stone-400 border-b-2 border-transparent hover:text-gray'
-                }`}
+                className={activeFlow === 'student' ? 'segmented-control-item-active' : 'segmented-control-item'}
               >
-                For students
+                for students
               </button>
               <button
                 onClick={() => setActiveFlow('teacher')}
-                className={`px-6 py-3 text-sm tracking-wider transition-colors duration-300 ${
-                  activeFlow === 'teacher'
-                    ? 'text-gray border-b-2 border-gray'
-                    : 'text-stone-400 border-b-2 border-transparent hover:text-gray'
-                }`}
+                className={activeFlow === 'teacher' ? 'segmented-control-item-active' : 'segmented-control-item'}
               >
-                For teachers
+                for teachers
               </button>
             </div>
           </div>
 
-          {/* Flow Steps */}
-          {activeFlow === 'student' ? (
-            <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16">
-              <div className="text-center">
-                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Browse</span>
-              </div>
-              <span className="hidden md:block text-stone-300">→</span>
-              <div className="text-center">
-                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Book</span>
-              </div>
-              <span className="hidden md:block text-stone-300">→</span>
-              <div className="text-center">
-                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Flow</span>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16">
-              <div className="text-center">
-                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Create</span>
-              </div>
-              <span className="hidden md:block text-stone-300">→</span>
-              <div className="text-center">
-                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Publish</span>
-              </div>
-              <span className="hidden md:block text-stone-300">→</span>
-              <div className="text-center">
-                <span className="text-3xl md:text-4xl font-normal text-gray tracking-tight">Get paid</span>
-              </div>
-            </div>
-          )}
+          {/* Flow Steps with crossfade animation */}
+          <div className="relative h-24 flex items-center justify-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeFlow}
+                className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12"
+                initial={{ opacity: 0, x: activeFlow === 'student' ? -20 : 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: activeFlow === 'student' ? 20 : -20 }}
+                transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                {flowSteps[activeFlow].map((step, index) => (
+                  <div key={step} className="flex items-center gap-6 md:gap-12">
+                    <span className="text-2xl md:text-4xl font-normal text-stone-800 tracking-tight">
+                      {step}
+                    </span>
+                    {index < flowSteps[activeFlow].length - 1 && (
+                      <span className="hidden md:block text-stone-300 text-2xl">→</span>
+                    )}
+                  </div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
-      </section>
+      </RevealSection>
 
-      {/* Featured Classes - Clean, minimal */}
-      {featuredClasses.length > 0 && (
-        <section className="py-32 px-6">
+      {/* Featured Classes - Staggered reveal, tactile hover */}
+      {(featuredClasses.length > 0 || loadingClasses) && (
+        <RevealSection className="py-32 md:py-40 px-6" stagger staggerDelay={0.1}>
           <div className="max-w-5xl mx-auto">
-            <div className="flex items-center justify-between mb-16">
-              <h2 className="text-2xl md:text-3xl font-normal text-gray tracking-tight">
-                Upcoming classes
+            <RevealItem className="flex items-center justify-between mb-16">
+              <h2 className="text-section-title">
+                upcoming classes
               </h2>
               <Link 
                 href="/classes" 
-                className="hidden md:inline-block text-stone-400 hover:text-gray transition-colors duration-300 tracking-wide"
+                className="hidden md:inline-block link-underline text-stone-500 tracking-wide"
               >
-                View all
+                view all
               </Link>
-            </div>
+            </RevealItem>
 
             {loadingClasses ? (
               <div className="flex items-center justify-center py-20">
-                <div className="w-6 h-6 border border-stone-300 border-t-gray rounded-full animate-spin"></div>
+                <motion.div 
+                  className="w-6 h-6 border-2 border-stone-200 border-t-stone-500 rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                />
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 gap-px bg-stone-200">
-                {featuredClasses.map((yogaClass) => {
+              <div className="grid md:grid-cols-2 gap-4">
+                {featuredClasses.map((yogaClass, index) => {
                   const spotsLeft = yogaClass.max_capacity - yogaClass.booking_count
                   const isFull = spotsLeft <= 0
 
                   return (
-                    <Link
-                      key={yogaClass.id}
-                      href={`/book/${yogaClass.id}`}
-                      className={`bg-white p-8 block group ${isFull ? 'opacity-50' : ''}`}
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h3 className="text-lg font-normal text-gray group-hover:text-gray-dark transition-colors duration-300 tracking-tight mb-1">
-                            {yogaClass.title}
-                          </h3>
-                          <p className="text-stone-400 text-sm tracking-wide">
-                            {yogaClass.instructor.first_name} {yogaClass.instructor.last_name}
-                          </p>
-                        </div>
-                        <span className="text-gray font-normal">
-                          {formatPrice(yogaClass.price_cents, yogaClass.is_donation)}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center gap-6 text-sm text-stone-400 tracking-wide">
-                        <span>{formatDate(yogaClass.time_slot.date)}</span>
-                        <span>{formatTime(yogaClass.time_slot.start_time)}</span>
-                      </div>
-                      
-                      {!isFull && (
-                        <div className="mt-6 pt-6 border-t border-stone-100">
-                          <span className="text-sm text-gray tracking-wide group-hover:border-b group-hover:border-gray transition-all duration-300">
-                            Book now
-                          </span>
-                        </div>
-                      )}
-                    </Link>
+                    <RevealItem key={yogaClass.id}>
+                      <motion.div
+                        className={`surface-card p-8 group ${isFull ? 'opacity-50' : ''}`}
+                        whileHover={!isFull ? { 
+                          y: -2,
+                          boxShadow: '0 8px 24px -6px rgba(0, 0, 0, 0.08)',
+                        } : {}}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Link href={`/book/${yogaClass.id}`} className="block">
+                          <div className="flex items-start justify-between mb-4">
+                            <div>
+                              <h3 className="text-lg font-normal text-stone-800 group-hover:text-stone-900 transition-colors duration-300 tracking-tight mb-1">
+                                {yogaClass.title.toLowerCase()}
+                              </h3>
+                              <p className="text-stone-400 text-sm tracking-wide">
+                                {yogaClass.instructor.first_name} {yogaClass.instructor.last_name}
+                              </p>
+                            </div>
+                            <span className="text-stone-700 font-normal">
+                              {formatPrice(yogaClass.price_cents, yogaClass.is_donation)}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-6 text-sm text-stone-400 tracking-wide">
+                            <span>{formatDate(yogaClass.time_slot.date)}</span>
+                            <span>{formatTime(yogaClass.time_slot.start_time)}</span>
+                          </div>
+                          
+                          {!isFull && (
+                            <div className="mt-6 pt-6 border-t border-stone-100">
+                              <span className="link-underline text-sm text-stone-600 tracking-wide">
+                                book now
+                              </span>
+                            </div>
+                          )}
+                        </Link>
+                      </motion.div>
+                    </RevealItem>
                   )
                 })}
               </div>
             )}
             
             <div className="text-center mt-12 md:hidden">
-              <Link 
-                href="/classes" 
-                className="text-stone-400 hover:text-gray transition-colors duration-300 tracking-wide"
-              >
-                View all classes
+              <Link href="/classes" className="link-underline text-stone-500 tracking-wide">
+                view all classes
               </Link>
             </div>
           </div>
-        </section>
+        </RevealSection>
       )}
 
-      {/* Final CTA - Simple, calm */}
-      <section className="py-32 px-6 bg-stone-50">
+      {/* Final CTA */}
+      <RevealSection className="py-32 md:py-40 px-6 bg-stone-50/50">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-normal text-gray mb-6 tracking-tight">
-            Ready to begin?
+          <h2 className="text-section-title mb-6">
+            ready to begin?
           </h2>
-          <p className="text-stone-500 mb-12 tracking-wide">
-            Find your next class or share your teaching with others.
+          <p className="text-body-large mb-12">
+            find your next class or share your teaching with others.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/classes" className="btn-primary">
-              Find a class
+              find a class
             </Link>
             <Link href="/instructor" className="btn-secondary">
-              Teach a class
+              teach a class
             </Link>
           </div>
         </div>
-      </section>
+      </RevealSection>
 
-      {/* Footer - Minimal */}
-      <footer className="py-20 px-6 border-t border-stone-200">
+      {/* Footer */}
+      <footer className="py-20 px-6 border-t border-stone-100">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-12">
             <div>
-              <span className="text-gray tracking-wide text-lg">PickUp</span>
+              <span className="text-stone-500 tracking-wide text-lg">PickUp</span>
               <p className="text-stone-400 text-sm mt-3 max-w-xs tracking-wide">
-                Find and book yoga classes near you.
+                find and book yoga classes near you.
               </p>
             </div>
             
             <div className="flex gap-16">
               <div>
-                <h4 className="text-stone-400 text-sm tracking-wider mb-4">Students</h4>
-                <ul className="space-y-3 text-gray text-sm tracking-wide">
-                  <li><Link href="/classes" className="hover:text-gray-dark transition-colors duration-300">Browse Classes</Link></li>
-                  <li><Link href="/auth/signup" className="hover:text-gray-dark transition-colors duration-300">Create Account</Link></li>
+                <h4 className="text-label mb-4">students</h4>
+                <ul className="space-y-3 text-stone-600 text-sm tracking-wide">
+                  <li><Link href="/classes" className="link-subtle">browse classes</Link></li>
+                  <li><Link href="/auth/signup" className="link-subtle">create account</Link></li>
                 </ul>
               </div>
               
               <div>
-                <h4 className="text-stone-400 text-sm tracking-wider mb-4">Teachers</h4>
-                <ul className="space-y-3 text-gray text-sm tracking-wide">
-                  <li><Link href="/instructor" className="hover:text-gray-dark transition-colors duration-300">Start Teaching</Link></li>
-                  <li><Link href="/instructor/auth/login" className="hover:text-gray-dark transition-colors duration-300">Sign In</Link></li>
+                <h4 className="text-label mb-4">teachers</h4>
+                <ul className="space-y-3 text-stone-600 text-sm tracking-wide">
+                  <li><Link href="/instructor" className="link-subtle">start teaching</Link></li>
+                  <li><Link href="/instructor/auth/login" className="link-subtle">sign in</Link></li>
                 </ul>
               </div>
             </div>
@@ -445,30 +472,35 @@ export default function HomePage() {
               © {new Date().getFullYear()} PickUp
             </span>
             <div className="flex gap-6 text-stone-400 text-sm tracking-wide">
-              <Link href="/legal/privacy" className="hover:text-gray transition-colors duration-300">Privacy</Link>
-              <Link href="/legal/terms" className="hover:text-gray transition-colors duration-300">Terms</Link>
+              <Link href="/legal/privacy" className="link-subtle">privacy</Link>
+              <Link href="/legal/terms" className="link-subtle">terms</Link>
             </div>
           </div>
         </div>
       </footer>
 
       {/* Mobile Sticky Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t border-stone-200 p-4 z-40">
+      <motion.div 
+        className="fixed bottom-0 left-0 right-0 md:hidden bg-white/90 backdrop-blur-glass border-t border-stone-100 p-4 z-40"
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        transition={{ delay: 0.5, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+      >
         <div className="flex gap-3 max-w-lg mx-auto">
           <Link 
             href="/classes" 
-            className="flex-1 bg-gray text-white text-center py-3 text-sm tracking-wide"
+            className="flex-1 bg-stone-800 text-white text-center py-3 text-sm tracking-wide hover:bg-stone-900 transition-colors duration-300"
           >
-            Find a class
+            find a class
           </Link>
           <Link 
             href="/instructor" 
-            className="flex-1 border border-gray text-gray text-center py-3 text-sm tracking-wide"
+            className="flex-1 border border-stone-300 text-stone-700 text-center py-3 text-sm tracking-wide hover:border-stone-400 transition-colors duration-300"
           >
-            Teach
+            teach
           </Link>
         </div>
-      </div>
+      </motion.div>
 
       {/* Spacer for mobile sticky CTA */}
       <div className="h-20 md:hidden" />

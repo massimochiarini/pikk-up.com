@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -61,7 +62,7 @@ export default function SignupPage() {
       window.location.href = '/classes'
     } catch (err: any) {
       console.error('Signup error:', err)
-      setError(err.message || 'Failed to create account')
+      setError(err.message || 'failed to create account')
     } finally {
       setLoading(false)
     }
@@ -69,31 +70,40 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-6 py-12">
-      <div className="w-full max-w-md">
+      <motion.div 
+        className="w-full max-w-md"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+      >
         {/* Logo */}
         <div className="text-center mb-16">
-          <Link href="/" className="text-gray tracking-wide text-lg inline-block">
+          <Link href="/" className="text-stone-500 tracking-wide text-lg inline-block hover:text-stone-700 transition-colors duration-300">
             PickUp
           </Link>
         </div>
 
         {/* Heading */}
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-normal text-gray tracking-tight mb-3">Create account</h1>
-          <p className="text-stone-400 tracking-wide">Start booking yoga classes today</p>
+          <h1 className="text-3xl font-normal text-stone-800 tracking-tight mb-3">create account</h1>
+          <p className="text-stone-500 tracking-wide">start booking yoga classes today</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 text-sm tracking-wide">
+            <motion.div 
+              className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 text-sm tracking-wide"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               {error}
-            </div>
+            </motion.div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="firstName" className="block text-sm text-stone-500 mb-2 tracking-wide">
-                First Name
+              <label htmlFor="firstName" className="label">
+                first name
               </label>
               <input
                 id="firstName"
@@ -101,13 +111,13 @@ export default function SignupPage() {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 className="input-field"
-                placeholder="Jane"
+                placeholder="jane"
                 required
               />
             </div>
             <div>
-              <label htmlFor="lastName" className="block text-sm text-stone-500 mb-2 tracking-wide">
-                Last Name
+              <label htmlFor="lastName" className="label">
+                last name
               </label>
               <input
                 id="lastName"
@@ -115,15 +125,15 @@ export default function SignupPage() {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 className="input-field"
-                placeholder="Doe"
+                placeholder="doe"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm text-stone-500 mb-2 tracking-wide">
-              Email
+            <label htmlFor="email" className="label">
+              email
             </label>
             <input
               id="email"
@@ -137,8 +147,8 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="phone" className="block text-sm text-stone-500 mb-2 tracking-wide">
-              Phone <span className="text-stone-300">(optional)</span>
+            <label htmlFor="phone" className="label">
+              phone <span className="text-stone-300">(optional)</span>
             </label>
             <input
               id="phone"
@@ -151,14 +161,14 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm text-stone-500 mb-2 tracking-wide">
-              Password
+            <label htmlFor="password" className="label">
+              password
             </label>
             <PasswordInput
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 6 characters"
+              placeholder="at least 6 characters"
               minLength={6}
               required
             />
@@ -169,15 +179,15 @@ export default function SignupPage() {
             disabled={loading}
             className="btn-primary w-full"
           >
-            {loading ? 'Creating account...' : 'Create account'}
+            {loading ? 'creating account...' : 'create account'}
           </button>
         </form>
 
         <div className="mt-12 pt-8 border-t border-stone-100 text-center">
           <p className="text-stone-400 text-sm tracking-wide">
-            Already have an account?{' '}
-            <Link href="/auth/login" className="text-gray hover:text-gray-dark transition-colors duration-300">
-              Sign in
+            already have an account?{' '}
+            <Link href="/auth/login" className="text-stone-600 hover:text-stone-800 transition-colors duration-300">
+              sign in
             </Link>
           </p>
         </div>
@@ -185,12 +195,12 @@ export default function SignupPage() {
         <div className="mt-6 text-center">
           <Link 
             href="/instructor/auth/signup" 
-            className="text-stone-400 hover:text-gray text-sm tracking-wide transition-colors duration-300"
+            className="text-stone-400 hover:text-stone-600 text-sm tracking-wide transition-colors duration-300"
           >
-            Want to teach? Create an instructor account
+            want to teach? create an instructor account
           </Link>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
