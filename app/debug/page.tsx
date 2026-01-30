@@ -239,7 +239,7 @@ export default function DebugPage() {
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">🔧 PikkUp Debug Panel</h1>
+          <h1 className="text-3xl font-bold mb-2">🔧 PickUp Debug Panel</h1>
           <p className="text-gray-400">
             This page tests your Supabase connection and database setup.
           </p>

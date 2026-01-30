@@ -312,7 +312,7 @@ export default function StudentMyClassesPage() {
                                 <div>
                                   <span className="text-xs uppercase tracking-wider text-neutral-400">Location</span>
                                   <p className="text-sm text-charcoal font-light mt-1 flex items-center gap-1">
-                                    <MapPinIcon className="w-4 h-4" /> PikkUp Studio
+                                    <MapPinIcon className="w-4 h-4" /> PickUp Studio
                                   </p>
                                 </div>
                               </div>

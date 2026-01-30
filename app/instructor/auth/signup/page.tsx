@@ -235,7 +235,7 @@ export default function InstructorSignupPage() {
             </div>
             <h1 className="text-3xl font-light text-charcoal mb-4">Request Submitted</h1>
             <p className="text-neutral-500 font-light mb-4">
-              Thank you for your interest in teaching at PikkUp!
+              Thank you for your interest in teaching at PickUp!
             </p>
             <p className="text-neutral-500 font-light mb-8">
               We will review your application and get back to you soon. In the meantime, 
@@ -268,7 +268,7 @@ export default function InstructorSignupPage() {
           <div className="w-full max-w-md">
             <div className="mb-8">
               <Link href="/" className="text-2xl font-light tracking-tight text-charcoal inline-block mb-2">
-                PikkUp
+                PickUp
               </Link>
               <span className="ml-3 text-xs uppercase tracking-wider text-neutral-400 border border-neutral-200 px-2 py-1">
                 Instructor
@@ -298,7 +298,7 @@ export default function InstructorSignupPage() {
                   value={applicationNote}
                   onChange={(e) => setApplicationNote(e.target.value)}
                   className="input-field min-h-[120px] resize-y"
-                  placeholder="Tell us about yourself, your teaching experience, certifications, and why you'd like to teach at PikkUp..."
+                  placeholder="Tell us about yourself, your teaching experience, certifications, and why you'd like to teach at PickUp..."
                   required
                 />
                 <p className="text-xs text-neutral-400 mt-1.5 font-light">
@@ -351,7 +351,7 @@ export default function InstructorSignupPage() {
         <div className="w-full max-w-md">
           <div className="mb-8">
             <Link href="/" className="text-2xl font-light tracking-tight text-charcoal inline-block mb-2">
-              PikkUp
+              PickUp
             </Link>
             <span className="ml-3 text-xs uppercase tracking-wider text-neutral-400 border border-neutral-200 px-2 py-1">
               Instructor
@@ -428,7 +428,7 @@ export default function InstructorSignupPage() {
                 value={applicationNote}
                 onChange={(e) => setApplicationNote(e.target.value)}
                 className="input-field min-h-[120px] resize-y"
-                placeholder="Tell us about yourself, your teaching experience, certifications, and why you'd like to teach at PikkUp..."
+                placeholder="Tell us about yourself, your teaching experience, certifications, and why you'd like to teach at PickUp..."
                 required
               />
               <p className="text-xs text-neutral-400 mt-1.5 font-light">

@@ -7,7 +7,7 @@ export default function PrivacyPage() {
       <header className="bg-white/95 backdrop-blur-md border-b border-neutral-100">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <Link href="/" className="text-xl font-light text-charcoal tracking-tight">
-            PikkUp
+            PickUp
           </Link>
         </div>
       </header>
@@ -23,7 +23,7 @@ export default function PrivacyPage() {
           <section className="mb-10">
             <h2 className="text-lg font-medium text-charcoal mb-4">1. Information We Collect</h2>
             <p className="text-neutral-600 font-light mb-4">
-              When you use PikkUp, we collect information you provide directly to us, such as:
+              When you use PickUp, we collect information you provide directly to us, such as:
             </p>
             <ul className="list-disc pl-6 text-neutral-600 font-light space-y-2">
               <li>Account information (name, email, phone number)</li>

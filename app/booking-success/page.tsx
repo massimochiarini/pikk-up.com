@@ -133,7 +133,7 @@ function BookingSuccessContent() {
                 <div className="flex items-center gap-3 text-sm">
                   <MapPinIcon className="w-5 h-5 text-neutral-400" />
                   <span className="text-charcoal font-light">
-                    PikkUp Studio, 2500 South Miami Ave
+                    PickUp Studio, 2500 South Miami Ave
                   </span>
                 </div>
               </div>

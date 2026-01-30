@@ -101,7 +101,7 @@ export default function InstructorLoginPage() {
         <div className="w-full max-w-md">
           <div className="mb-10">
             <Link href="/" className="text-2xl font-light tracking-tight text-charcoal inline-block mb-2">
-              PikkUp
+              PickUp
             </Link>
             <span className="ml-3 text-xs uppercase tracking-wider text-neutral-400 border border-neutral-200 px-2 py-1">
               Instructor

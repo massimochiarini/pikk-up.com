@@ -21,7 +21,7 @@ export function Navbar() {
             href={isInstructor ? '/instructor' : '/'} 
             className="text-xl sm:text-2xl font-light tracking-tight text-charcoal flex-shrink-0"
           >
-            PikkUp
+            PickUp
           </Link>
           
           {/* Desktop Navigation */}

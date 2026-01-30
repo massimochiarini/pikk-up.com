@@ -54,7 +54,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <div className="mb-10">
             <Link href="/" className="text-2xl font-light tracking-tight text-charcoal inline-block mb-8">
-              PikkUp
+              PickUp
             </Link>
             <h1 className="text-3xl font-light text-charcoal mb-2">Welcome back</h1>
             <p className="text-neutral-500 font-light">Sign in to continue to your account.</p>

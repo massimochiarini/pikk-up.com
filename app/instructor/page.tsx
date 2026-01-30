@@ -87,7 +87,7 @@ export default function InstructorDashboardPage() {
             </div>
             <h1 className="text-3xl font-light text-charcoal mb-4">Application Under Review</h1>
             <p className="text-neutral-500 font-light mb-2">
-              Hi {profile.first_name}! Thanks for applying to teach at PikkUp.
+              Hi {profile.first_name}! Thanks for applying to teach at PickUp.
             </p>
             <p className="text-neutral-500 font-light mb-8">
               Your instructor application is being reviewed. We will notify you once it is approved.
@@ -154,7 +154,7 @@ export default function InstructorDashboardPage() {
               {profile ? `Hi ${profile.first_name}! Your current account is set up for booking classes.` : 'Welcome!'}
             </p>
             <p className="text-neutral-500 font-light mb-8">
-              Want to teach yoga at PikkUp? Apply to become an instructor and start sharing your practice.
+              Want to teach yoga at PickUp? Apply to become an instructor and start sharing your practice.
             </p>
             <div className="space-y-3">
               <Link href="/instructor/auth/signup" className="btn-primary w-full block text-center py-4">
@@ -261,7 +261,7 @@ export default function InstructorDashboardPage() {
               <MapPinIcon className="w-6 h-6 text-charcoal" />
             </div>
             <div>
-              <h3 className="font-medium text-charcoal">PikkUp Studio</h3>
+              <h3 className="font-medium text-charcoal">PickUp Studio</h3>
               <p className="text-neutral-500 font-light">2500 South Miami Avenue</p>
               <a 
                 href="https://www.google.com/maps/search/?api=1&query=2500+South+Miami+Avenue"

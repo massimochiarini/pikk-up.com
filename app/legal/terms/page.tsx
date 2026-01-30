@@ -7,7 +7,7 @@ export default function TermsPage() {
       <header className="bg-white/95 backdrop-blur-md border-b border-neutral-100">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <Link href="/" className="text-xl font-light text-charcoal tracking-tight">
-            PikkUp
+            PickUp
           </Link>
         </div>
       </header>
@@ -23,7 +23,7 @@ export default function TermsPage() {
           <section className="mb-10">
             <h2 className="text-lg font-medium text-charcoal mb-4">1. Acceptance of Terms</h2>
             <p className="text-neutral-600 font-light leading-relaxed">
-              By accessing and using PikkUp, you agree to be bound by these Terms of Service. 
+              By accessing and using PickUp, you agree to be bound by these Terms of Service. 
               If you do not agree to these terms, please do not use our services.
             </p>
           </section>
@@ -31,7 +31,7 @@ export default function TermsPage() {
           <section className="mb-10">
             <h2 className="text-lg font-medium text-charcoal mb-4">2. Description of Service</h2>
             <p className="text-neutral-600 font-light leading-relaxed">
-              PikkUp is a marketplace platform that connects yoga students with instructors 
+              PickUp is a marketplace platform that connects yoga students with instructors 
               for classes at our studio location. We facilitate bookings and payments but 
               are not responsible for the quality of instruction provided.
             </p>
@@ -80,7 +80,7 @@ export default function TermsPage() {
           <section className="mb-10">
             <h2 className="text-lg font-medium text-charcoal mb-4">7. Limitation of Liability</h2>
             <p className="text-neutral-600 font-light leading-relaxed">
-              PikkUp is not liable for any injuries, damages, or losses incurred during 
+              PickUp is not liable for any injuries, damages, or losses incurred during 
               yoga classes booked through our platform. Participation in yoga classes 
               is at your own risk.
             </p>

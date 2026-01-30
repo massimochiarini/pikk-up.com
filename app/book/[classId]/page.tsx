@@ -558,7 +558,7 @@ function PublicBookingContent() {
             sessionTitle: yogaClass!.title,
             sessionDate: format(parseISO(yogaClass!.time_slot.date), 'EEEE, MMM d, yyyy'),
             sessionTime: formatTime(yogaClass!.time_slot.start_time),
-            venueName: 'PikkUp Studio',
+            venueName: 'PickUp Studio',
             venueAddress: '2500 South Miami Avenue',
             cost: 0,
             bookingId: bookingData.id,
@@ -580,7 +580,7 @@ function PublicBookingContent() {
               sessionTitle: yogaClass!.title,
               sessionDate: format(parseISO(yogaClass!.time_slot.date), 'EEEE, MMM d, yyyy'),
               sessionTime: formatTime(yogaClass!.time_slot.start_time),
-              venueName: 'PikkUp Studio',
+              venueName: 'PickUp Studio',
               venueAddress: '2500 South Miami Avenue',
               cost: 0,
               bookingId: bookingData.id,
@@ -657,7 +657,7 @@ function PublicBookingContent() {
           sessionTitle: yogaClass!.title,
           sessionDate: format(parseISO(yogaClass!.time_slot.date), 'EEEE, MMM d, yyyy'),
           sessionTime: formatTime(yogaClass!.time_slot.start_time),
-          venueName: 'PikkUp Studio',
+          venueName: 'PickUp Studio',
           userId: userId,
         }),
       })
@@ -802,7 +802,7 @@ function PublicBookingContent() {
             <div className="flex items-center gap-3 text-sm">
               <MapPinIcon className="w-5 h-5 text-neutral-400" />
               <span className="text-charcoal font-light">
-                PikkUp Studio, 2500 South Miami Ave
+                PickUp Studio, 2500 South Miami Ave
               </span>
             </div>
           </div>
@@ -884,7 +884,7 @@ function PublicBookingContent() {
       <header className="border-b border-neutral-100">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="text-xl font-light tracking-tight text-charcoal">
-            PikkUp
+            PickUp
           </Link>
           <button
             onClick={copyBookingLink}
@@ -965,7 +965,7 @@ function PublicBookingContent() {
                 <div className="flex items-center gap-4">
                   <MapPinIcon className="w-5 h-5 text-neutral-400" />
                   <div>
-                    <div className="text-charcoal">PikkUp Studio</div>
+                    <div className="text-charcoal">PickUp Studio</div>
                     <a 
                       href="https://www.google.com/maps/search/?api=1&query=2500+South+Miami+Avenue"
                       target="_blank"
@@ -1087,7 +1087,7 @@ function PublicBookingContent() {
                       <div className="flex items-center gap-3 text-sm">
                         <MapPinIcon className="w-5 h-5 text-neutral-400" />
                         <span className="text-charcoal font-light">
-                          PikkUp Studio, 2500 South Miami Ave
+                          PickUp Studio, 2500 South Miami Ave
                         </span>
                       </div>
                     </div>
