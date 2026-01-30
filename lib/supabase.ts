@@ -109,6 +109,7 @@ export type Booking = {
   guest_first_name?: string
   guest_last_name?: string
   guest_phone?: string
+  guest_email?: string
   status: 'confirmed' | 'cancelled'
   created_at: string
 }

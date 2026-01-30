@@ -39,6 +39,7 @@ function PublicBookingContent() {
   // Form fields
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [donationAmount, setDonationAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -51,6 +52,7 @@ function PublicBookingContent() {
     if (profile && !profileFieldsSet) {
       if (profile.first_name) setFirstName(profile.first_name)
       if (profile.last_name) setLastName(profile.last_name)
+      if (profile.email) setEmail(profile.email)
       if (profile.phone) setPhone(profile.phone)
       setProfileFieldsSet(true)
     }
@@ -385,7 +387,7 @@ function PublicBookingContent() {
   }
 
   const handleBookWithCredit = async () => {
-    if (!yogaClass || !firstName || !lastName || !phone) {
+    if (!yogaClass || !firstName || !lastName || !email) {
       setErrorMessage('Please fill in all required fields')
       return
     }
@@ -406,7 +408,8 @@ function PublicBookingContent() {
           classId,
           firstName: firstName.trim(),
           lastName: lastName.trim(),
-          phone,
+          email: email.toLowerCase().trim(),
+          phone: phone || null,
           userId: user?.id || null,
         }),
       })
@@ -444,15 +447,15 @@ function PublicBookingContent() {
   const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e) e.preventDefault()
     
-    if (!yogaClass || !firstName || !lastName || !phone) {
+    if (!yogaClass || !firstName || !lastName || !email) {
       setErrorMessage('Please fill in all required fields')
       return
     }
 
-    // Phone validation
-    const phoneRegex = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/
-    if (!phoneRegex.test(phone)) {
-      setErrorMessage('Please enter a valid phone number')
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setErrorMessage('Please enter a valid email address')
       return
     }
 
@@ -467,17 +470,17 @@ function PublicBookingContent() {
         return
       }
 
-      // Check if phone already booked
+      // Check if email already booked
       const { data: existingBooking } = await supabase
         .from('bookings')
         .select('id')
         .eq('class_id', classId)
-        .eq('guest_phone', phone.replace(/\D/g, ''))
+        .eq('guest_email', email.toLowerCase().trim())
         .eq('status', 'confirmed')
         .single()
 
       if (existingBooking) {
-        setErrorMessage('This phone number has already been registered for this class.')
+        setErrorMessage('This email has already been registered for this class.')
         setSubmitting(false)
         return
       }
@@ -542,7 +545,8 @@ function PublicBookingContent() {
           user_id: userId,
           guest_first_name: firstName.trim(),
           guest_last_name: lastName.trim(),
-          guest_phone: phone.replace(/\D/g, ''),
+          guest_email: email.toLowerCase().trim(),
+          guest_phone: phone ? phone.replace(/\D/g, '') : null,
           status: 'confirmed',
         })
         .select()
@@ -550,33 +554,12 @@ function PublicBookingContent() {
 
       if (bookingError) throw bookingError
 
-      // Send SMS confirmation (best effort)
-      try {
-        await supabase.functions.invoke('send-sms-confirmation', {
-          body: {
-            to: phone,
-            guestName: `${firstName.trim()} ${lastName.trim()}`,
-            sessionTitle: yogaClass!.title,
-            sessionDate: format(parseISO(yogaClass!.time_slot.date), 'EEEE, MMM d, yyyy'),
-            sessionTime: formatTime(yogaClass!.time_slot.start_time),
-            venueName: 'PickUp Studio',
-            venueAddress: '2500 South Miami Avenue',
-            cost: 0,
-            bookingId: bookingData.id,
-          }
-        })
-      } catch (smsError) {
-        console.error('SMS error:', smsError)
-      }
-
-      // Send email confirmation (if user is logged in and has email)
-      console.log('Checking for email confirmation. Profile email:', profile?.email)
-      if (profile?.email) {
+      // Send SMS confirmation if phone provided (best effort)
+      if (phone) {
         try {
-          console.log('Sending email confirmation to:', profile.email)
-          const { data: emailResult, error: emailFuncError } = await supabase.functions.invoke('send-email-confirmation', {
+          await supabase.functions.invoke('send-sms-confirmation', {
             body: {
-              to: profile.email,
+              to: phone,
               guestName: `${firstName.trim()} ${lastName.trim()}`,
               sessionTitle: yogaClass!.title,
               sessionDate: format(parseISO(yogaClass!.time_slot.date), 'EEEE, MMM d, yyyy'),
@@ -587,16 +570,35 @@ function PublicBookingContent() {
               bookingId: bookingData.id,
             }
           })
-          if (emailFuncError) {
-            console.error('Email function error:', emailFuncError)
-          } else {
-            console.log('Email confirmation result:', emailResult)
-          }
-        } catch (emailError) {
-          console.error('Email error:', emailError)
+        } catch (smsError) {
+          console.error('SMS error:', smsError)
         }
-      } else {
-        console.log('No email in profile, skipping email confirmation')
+      }
+
+      // Send email confirmation to guest email
+      const confirmationEmail = email.toLowerCase().trim()
+      console.log('Sending email confirmation to:', confirmationEmail)
+      try {
+        const { data: emailResult, error: emailFuncError } = await supabase.functions.invoke('send-email-confirmation', {
+          body: {
+            to: confirmationEmail,
+            guestName: `${firstName.trim()} ${lastName.trim()}`,
+            sessionTitle: yogaClass!.title,
+            sessionDate: format(parseISO(yogaClass!.time_slot.date), 'EEEE, MMM d, yyyy'),
+            sessionTime: formatTime(yogaClass!.time_slot.start_time),
+            venueName: 'PickUp Studio',
+            venueAddress: '2500 South Miami Avenue',
+            cost: 0,
+            bookingId: bookingData.id,
+          }
+        })
+        if (emailFuncError) {
+          console.error('Email function error:', emailFuncError)
+        } else {
+          console.log('Email confirmation result:', emailResult)
+        }
+      } catch (emailError) {
+        console.error('Email error:', emailError)
       }
 
       // If user is not logged in, offer to create account
@@ -652,7 +654,8 @@ function PublicBookingContent() {
           classId,
           firstName: firstName.trim(),
           lastName: lastName.trim(),
-          phone,
+          email: email.toLowerCase().trim(),
+          phone: phone || null,
           priceCents,
           isDonation,
           sessionTitle: yogaClass!.title,
@@ -846,7 +849,7 @@ function PublicBookingContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            your spot has been reserved. check your phone for a confirmation text.
+            your spot has been reserved. check your email for a confirmation.
           </motion.p>
           
           <motion.div 
@@ -1360,7 +1363,23 @@ function PublicBookingContent() {
                       </div>
 
                       <div>
-                        <label htmlFor="phone" className="label">Phone Number</label>
+                        <label htmlFor="email" className="label">Email</label>
+                        <input
+                          type="email"
+                          id="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="input-field"
+                          placeholder="you@example.com"
+                          required
+                        />
+                        <p className="text-neutral-400 text-xs mt-2 font-light">
+                          We&apos;ll send your confirmation via email.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label htmlFor="phone" className="label">Phone Number <span className="text-stone-300">(optional)</span></label>
                         <input
                           type="tel"
                           id="phone"
@@ -1368,11 +1387,7 @@ function PublicBookingContent() {
                           onChange={(e) => setPhone(e.target.value)}
                           className="input-field"
                           placeholder="+1 (555) 123-4567"
-                          required
                         />
-                        <p className="text-neutral-400 text-xs mt-2 font-light">
-                          We&apos;ll send your confirmation via text.
-                        </p>
                       </div>
 
                       {/* Available Credits Display */}

@@ -101,14 +101,15 @@ async function handleCheckoutSessionCompleted(
   }
 
   // Otherwise, handle as class booking
-  const { classId, firstName, lastName, phone, customerName } = metadata
+  const { classId, firstName, lastName, email, phone, customerName } = metadata
 
-  if (!classId || !firstName || !lastName || !phone) {
+  if (!classId || !firstName || !lastName || !email) {
     console.error('Missing metadata in checkout session')
     return
   }
 
-  const phoneNormalized = phone.replace(/\D/g, '')
+  const emailNormalized = email.toLowerCase().trim()
+  const phoneNormalized = phone ? phone.replace(/\D/g, '') : null
 
   try {
     const supabase = getSupabaseAdmin()
@@ -130,12 +131,12 @@ async function handleCheckoutSessionCompleted(
       return
     }
 
-    // 2. Check if already booked (duplicate protection)
+    // 2. Check if already booked (duplicate protection by email)
     const { data: existingBooking } = await supabase
       .from('bookings')
       .select('id')
       .eq('class_id', classId)
-      .eq('guest_phone', phoneNormalized)
+      .eq('guest_email', emailNormalized)
       .eq('status', 'confirmed')
       .single()
 
@@ -158,12 +159,12 @@ async function handleCheckoutSessionCompleted(
       return
     }
 
-    // 3.5 Try to find a user account with matching phone number
+    // 3.5 Try to find a user account with matching email
     let matchedUserId: string | null = null
     const { data: matchedProfile } = await supabase
       .from('profiles')
       .select('id')
-      .eq('phone', phoneNormalized)
+      .eq('email', emailNormalized)
       .single()
     
     if (matchedProfile) {
@@ -179,6 +180,7 @@ async function handleCheckoutSessionCompleted(
         user_id: matchedUserId,
         guest_first_name: firstName.trim(),
         guest_last_name: lastName.trim(),
+        guest_email: emailNormalized,
         guest_phone: phoneNormalized,
         status: 'confirmed',
       })
@@ -202,7 +204,7 @@ async function handleCheckoutSessionCompleted(
     // 5. Record payment
     await recordPayment(session, classId, bookingData.id)
 
-    // 6. Send SMS confirmation
+    // 6. Send SMS confirmation (if phone provided)
     const formatTime = (time: string) => {
       const [hours, minutes] = time.split(':')
       const hour = parseInt(hours)
@@ -211,45 +213,11 @@ async function handleCheckoutSessionCompleted(
       return `${displayHour}:${minutes} ${period}`
     }
 
-    try {
-      await supabase.functions.invoke('send-sms-confirmation', {
-        body: {
-          to: `+${phoneNormalized}`,
-          guestName: customerName || `${firstName} ${lastName}`,
-          sessionTitle: yogaClass.title,
-          sessionDate: format(
-            parseISO(yogaClass.time_slot.date),
-            'EEEE, MMM d, yyyy'
-          ),
-          sessionTime: formatTime(yogaClass.time_slot.start_time),
-          venueName: 'PikkUp Studio',
-          venueAddress: '2500 South Miami Avenue',
-          cost: yogaClass.price_cents,
-          bookingId: bookingData.id,
-        },
-      })
-      console.log('SMS sent successfully')
-    } catch (smsError) {
-      console.error('SMS error:', smsError)
-    }
-
-    // 7. Send email confirmation (if we have an email)
-    try {
-      // Try to find user's email from profile
-      let userEmail: string | null = null
-      if (matchedUserId) {
-        const { data: userProfile } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('id', matchedUserId)
-          .single()
-        userEmail = userProfile?.email || null
-      }
-
-      if (userEmail) {
-        await supabase.functions.invoke('send-email-confirmation', {
+    if (phoneNormalized) {
+      try {
+        await supabase.functions.invoke('send-sms-confirmation', {
           body: {
-            to: userEmail,
+            to: `+${phoneNormalized}`,
             guestName: customerName || `${firstName} ${lastName}`,
             sessionTitle: yogaClass.title,
             sessionDate: format(
@@ -257,14 +225,37 @@ async function handleCheckoutSessionCompleted(
               'EEEE, MMM d, yyyy'
             ),
             sessionTime: formatTime(yogaClass.time_slot.start_time),
-            venueName: 'PikkUp Studio',
+            venueName: 'PickUp Studio',
             venueAddress: '2500 South Miami Avenue',
             cost: yogaClass.price_cents,
             bookingId: bookingData.id,
           },
         })
-        console.log('Email confirmation sent successfully')
+        console.log('SMS sent successfully')
+      } catch (smsError) {
+        console.error('SMS error:', smsError)
       }
+    }
+
+    // 7. Send email confirmation to guest email
+    try {
+      await supabase.functions.invoke('send-email-confirmation', {
+        body: {
+          to: emailNormalized,
+          guestName: customerName || `${firstName} ${lastName}`,
+          sessionTitle: yogaClass.title,
+          sessionDate: format(
+            parseISO(yogaClass.time_slot.date),
+            'EEEE, MMM d, yyyy'
+          ),
+          sessionTime: formatTime(yogaClass.time_slot.start_time),
+          venueName: 'PickUp Studio',
+          venueAddress: '2500 South Miami Avenue',
+          cost: yogaClass.price_cents,
+          bookingId: bookingData.id,
+        },
+      })
+      console.log('Email confirmation sent to:', emailNormalized)
     } catch (emailError) {
       console.error('Email confirmation error:', emailError)
     }
@@ -282,8 +273,8 @@ async function recordPayment(
   status: string = 'succeeded',
   errorMessage?: string
 ) {
-  const { firstName, lastName, phone } = session.metadata || {}
-  const phoneNormalized = phone?.replace(/\D/g, '') || ''
+  const { firstName, lastName, email, phone } = session.metadata || {}
+  const phoneNormalized = phone ? phone.replace(/\D/g, '') : ''
 
   const paymentData = {
     booking_id: bookingId,
@@ -294,6 +285,7 @@ async function recordPayment(
     currency: session.currency || 'usd',
     status,
     customer_name: `${firstName} ${lastName}`,
+    customer_email: email?.toLowerCase().trim() || '',
     customer_phone: phoneNormalized,
     error_message: errorMessage,
     paid_at: status === 'succeeded' ? new Date().toISOString() : null,

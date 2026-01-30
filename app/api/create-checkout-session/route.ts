@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
       classId,
       firstName,
       lastName,
+      email,
       phone,
       priceCents,
       isDonation,
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Validation
-    if (!classId || !firstName || !lastName || !phone) {
+    if (!classId || !firstName || !lastName || !email) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -52,7 +53,8 @@ export async function POST(request: NextRequest) {
     }
 
     const customerName = `${firstName.trim()} ${lastName.trim()}`
-    const phoneNormalized = phone.replace(/\D/g, '')
+    const emailNormalized = email.toLowerCase().trim()
+    const phoneNormalized = phone ? phone.replace(/\D/g, '') : null
 
     // Determine product name based on whether it's a donation
     const productName = isDonation 
@@ -62,6 +64,7 @@ export async function POST(request: NextRequest) {
     // Create Stripe Checkout Session
     const session = await getStripe().checkout.sessions.create({
       payment_method_types: ['card'],
+      customer_email: emailNormalized,
       line_items: [
         {
           price_data: {
@@ -80,7 +83,8 @@ export async function POST(request: NextRequest) {
         classId,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        phone: phoneNormalized,
+        email: emailNormalized,
+        phone: phoneNormalized || '',
         customerName,
         isDonation: isDonation ? 'true' : 'false',
       },
