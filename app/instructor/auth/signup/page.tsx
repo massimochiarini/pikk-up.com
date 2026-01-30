@@ -14,9 +14,6 @@ export default function InstructorSignupPage() {
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [phone, setPhone] = useState('')
-  const [instagram, setInstagram] = useState('')
-  const [bio, setBio] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -26,9 +23,6 @@ export default function InstructorSignupPage() {
     if (profile) {
       setFirstName(profile.first_name || '')
       setLastName(profile.last_name || '')
-      setPhone(profile.phone || '')
-      setBio(profile.bio || '')
-      setInstagram(profile.instagram || '')
     }
   }, [profile])
 
@@ -66,9 +60,6 @@ export default function InstructorSignupPage() {
             lastName,
             isInstructor: false, // Not approved yet
             instructorStatus: 'pending',
-            phone: phone.replace(/\D/g, '') || null,
-            instagram: instagram || null,
-            bio: bio || null,
           }),
         })
 
@@ -104,11 +95,7 @@ export default function InstructorSignupPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({
-          bio: bio || null,
-          instagram: instagram || null,
-          phone: phone.replace(/\D/g, '') || null,
-        }),
+        body: JSON.stringify({}),
       })
 
       const result = await response.json()
@@ -300,45 +287,8 @@ export default function InstructorSignupPage() {
                 <div className="font-medium text-charcoal">{profile.email}</div>
               </div>
 
-              <div>
-                <label htmlFor="phone" className="label">Phone</label>
-                <input
-                  id="phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="input-field"
-                  placeholder="+1 (555) 123-4567"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="instagram" className="label">
-                  Instagram <span className="text-neutral-400 font-normal lowercase">(optional)</span>
-                </label>
-                <input
-                  id="instagram"
-                  type="text"
-                  value={instagram}
-                  onChange={(e) => setInstagram(e.target.value)}
-                  className="input-field"
-                  placeholder="@yourusername"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="bio" className="label">
-                  Tell us about yourself
-                </label>
-                <textarea
-                  id="bio"
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  className="input-field resize-none"
-                  rows={4}
-                  placeholder="Share your yoga experience, certifications, and teaching style..."
-                  required
-                />
+              <div className="bg-neutral-50 border border-neutral-200 p-4 text-sm text-neutral-500 font-light">
+                Your request will be reviewed by our team. Once approved, you can complete your instructor profile with additional details.
               </div>
 
               <button
@@ -444,47 +394,6 @@ export default function InstructorSignupPage() {
             </div>
 
             <div>
-              <label htmlFor="phone" className="label">Phone</label>
-              <input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="input-field"
-                placeholder="+1 (555) 123-4567"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="instagram" className="label">
-                Instagram <span className="text-neutral-400 font-normal lowercase">(optional)</span>
-              </label>
-              <input
-                id="instagram"
-                type="text"
-                value={instagram}
-                onChange={(e) => setInstagram(e.target.value)}
-                className="input-field"
-                placeholder="@yourusername"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="bio" className="label">
-                Tell us about yourself
-              </label>
-              <textarea
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                className="input-field resize-none"
-                rows={3}
-                placeholder="Share your yoga experience, certifications, and teaching style..."
-                required
-              />
-            </div>
-
-            <div>
               <label htmlFor="password" className="label">Password</label>
               <PasswordInput
                 id="password"
@@ -497,7 +406,7 @@ export default function InstructorSignupPage() {
             </div>
 
             <div className="bg-neutral-50 border border-neutral-200 p-4 text-sm text-neutral-500 font-light">
-              Your application will be reviewed by our team. Once approved, you will be able to create and manage classes.
+              Your application will be reviewed by our team. Once approved, you can complete your profile and start creating classes.
             </div>
 
             <button
