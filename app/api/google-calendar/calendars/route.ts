@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { createServerClient } from '@/lib/supabase'
 import { listCalendars } from '@/lib/google-calendar'
 
+export const dynamic = 'force-dynamic'
+
 // GET - List user's calendars
 export async function GET(request: NextRequest) {
   try {

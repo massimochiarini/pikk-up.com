@@ -186,6 +186,7 @@ export default function AdminPage() {
     if (user && profile?.is_admin) {
       fetchCalendarStatus()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, profile?.is_admin])
 
   const connectGoogleCalendar = async () => {

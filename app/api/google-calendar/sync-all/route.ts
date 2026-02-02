@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { createServerClient } from '@/lib/supabase'
 import { createCalendarEvent } from '@/lib/google-calendar'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     // Verify user is authenticated and is admin
