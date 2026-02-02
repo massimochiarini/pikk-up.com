@@ -31,6 +31,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Check if force resync is requested
+    let forceResync = false
+    try {
+      const body = await request.json()
+      forceResync = body.force === true
+    } catch {
+      // No body or invalid JSON, that's fine
+    }
+
     // Verify admin status
     const serverClient = createServerClient()
     const { data: profile } = await serverClient
@@ -47,10 +56,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Google Calendar not connected' }, { status: 400 })
     }
 
-    // Get all upcoming classes that don't have a calendar event ID
+    // Get all upcoming classes
     const today = new Date().toISOString().split('T')[0]
     
-    const { data: classes, error: classesError } = await serverClient
+    // If force resync, get ALL upcoming classes; otherwise only those without event IDs
+    let query = serverClient
       .from('classes')
       .select(`
         id,
@@ -61,8 +71,13 @@ export async function POST(request: NextRequest) {
         time_slot:time_slots(date, start_time, end_time),
         instructor:profiles!classes_instructor_id_fkey(first_name, last_name)
       `)
-      .is('google_calendar_event_id', null)
       .eq('status', 'upcoming')
+    
+    if (!forceResync) {
+      query = query.is('google_calendar_event_id', null)
+    }
+    
+    const { data: classes, error: classesError } = await query
 
     if (classesError) {
       console.error('Error fetching classes:', classesError)
@@ -76,6 +91,7 @@ export async function POST(request: NextRequest) {
     })
 
     let synced = 0
+    let skipped = 0
     let failed = 0
 
     // Sync each class to Google Calendar
@@ -86,9 +102,13 @@ export async function POST(request: NextRequest) {
         
         if (!timeSlot) continue
 
+        // Skip if already has an event ID and not forcing resync
+        if (cls.google_calendar_event_id && !forceResync) {
+          skipped++
+          continue
+        }
+
         // Calculate class end time (remove the 30-min buffer that's stored)
-        // The stored end_time includes buffer, so we need to use actual class duration
-        // For simplicity, we'll use the stored end_time minus 30 minutes
         const [endH, endM] = timeSlot.end_time.split(':').map(Number)
         const endMinutes = endH * 60 + endM - 30 // Remove 30-min buffer
         const classEndHours = Math.floor(endMinutes / 60)
@@ -99,6 +119,7 @@ export async function POST(request: NextRequest) {
           ? `${instructor.first_name} ${instructor.last_name}` 
           : undefined
 
+        // Create new calendar event (this will create a new event even if old ID exists)
         const eventId = await createCalendarEvent({
           id: cls.id,
           title: cls.title,
@@ -110,7 +131,7 @@ export async function POST(request: NextRequest) {
         })
 
         if (eventId) {
-          // Store the calendar event ID
+          // Store the new calendar event ID
           await serverClient
             .from('classes')
             .update({ google_calendar_event_id: eventId })
@@ -126,12 +147,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const message = forceResync 
+      ? `Re-synced ${synced} classes to Google Calendar${failed > 0 ? `, ${failed} failed` : ''}`
+      : `Synced ${synced} new classes to Google Calendar${skipped > 0 ? ` (${skipped} already synced)` : ''}${failed > 0 ? `, ${failed} failed` : ''}`
+
     return NextResponse.json({
       success: true,
       synced,
+      skipped,
       failed,
       total: upcomingClasses.length,
-      message: `Synced ${synced} classes to Google Calendar${failed > 0 ? `, ${failed} failed` : ''}`
+      message
     })
   } catch (error) {
     console.error('Sync all classes error:', error)

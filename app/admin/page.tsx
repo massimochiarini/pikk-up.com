@@ -99,7 +99,7 @@ function AdminPageContent() {
   }, [user, profile?.is_admin])
 
   // Sync all existing classes to Google Calendar
-  const syncAllClasses = async () => {
+  const syncAllClasses = async (force: boolean = false) => {
     setCalendarConnecting(true)
     setCalendarError('')
     
@@ -110,8 +110,10 @@ function AdminPageContent() {
       const response = await fetch('/api/google-calendar/sync-all', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ force })
       })
       
       const data = await response.json()
@@ -423,23 +425,36 @@ function AdminPageContent() {
                   {calendarConnecting ? 'Processing...' : 'Disconnect'}
                 </button>
               </div>
-              <button
-                onClick={syncAllClasses}
-                disabled={calendarConnecting}
-                className="btn-secondary py-2 px-4 flex items-center gap-2 text-sm"
-              >
-                {calendarConnecting ? (
-                  <>
-                    <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                    Syncing...
-                  </>
-                ) : (
-                  <>
-                    <ArrowPathIcon className="w-4 h-4" />
-                    Sync All Upcoming Classes
-                  </>
-                )}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => syncAllClasses(false)}
+                  disabled={calendarConnecting}
+                  className="btn-secondary py-2 px-4 flex items-center gap-2 text-sm"
+                >
+                  {calendarConnecting ? (
+                    <>
+                      <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                      Syncing...
+                    </>
+                  ) : (
+                    <>
+                      <ArrowPathIcon className="w-4 h-4" />
+                      Sync New Classes
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => syncAllClasses(true)}
+                  disabled={calendarConnecting}
+                  className="btn-secondary py-2 px-4 flex items-center gap-2 text-sm border-amber-300 text-amber-700 hover:bg-amber-50"
+                >
+                  <ArrowPathIcon className="w-4 h-4" />
+                  Force Re-sync All
+                </button>
+              </div>
+              <p className="text-neutral-400 text-xs font-light mt-2">
+                Use "Force Re-sync All" if you deleted events from Google Calendar and need to recreate them.
+              </p>
             </div>
           ) : calendarStatus?.configured === false ? (
             <div className="bg-neutral-50 border border-neutral-200 p-4">
