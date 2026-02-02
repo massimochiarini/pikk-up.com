@@ -68,28 +68,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Google Calendar not connected' }, { status: 400 })
     }
 
-    // Get all upcoming classes
-    // Use yesterday's date to account for timezone differences (EST vs UTC)
-    const now = new Date()
-    now.setDate(now.getDate() - 1) // Go back 1 day to be safe
-    const yesterday = now.toISOString().split('T')[0]
+    // Calculate date threshold - go back a week to be very safe with timezones
+    const threshold = new Date()
+    threshold.setDate(threshold.getDate() - 7)
+    const thresholdDate = threshold.toISOString().split('T')[0]
     
-    // If force resync, get ALL upcoming classes; otherwise only those without event IDs
+    console.log('Force resync:', forceResync)
+    console.log('Date threshold:', thresholdDate)
+    
+    // Get classes - for force resync, get ALL classes regardless of status or event ID
     let query = serverClient
       .from('classes')
       .select(`
         id,
         title,
         description,
+        status,
         google_calendar_event_id,
         instructor_id,
         time_slot:time_slots(date, start_time, end_time),
         instructor:profiles!classes_instructor_id_fkey(first_name, last_name)
       `)
-      .eq('status', 'upcoming')
     
+    // Only filter by status and event ID if NOT forcing resync
     if (!forceResync) {
-      query = query.is('google_calendar_event_id', null)
+      query = query.eq('status', 'upcoming').is('google_calendar_event_id', null)
     }
     
     const { data: classes, error: classesError } = await query
@@ -101,14 +104,32 @@ export async function POST(request: NextRequest) {
 
     console.log('Total classes from query:', classes?.length || 0)
     
-    // Filter to only future/current classes (using yesterday to account for timezone)
+    // Log first few classes for debugging
+    if (classes && classes.length > 0) {
+      console.log('Sample classes:', classes.slice(0, 3).map((c: any) => ({
+        id: c.id,
+        title: c.title,
+        status: c.status,
+        hasEventId: !!c.google_calendar_event_id,
+        timeSlot: c.time_slot
+      })))
+    }
+    
+    // Filter to classes with valid time slots and future dates
     const upcomingClasses = (classes || []).filter((cls: any) => {
       const timeSlot = Array.isArray(cls.time_slot) ? cls.time_slot[0] : cls.time_slot
-      return timeSlot && timeSlot.date >= yesterday
+      if (!timeSlot) {
+        console.log('Class has no time slot:', cls.id, cls.title)
+        return false
+      }
+      const isUpcoming = timeSlot.date >= thresholdDate
+      if (!isUpcoming) {
+        console.log('Class filtered out by date:', cls.id, cls.title, timeSlot.date)
+      }
+      return isUpcoming
     })
     
-    console.log('Upcoming classes after date filter:', upcomingClasses.length)
-    console.log('Date threshold (yesterday):', yesterday)
+    console.log('Classes after date filter:', upcomingClasses.length)
 
     let synced = 0
     let skipped = 0
@@ -120,13 +141,19 @@ export async function POST(request: NextRequest) {
         const timeSlot = Array.isArray(cls.time_slot) ? cls.time_slot[0] : cls.time_slot
         const instructor = Array.isArray(cls.instructor) ? cls.instructor[0] : cls.instructor
         
-        if (!timeSlot) continue
+        if (!timeSlot) {
+          console.log('Skipping class without time slot:', cls.id)
+          continue
+        }
 
         // Skip if already has an event ID and not forcing resync
         if (cls.google_calendar_event_id && !forceResync) {
+          console.log('Skipping already synced class:', cls.id, cls.title)
           skipped++
           continue
         }
+        
+        console.log('Syncing class:', cls.id, cls.title, 'Date:', timeSlot.date)
 
         // Calculate class end time (remove the 30-min buffer that's stored)
         const [endH, endM] = timeSlot.end_time.split(':').map(Number)
