@@ -69,7 +69,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Get all upcoming classes
-    const today = new Date().toISOString().split('T')[0]
+    // Use yesterday's date to account for timezone differences (EST vs UTC)
+    const now = new Date()
+    now.setDate(now.getDate() - 1) // Go back 1 day to be safe
+    const yesterday = now.toISOString().split('T')[0]
     
     // If force resync, get ALL upcoming classes; otherwise only those without event IDs
     let query = serverClient
@@ -98,14 +101,14 @@ export async function POST(request: NextRequest) {
 
     console.log('Total classes from query:', classes?.length || 0)
     
-    // Filter to only future classes
+    // Filter to only future/current classes (using yesterday to account for timezone)
     const upcomingClasses = (classes || []).filter((cls: any) => {
       const timeSlot = Array.isArray(cls.time_slot) ? cls.time_slot[0] : cls.time_slot
-      return timeSlot && timeSlot.date >= today
+      return timeSlot && timeSlot.date >= yesterday
     })
     
     console.log('Upcoming classes after date filter:', upcomingClasses.length)
-    console.log('Today:', today)
+    console.log('Date threshold (yesterday):', yesterday)
 
     let synced = 0
     let skipped = 0
