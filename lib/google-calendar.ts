@@ -175,11 +175,11 @@ export async function createCalendarEvent(
       description: description.trim(),
       start: {
         dateTime: startDateTime,
-        timeZone: 'America/Los_Angeles',
+        timeZone: 'America/New_York',
       },
       end: {
         dateTime: endDateTime,
-        timeZone: 'America/Los_Angeles',
+        timeZone: 'America/New_York',
       },
       // Add a link back to the class
       source: {
@@ -238,11 +238,11 @@ export async function updateCalendarEvent(
       description: classData.description || `PickUp Class: ${classData.title}`,
       start: {
         dateTime: startDateTime,
-        timeZone: 'America/Los_Angeles',
+        timeZone: 'America/New_York',
       },
       end: {
         dateTime: endDateTime,
-        timeZone: 'America/Los_Angeles',
+        timeZone: 'America/New_York',
       },
     }
     

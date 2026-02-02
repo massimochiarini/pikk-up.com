@@ -14,8 +14,10 @@ import {
   ArrowPathIcon,
   MagnifyingGlassIcon,
   CalendarDaysIcon,
-  LinkIcon
+  LinkIcon,
+  EnvelopeIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
 
 type FilterType = 'all' | 'pending' | 'instructors' | 'students'
 
@@ -347,6 +349,29 @@ function AdminPageContent() {
             <div className="text-sm text-neutral-500 font-light">Pending Requests</div>
           </div>
         </div>
+
+        {/* Newsletter */}
+        <Link 
+          href="/admin/newsletter"
+          className="block border border-neutral-200 p-6 mb-8 hover:border-charcoal transition-colors group"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-medium text-charcoal mb-1 flex items-center gap-2">
+                <EnvelopeIcon className="w-5 h-5" />
+                Weekly Newsletter
+              </h2>
+              <p className="text-neutral-500 font-light text-sm">
+                Send weekly updates with class schedules, featured teachers, and special deals to all subscribers.
+              </p>
+            </div>
+            <div className="text-neutral-400 group-hover:text-charcoal transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        </Link>
 
         {/* Google Calendar Integration */}
         <div className="border border-neutral-200 p-6 mb-8">
