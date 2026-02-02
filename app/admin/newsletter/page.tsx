@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
 interface Teacher {
@@ -31,7 +31,6 @@ interface Stats {
 }
 
 export default function NewsletterAdminPage() {
-  const supabase = createClientComponentClient()
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [stats, setStats] = useState<Stats | null>(null)
