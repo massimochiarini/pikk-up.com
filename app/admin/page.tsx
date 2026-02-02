@@ -107,13 +107,16 @@ function AdminPageContent() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) throw new Error('No session')
       
-      const response = await fetch('/api/google-calendar/sync-all', {
+      // Use query param for force flag (more reliable than body)
+      const url = force 
+        ? '/api/google-calendar/sync-all?force=true' 
+        : '/api/google-calendar/sync-all'
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ force })
+          'Authorization': `Bearer ${session.access_token}`
+        }
       })
       
       const data = await response.json()

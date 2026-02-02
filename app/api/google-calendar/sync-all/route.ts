@@ -31,14 +31,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if force resync is requested
+    // Check if force resync is requested - check both body and URL param
     let forceResync = false
-    try {
-      const body = await request.json()
-      forceResync = body.force === true
-    } catch {
-      // No body or invalid JSON, that's fine
+    
+    // Check URL param first
+    const url = new URL(request.url)
+    if (url.searchParams.get('force') === 'true') {
+      forceResync = true
     }
+    
+    // Also check body
+    if (!forceResync) {
+      try {
+        const body = await request.json()
+        forceResync = body.force === true
+      } catch {
+        // No body or invalid JSON, that's fine
+      }
+    }
+    
+    console.log('Sync all classes - forceResync:', forceResync)
 
     // Verify admin status
     const serverClient = createServerClient()
@@ -84,11 +96,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch classes' }, { status: 500 })
     }
 
+    console.log('Total classes from query:', classes?.length || 0)
+    
     // Filter to only future classes
     const upcomingClasses = (classes || []).filter((cls: any) => {
       const timeSlot = Array.isArray(cls.time_slot) ? cls.time_slot[0] : cls.time_slot
       return timeSlot && timeSlot.date >= today
     })
+    
+    console.log('Upcoming classes after date filter:', upcomingClasses.length)
+    console.log('Today:', today)
 
     let synced = 0
     let skipped = 0
