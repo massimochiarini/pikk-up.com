@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
@@ -19,7 +19,8 @@ import {
 
 type FilterType = 'all' | 'pending' | 'instructors' | 'students'
 
-export default function AdminPage() {
+// Wrapper component to handle Suspense for useSearchParams
+function AdminPageContent() {
   const { user, profile, loading: authLoading } = useAuth()
   const searchParams = useSearchParams()
   const [users, setUsers] = useState<Profile[]>([])
@@ -779,5 +780,18 @@ export default function AdminPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+// Main export with Suspense wrapper
+export default function AdminPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-neutral-200 border-t-charcoal rounded-full animate-spin"></div>
+      </div>
+    }>
+      <AdminPageContent />
+    </Suspense>
   )
 }
