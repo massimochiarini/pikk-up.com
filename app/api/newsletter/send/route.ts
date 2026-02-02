@@ -186,6 +186,15 @@ function generateNewsletterHtml(
 
 export async function POST(request: NextRequest) {
   try {
+    // Check for required env vars
+    if (!RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not set')
+      return NextResponse.json(
+        { error: 'Email service not configured. Please add RESEND_API_KEY to environment variables.' },
+        { status: 500 }
+      )
+    }
+
     const body = await request.json()
     const {
       preview = false,
@@ -201,6 +210,7 @@ export async function POST(request: NextRequest) {
     const nextWeek = new Date()
     nextWeek.setDate(nextWeek.getDate() + 7)
 
+    // Simpler query that's more reliable
     const { data: classesData, error: classesError } = await supabaseAdmin
       .from('classes')
       .select(`
@@ -209,25 +219,52 @@ export async function POST(request: NextRequest) {
         description,
         price_cents,
         max_capacity,
-        time_slots!inner(date, start_time),
-        profiles!instructor_id(first_name, last_name)
+        time_slot_id,
+        instructor_id
       `)
       .eq('status', 'upcoming')
-      .gte('time_slots.date', today.toISOString().split('T')[0])
-      .lte('time_slots.date', nextWeek.toISOString().split('T')[0])
-      .order('time_slots(date)', { ascending: true })
-      .limit(5)
+      .limit(10)
 
     if (classesError) {
       console.error('Error fetching classes:', classesError)
     }
 
+    // Get time slots for these classes
+    const timeSlotIds = (classesData || []).map((c: any) => c.time_slot_id).filter(Boolean)
+    const { data: timeSlotsData } = await supabaseAdmin
+      .from('time_slots')
+      .select('id, date, start_time')
+      .in('id', timeSlotIds)
+      .gte('date', today.toISOString().split('T')[0])
+      .lte('date', nextWeek.toISOString().split('T')[0])
+      .order('date', { ascending: true })
+
+    const timeSlotMap: Record<string, any> = {}
+    ;(timeSlotsData || []).forEach((ts: any) => {
+      timeSlotMap[ts.id] = ts
+    })
+
+    // Get instructor names
+    const instructorIds = (classesData || []).map((c: any) => c.instructor_id).filter(Boolean)
+    const { data: instructorsData } = await supabaseAdmin
+      .from('profiles')
+      .select('id, first_name, last_name')
+      .in('id', instructorIds)
+
+    const instructorMap: Record<string, any> = {}
+    ;(instructorsData || []).forEach((i: any) => {
+      instructorMap[i.id] = i
+    })
+
+    // Filter to only classes with valid time slots in range
+    const validClasses = (classesData || []).filter((c: any) => timeSlotMap[c.time_slot_id])
+
     // Get booking counts for each class
-    const classIds = (classesData || []).map((c: any) => c.id)
+    const classIds = validClasses.map((c: any) => c.id)
     const { data: bookingCounts } = await supabaseAdmin
       .from('bookings')
       .select('class_id')
-      .in('class_id', classIds)
+      .in('class_id', classIds.length > 0 ? classIds : ['none'])
       .eq('status', 'confirmed')
 
     const countByClass: Record<string, number> = {}
@@ -236,8 +273,9 @@ export async function POST(request: NextRequest) {
     })
 
     // Format classes
-    const classes: ClassInfo[] = (classesData || []).map((c: any) => {
-      const timeSlot = c.time_slots
+    const classes: ClassInfo[] = validClasses.slice(0, 5).map((c: any) => {
+      const timeSlot = timeSlotMap[c.time_slot_id]
+      const instructor = instructorMap[c.instructor_id]
       const date = new Date(timeSlot?.date)
       const timeStr = timeSlot?.start_time?.substring(0, 5) || '00:00'
       const [hours, minutes] = timeStr.split(':')
@@ -252,7 +290,7 @@ export async function POST(request: NextRequest) {
         description: c.description || '',
         date: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
         time: `${hour12}:${minutes} ${ampm}`,
-        instructor_name: `${c.profiles?.first_name || ''} ${c.profiles?.last_name || ''}`.trim() || 'TBA',
+        instructor_name: `${instructor?.first_name || ''} ${instructor?.last_name || ''}`.trim() || 'TBA',
         price_display: c.price_cents === 0 ? 'Free' : `$${(c.price_cents / 100).toFixed(0)}`,
         spots_left: Math.max(0, c.max_capacity - booked)
       }
