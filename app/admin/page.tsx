@@ -453,7 +453,7 @@ function AdminPageContent() {
                 </button>
               </div>
               <p className="text-neutral-400 text-xs font-light mt-2">
-                Use "Force Re-sync All" if you deleted events from Google Calendar and need to recreate them.
+                Use Force Re-sync All if you deleted events from Google Calendar and need to recreate them.
               </p>
             </div>
           ) : calendarStatus?.configured === false ? (
