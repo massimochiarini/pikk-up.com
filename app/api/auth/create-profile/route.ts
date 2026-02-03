@@ -24,8 +24,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Use service role client to bypass RLS
-    const supabase = createServerClient()
+    // Use service role client to bypass RLS (required for profile create/update)
+    let supabase
+    try {
+      supabase = createServerClient()
+    } catch (serverErr: any) {
+      console.error('Create profile: server client init failed', serverErr?.message)
+      return NextResponse.json(
+        { error: 'Server configuration error. Please try again later or contact support.' },
+        { status: 503 }
+      )
+    }
 
     // Check if profile already exists
     const { data: existingProfile } = await supabase

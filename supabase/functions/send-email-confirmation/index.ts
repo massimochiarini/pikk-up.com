@@ -2,6 +2,11 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 
+// Fail fast with clear error if Resend is not configured (set via: supabase secrets set RESEND_API_KEY=re_xxx)
+if (!RESEND_API_KEY || RESEND_API_KEY.trim() === '') {
+  console.error('RESEND_API_KEY is not set. Set it with: supabase secrets set RESEND_API_KEY=your_key')
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
@@ -217,6 +222,19 @@ serve(async (req) => {
         }),
         {
           status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    if (!RESEND_API_KEY || RESEND_API_KEY.trim() === '') {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Email service not configured. Set RESEND_API_KEY in Supabase secrets.',
+        }),
+        {
+          status: 503,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       )

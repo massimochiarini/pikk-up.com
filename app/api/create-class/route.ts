@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
-import { addDays } from 'date-fns'
-import { createCalendarEvent, isAdminCalendarConnected } from '@/lib/google-calendar'
 
 export async function POST(request: NextRequest) {
   try {
@@ -156,57 +154,11 @@ export async function POST(request: NextRequest) {
         continue
       }
 
-      // Sync with Admin's Google Calendar for bookkeeping
-      let calendarEventId: string | null = null
-      try {
-        const adminCalendarConnected = await isAdminCalendarConnected()
-        if (adminCalendarConnected) {
-          // Calculate actual class end time (without buffer) for calendar
-          const classEndMinutes = totalStartMinutes + durationMinutes
-          const classEndHours = Math.floor(classEndMinutes / 60)
-          const classEndMins = classEndMinutes % 60
-          const classEndTime = `${String(classEndHours).padStart(2, '0')}:${String(classEndMins).padStart(2, '0')}:00`
-          
-          // Get instructor name for the calendar event
-          const { data: instructor } = await supabase
-            .from('profiles')
-            .select('first_name, last_name')
-            .eq('id', instructorId)
-            .single()
-          
-          const instructorName = instructor 
-            ? `${instructor.first_name} ${instructor.last_name}` 
-            : undefined
-          
-          calendarEventId = await createCalendarEvent({
-            id: newClass.id,
-            title: title.trim(),
-            description: description?.trim() || undefined,
-            date: formattedDate,
-            startTime: formattedStartTime,
-            endTime: classEndTime,
-            instructorName,
-          })
-          
-          // Store the calendar event ID in the class record
-          if (calendarEventId) {
-            await supabase
-              .from('classes')
-              .update({ google_calendar_event_id: calendarEventId })
-              .eq('id', newClass.id)
-          }
-        }
-      } catch (calendarError) {
-        // Log but don't fail the class creation
-        console.error('Google Calendar sync error:', calendarError)
-      }
-
       createdClasses.push({
         ...newClass,
         date: formattedDate,
         start_time: formattedStartTime,
         end_time: endTime,
-        google_calendar_event_id: calendarEventId,
       })
     }
 

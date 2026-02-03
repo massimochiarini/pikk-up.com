@@ -56,6 +56,7 @@ export default function SignupPage() {
         
         if (!response.ok) {
           console.error('Profile creation failed:', result.error)
+          throw new Error(result.error || 'We couldn\'t complete your profile. Please try again or contact support.')
         }
       }
 

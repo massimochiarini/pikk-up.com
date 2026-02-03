@@ -140,6 +140,13 @@ Open [http://localhost:3000](http://localhost:3000)
 
 Add all variables from `.env.local` to your Vercel project settings.
 
+### Required for core features
+
+| Issue | What to set |
+|-------|-------------|
+| **Users can't sign up / create account** | `SUPABASE_SERVICE_ROLE_KEY` must be set on the server (e.g. Vercel). The create-profile API uses it to create/update profiles. |
+| **Booking/confirmation emails not sending** | Deploy the Edge Function and set Resend: `supabase functions deploy send-email-confirmation` then `supabase secrets set RESEND_API_KEY=re_xxxx`. |
+
 ## Studio Location
 
 Default studio location is configured as:
