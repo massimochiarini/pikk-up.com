@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { Navbar } from '@/components/Navbar'
 import { format, parseISO, isPast } from 'date-fns'
 import Link from 'next/link'
-import { CalendarDaysIcon, ClockIcon, MapPinIcon, CheckIcon, ChevronDownIcon, XMarkIcon, UsersIcon, TicketIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, ClockIcon, MapPinIcon, CheckIcon, ChevronDownIcon, XMarkIcon, TicketIcon } from '@heroicons/react/24/outline'
 import type { PackageCreditWithDetails } from '@/lib/supabase'
 
 export default function StudentMyClassesPage() {
@@ -315,30 +315,6 @@ export default function StudentMyClassesPage() {
                                     <MapPinIcon className="w-4 h-4" /> PickUp Studio
                                   </p>
                                 </div>
-                              </div>
-                              
-                              {/* Participants */}
-                              <div className="border border-neutral-100 p-4">
-                                <h4 className="text-xs uppercase tracking-wider text-neutral-400 mb-3 flex items-center gap-2">
-                                  <UsersIcon className="w-4 h-4" />
-                                  Participants
-                                </h4>
-                                {booking.class.participants && booking.class.participants.length > 0 ? (
-                                  <div className="space-y-2">
-                                    {booking.class.participants.map((participant: { first_name: string; last_name: string }, index: number) => (
-                                      <div key={index} className="flex items-center gap-2 text-sm">
-                                        <div className="w-6 h-6 border border-neutral-200 flex items-center justify-center text-xs text-neutral-500 font-light">
-                                          {participant.first_name?.[0] || '?'}
-                                        </div>
-                                        <span className="text-charcoal font-light">
-                                          {participant.first_name} {participant.last_name}
-                                        </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <p className="text-sm text-neutral-400 font-light">No participants yet</p>
-                                )}
                               </div>
                               
                               {/* Instructor Info */}
