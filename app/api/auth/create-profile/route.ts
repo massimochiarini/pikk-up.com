@@ -31,7 +31,11 @@ export async function POST(request: NextRequest) {
     } catch (serverErr: any) {
       console.error('Create profile: server client init failed', serverErr?.message)
       return NextResponse.json(
-        { error: 'Server configuration error. Please try again later or contact support.' },
+        {
+          error: 'Server configuration error. Please try again later or contact support.',
+          code: 'MISSING_SERVICE_ROLE_KEY',
+          hint: 'Site owner: add SUPABASE_SERVICE_ROLE_KEY to your deployment (e.g. Vercel → Settings → Environment Variables).',
+        },
         { status: 503 }
       )
     }

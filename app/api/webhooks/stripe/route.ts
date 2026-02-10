@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { format, parseISO } from 'date-fns'
+import { trackEmailEvent, enqueueEmailJob, cancelEmailJobs } from '@/lib/email-automation'
 
 // Lazy initialization to avoid build-time errors
 let stripe: Stripe | null = null
@@ -231,6 +232,53 @@ async function handleCheckoutSessionCompleted(
     } catch (emailError) {
       console.error('Email confirmation error:', emailError)
     }
+
+    // --- NEW: Trigger Automations ---
+    try {
+      const { data: instructorInfo } = await supabase
+        .from('profiles')
+        .select('first_name')
+        .eq('id', yogaClass.instructor_id)
+        .single()
+
+      // 1. Track 'booked' event
+      await trackEmailEvent(emailNormalized, 'booked', { 
+        booking_id: bookingData.id, 
+        class_id: classId,
+        instructor_id: yogaClass.instructor_id 
+      })
+
+      // 2. Cancel lead_no_booking jobs
+      await cancelEmailJobs(emailNormalized, ['lead_no_booking_1', 'lead_no_booking_2'])
+
+      // 3. Enqueue pre_class_reminder (24h before)
+      const classStart = parseISO(`${yogaClass.time_slot.date}T${yogaClass.time_slot.start_time}`)
+      const reminderTime = new Date(classStart.getTime() - 24 * 60 * 60 * 1000)
+      
+      if (reminderTime > new Date()) {
+        await enqueueEmailJob(emailNormalized, 'pre_class_reminder', reminderTime, {
+          bookingId: bookingData.id,
+          firstName: firstName.trim(),
+          sessionTitle: yogaClass.title,
+          instructorName: instructorInfo?.first_name || 'your instructor',
+          sessionTime: `${format(classStart, 'EEEE, MMM d')} at ${yogaClass.time_slot.start_time}`,
+        })
+      }
+
+      // 4. Enqueue post_class_followup (3h after)
+      const classEnd = parseISO(`${yogaClass.time_slot.date}T${yogaClass.time_slot.end_time || yogaClass.time_slot.start_time}`)
+      const followupTime = new Date(classEnd.getTime() + 3 * 60 * 60 * 1000)
+      
+      await enqueueEmailJob(emailNormalized, 'post_class_followup', followupTime, {
+        bookingId: bookingData.id,
+        firstName: firstName.trim(),
+        sessionTitle: yogaClass.title,
+        instructorName: instructorInfo?.first_name || 'your instructor',
+      })
+    } catch (autoError) {
+      console.error('Automation trigger error:', autoError)
+    }
+    // ---------------------------------
 
     console.log('Checkout session processing complete')
   } catch (error) {

@@ -79,6 +79,55 @@ function PublicBookingContent() {
   const [isAlreadyBooked, setIsAlreadyBooked] = useState(false)
   const [checkingBooking, setCheckingBooking] = useState(true)
 
+  // First-class-free token (from bio gate): validate on mount and allow one free paid-class booking
+  const [firstClassFreeValid, setFirstClassFreeValid] = useState(false)
+  const [firstClassFreeEmail, setFirstClassFreeEmail] = useState<string | null>(null)
+  const [firstClassFreeToken, setFirstClassFreeToken] = useState<string | null>(null)
+  const [hasHttpOnlyPass, setHasHttpOnlyPass] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    // 1. Check for old-style UUID token in non-HttpOnly cookie
+    const match = document.cookie.match(/pikkup_first_class_free_token=([^;]+)/)
+    const token = match ? decodeURIComponent(match[1]) : null
+    if (token) {
+      setFirstClassFreeToken(token)
+      fetch(`/api/first-class-free/validate?token=${encodeURIComponent(token)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.valid && data.email) {
+            setFirstClassFreeValid(true)
+            setFirstClassFreeEmail(data.email)
+          }
+        })
+        .catch(() => {})
+    }
+
+    // 2. Check for new-style HTTP-only cookie pass
+    fetch('/api/welcome/validate-pass', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.valid && data.email) {
+          setFirstClassFreeValid(true)
+          setFirstClassFreeEmail(data.email)
+          setHasHttpOnlyPass(true)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const clearFirstClassFreeCookie = () => {
+    if (typeof document === 'undefined') return
+    // Clear old-style cookie
+    document.cookie = 'pikkup_first_class_free_token=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    // State clearing
+    setFirstClassFreeValid(false)
+    setFirstClassFreeEmail(null)
+    setFirstClassFreeToken(null)
+    setHasHttpOnlyPass(false)
+  }
+
   const copyBookingLink = () => {
     const url = window.location.href
     navigator.clipboard.writeText(url)
@@ -501,6 +550,13 @@ function PublicBookingContent() {
         return
       }
 
+      // First-class-free token: one free paid-class booking (email must match token)
+      const emailNorm = email.toLowerCase().trim()
+      if (firstClassFreeValid && firstClassFreeEmail === emailNorm && (firstClassFreeToken || hasHttpOnlyPass)) {
+        await handleFreeBooking()
+        return
+      }
+
       // Paid class - redirect to Stripe
       await handlePaidBooking(yogaClass.price_cents, false)
     } catch (error: any) {
@@ -575,6 +631,43 @@ function PublicBookingContent() {
       }
 
       setBookingState('success')
+
+      // --- NEW: Trigger Automations ---
+      if (bookingData?.id) {
+        fetch('/api/bookings/trigger-automation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bookingId: bookingData.id }),
+        }).catch(err => console.error('Automation trigger error:', err))
+      }
+      // -------------------------------
+
+      // Consume first-class-free token if this booking used it
+      if (bookingData?.id) {
+        if (hasHttpOnlyPass) {
+          // New style HTTP-only pass
+          try {
+            await fetch('/api/welcome/consume-pass', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ booking_id: bookingData.id }),
+            })
+          } catch (_) {}
+          clearFirstClassFreeCookie()
+        } else if (firstClassFreeToken) {
+          // Old style UUID token
+          try {
+            await fetch('/api/first-class-free/consume', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: firstClassFreeToken, booking_id: bookingData.id }),
+            })
+          } catch (_) {}
+          clearFirstClassFreeCookie()
+        }
+      }
+
       // Reload booking count
       const { count } = await supabase
         .from('bookings')
@@ -1106,8 +1199,17 @@ function PublicBookingContent() {
               <div className="border border-neutral-200 p-8">
                 {/* Price */}
                 <div className="text-center mb-8 pb-8 border-b border-neutral-100">
-                  <div className="text-3xl font-light text-charcoal">{formatPrice(yogaClass.price_cents, yogaClass.is_donation)}</div>
-                  <div className="text-neutral-500 text-sm font-light mt-1">per person</div>
+                  {firstClassFreeValid && yogaClass.price_cents > 0 && !useCredit ? (
+                    <>
+                      <div className="text-3xl font-light text-green-700">First class free</div>
+                      <div className="text-neutral-500 text-sm font-light mt-1">Use the email from your link to claim</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-3xl font-light text-charcoal">{formatPrice(yogaClass.price_cents, yogaClass.is_donation)}</div>
+                      <div className="text-neutral-500 text-sm font-light mt-1">per person</div>
+                    </>
+                  )}
                 </div>
 
                 {isAlreadyBooked ? (
@@ -1262,13 +1364,15 @@ function PublicBookingContent() {
                               ? parseFloat(donationAmount || '0') > 0
                                 ? `Donate $${parseFloat(donationAmount).toFixed(0)} & Reserve`
                                 : 'Reserve My Spot'
-                              : yogaClass.price_cents > 0
-                                ? `Pay ${formatPrice(yogaClass.price_cents)} & Reserve`
-                                : 'Reserve My Spot'}
+                              : firstClassFreeValid && yogaClass.price_cents > 0
+                                ? 'Reserve My Spot'
+                                : yogaClass.price_cents > 0
+                                  ? `Pay ${formatPrice(yogaClass.price_cents)} & Reserve`
+                                  : 'Reserve My Spot'}
                         </button>
                       )}
 
-                      {!useCredit && (yogaClass.price_cents > 0 || (yogaClass.is_donation && parseFloat(donationAmount || '0') > 0)) && (
+                      {!useCredit && !(firstClassFreeValid && yogaClass.price_cents > 0) && (yogaClass.price_cents > 0 || (yogaClass.is_donation && parseFloat(donationAmount || '0') > 0)) && (
                         <p className="text-neutral-400 text-xs text-center font-light">
                           Secure payment powered by Stripe
                         </p>
@@ -1409,13 +1513,15 @@ function PublicBookingContent() {
                               ? parseFloat(donationAmount || '0') > 0
                                 ? `Donate $${parseFloat(donationAmount).toFixed(0)} & Reserve`
                                 : 'Reserve My Spot'
-                              : yogaClass.price_cents > 0
-                                ? `Pay ${formatPrice(yogaClass.price_cents)} & Reserve`
-                                : 'Reserve My Spot'}
+                              : firstClassFreeValid && yogaClass.price_cents > 0
+                                ? 'Reserve My Spot'
+                                : yogaClass.price_cents > 0
+                                  ? `Pay ${formatPrice(yogaClass.price_cents)} & Reserve`
+                                  : 'Reserve My Spot'}
                         </button>
                       )}
 
-                      {!useCredit && (yogaClass.price_cents > 0 || (yogaClass.is_donation && parseFloat(donationAmount || '0') > 0)) && (
+                      {!useCredit && !(firstClassFreeValid && yogaClass.price_cents > 0) && (yogaClass.price_cents > 0 || (yogaClass.is_donation && parseFloat(donationAmount || '0') > 0)) && (
                         <p className="text-neutral-400 text-xs text-center font-light">
                           Secure payment powered by Stripe
                         </p>

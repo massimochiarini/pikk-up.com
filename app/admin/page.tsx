@@ -184,6 +184,29 @@ function AdminPageContent() {
           </div>
         </div>
 
+        {/* Funnel & Email KPIs */}
+        <Link 
+          href="/admin/funnel"
+          className="block border border-neutral-200 p-6 mb-6 hover:border-charcoal transition-colors group"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-medium text-charcoal mb-1 flex items-center gap-2">
+                <EnvelopeIcon className="w-5 h-5" />
+                Funnel & Email
+              </h2>
+              <p className="text-neutral-500 font-light text-sm">
+                Bio captures, first-class-free tokens, and booking counts. Run email automations via cron.
+              </p>
+            </div>
+            <div className="text-neutral-400 group-hover:text-charcoal transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        </Link>
+
         {/* Newsletter */}
         <Link 
           href="/admin/newsletter"

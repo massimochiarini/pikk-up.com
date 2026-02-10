@@ -55,8 +55,14 @@ export default function SignupPage() {
         const result = await response.json()
         
         if (!response.ok) {
-          console.error('Profile creation failed:', result.error)
-          throw new Error(result.error || 'We couldn\'t complete your profile. Please try again or contact support.')
+          console.error('Profile creation failed:', result.error, result.hint)
+          // Supabase trigger already creates a profile on signup, so the user can still use the app.
+          // Redirect anyway and show a brief notice so they're not stuck.
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('signup_profile_pending', 'true')
+          }
+          window.location.href = '/classes'
+          return
         }
       }
 

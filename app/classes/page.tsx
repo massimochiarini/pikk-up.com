@@ -26,6 +26,7 @@ export default function ClassesPage() {
   const [myClassIds, setMyClassIds] = useState<Set<string>>(new Set())
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [participantsModal, setParticipantsModal] = useState<{ classId: string; title: string; isOwner: boolean } | null>(null)
+  const [showSignupNotice, setShowSignupNotice] = useState(false)
   
   const hasFetchedBookings = useRef<string | null>(null)
 
@@ -88,6 +89,15 @@ export default function ClassesPage() {
   useEffect(() => {
     fetchClasses()
   }, [fetchClasses])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const pending = sessionStorage.getItem('signup_profile_pending')
+    if (pending === 'true') {
+      sessionStorage.removeItem('signup_profile_pending')
+      setShowSignupNotice(true)
+    }
+  }, [])
 
   useEffect(() => {
     if (!user) return
@@ -195,6 +205,21 @@ export default function ClassesPage() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
+
+      {showSignupNotice && (
+        <div className="bg-green-50 border-b border-green-200 px-6 py-3 flex items-center justify-between gap-4">
+          <p className="text-green-800 text-sm">
+            Your account was created. If your name doesn’t appear in the menu, refresh the page or log out and back in.
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowSignupNotice(false)}
+            className="text-green-700 hover:text-green-900 text-sm font-medium shrink-0"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Page Header */}
       <motion.div 
