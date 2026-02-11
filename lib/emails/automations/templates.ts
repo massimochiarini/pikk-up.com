@@ -35,6 +35,17 @@ function wrapLayout(contentHtml: string, email: string) {
 </body></html>`
 }
 
+export function getEmailTemplate(type: string, email: string, payload: any): { subject: string, html: string } {
+  const templateFn = templates[type as keyof typeof templates]
+  if (templateFn) {
+    return templateFn(email, payload)
+  }
+  return {
+    subject: "Update from PickUp Yoga",
+    html: wrapLayout(`<p style="margin: 0 0 16px; font-size: 15px; color: #555; line-height: 1.6;">Hello! You have a new message from PickUp Yoga.</p>`, email)
+  }
+}
+
 export const templates = {
   lead_no_booking_1: (email: string, payload: any) => {
     const name = payload.firstName || 'there'
