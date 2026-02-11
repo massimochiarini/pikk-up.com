@@ -1,14 +1,12 @@
-/**
- * EMAIL AUTOMATION DEPLOYMENT CHECKLIST:
- * 1. Deploy this function:
- *    npx supabase functions deploy run-email-automations
- * 2. Set environment secrets in Supabase:
- *    npx supabase secrets set RESEND_API_KEY=re_xxx
- *    npx supabase secrets set EMAIL_AUTOMATIONS_ENABLED=true
- * 3. Verify domain in Resend dashboard (from: updates@pikk-up.com)
- * 4. Schedule the function to run every 10 mins (Supabase dashboard -> Cron):
- *    SELECT cron.schedule('run-email-automations', '*/10 * * * *', 'SELECT net.http_post(url:=''https://<project-id>.supabase.co/functions/v1/run-email-automations'', headers:=''{"Authorization": "Bearer <service-role-key>"}'')');
- */
+// EMAIL AUTOMATION DEPLOYMENT CHECKLIST:
+// 1. Deploy this function:
+//    npx supabase functions deploy run-email-automations
+// 2. Set environment secrets in Supabase:
+//    npx supabase secrets set RESEND_API_KEY=re_xxx
+//    npx supabase secrets set EMAIL_AUTOMATIONS_ENABLED=true
+// 3. Verify domain in Resend dashboard (from: updates@pikk-up.com)
+// 4. Schedule the function to run every 10 mins (Supabase dashboard -> Cron):
+//    SELECT cron.schedule('run-email-automations', '*/10 * * * *', 'SELECT net.http_post(url:=''https://<project-id>.supabase.co/functions/v1/run-email-automations'', headers:=''{"Authorization": "Bearer <service-role-key>"}'')');
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7'

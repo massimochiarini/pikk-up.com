@@ -74,35 +74,6 @@ export function getEmailTemplate(type: string, email: string, payload: any): { s
       subject = `Reminder: you’re booked for ${payload.instructorName || 'Tatiana'}’s class tomorrow`
       content = `
         <p style="margin: 0 0 16px; font-size: 16px; color: #333;">Hi ${name},</p>
-        <p style="margin: 0 0 16px; font-size: 15|    case 'lead_no_booking_1':
-      subject = "Your free class is waiting (book in 30 min)"
-      content = `
-        <p style="margin: 0 0 16px; font-size: 16px; color: #333;">Hi ${name},</p>
-        <p style="margin: 0 0 16px; font-size: 15px; color: #555; line-height: 1.6;">Your free class is waiting! We noticed you signed up but haven't booked your spot yet.</p>
-        <p style="margin: 0 0 24px; font-size: 15px; color: #555; line-height: 1.6;">This offer is only valid if you book in the next 30 minutes. Come flow with us!</p>
-        <a href="${buildClickUrl(email, 'lead_no_booking_1', `${SITE_URL}/classes?free=1`)}" style="display: inline-block; padding: 12px 24px; background: #1a1a1a; color: #fff; text-decoration: none; border-radius: 6px; font-size: 14px;">Claim my free class</a>
-      `
-      break
-
-    case 'lead_no_booking_2':
-      subject = "Try a class this week — here are 3 options"
-      content = `
-        <p style="margin: 0 0 16px; font-size: 16px; color: #333;">Hi ${name},</p>
-        <p style="margin: 0 0 16px; font-size: 15px; color: #555; line-height: 1.6;">Try a class this week! We have some great sessions coming up that we think you'll love.</p>
-        <p style="margin: 0 0 24px; font-size: 15px; color: #555; line-height: 1.6;">Here are 3 options for you to get started:</p>
-        <div style="margin-bottom: 24px;">
-          <p style="margin: 0 0 8px; font-size: 14px; color: #666;">• Morning Vinyasa Flow</p>
-          <p style="margin: 0 0 8px; font-size: 14px; color: #666;">• Evening Restoration</p>
-          <p style="margin: 0 0 8px; font-size: 14px; color: #666;">• Weekend Breathwork</p>
-        </div>
-        <a href="${buildClickUrl(email, 'lead_no_booking_2', `${SITE_URL}/classes`)}" style="display: inline-block; padding: 12px 24px; background: #1a1a1a; color: #fff; text-decoration: none; border-radius: 6px; font-size: 14px;">View all classes</a>
-      `
-      break
-
-    case 'pre_class_reminder':
-      subject = `Reminder: you’re booked for ${payload.instructorName || 'Tatiana'}’s class tomorrow`
-      content = `
-        <p style="margin: 0 0 16px; font-size: 16px; color: #333;">Hi ${name},</p>
         <p style="margin: 0 0 16px; font-size: 15px; color: #555; line-height: 1.6;">You’re booked for <strong>${payload.sessionTitle}</strong> with ${payload.instructorName || 'Tatiana'} tomorrow.</p>
         <p style="margin: 0 0 8px; font-size: 14px; color: #666;">📅 ${payload.sessionTime}</p>
         <p style="margin: 0 0 24px; font-size: 14px; color: #666;">📍 PickUp Studio, 2500 South Miami Avenue</p>
