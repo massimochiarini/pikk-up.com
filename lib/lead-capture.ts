@@ -18,6 +18,7 @@ export interface UpsertSubscriberResult {
   id: string
   email: string
   created: boolean
+  first_name?: string | null
   free_pass_token?: string | null
   free_pass_expires_at?: string | null
 }
@@ -88,7 +89,7 @@ export async function upsertSubscriber(
       .from('newsletter_subscribers')
       .update(updatePayload)
       .eq('email', normalizedEmail)
-      .select('id, email, free_pass_token, free_pass_expires_at')
+      .select('id, email, first_name, free_pass_token, free_pass_expires_at')
       .single()
 
     if (error) throw error
@@ -96,6 +97,7 @@ export async function upsertSubscriber(
       id: updated.id,
       email: updated.email,
       created: false,
+      first_name: updated.first_name ?? undefined,
       free_pass_token: updated.free_pass_token ?? undefined,
       free_pass_expires_at: updated.free_pass_expires_at ?? undefined,
     }
@@ -104,7 +106,7 @@ export async function upsertSubscriber(
   const { data: inserted, error } = await supabase
     .from('newsletter_subscribers')
     .insert(insertPayload)
-    .select('id, email, free_pass_token, free_pass_expires_at')
+    .select('id, email, first_name, free_pass_token, free_pass_expires_at')
     .single()
 
   if (error) throw error
@@ -112,6 +114,7 @@ export async function upsertSubscriber(
     id: inserted.id,
     email: inserted.email,
     created: true,
+    first_name: inserted.first_name ?? undefined,
     free_pass_token: inserted.free_pass_token ?? undefined,
     free_pass_expires_at: inserted.free_pass_expires_at ?? undefined,
   }
