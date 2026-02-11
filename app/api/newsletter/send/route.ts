@@ -382,15 +382,15 @@ export async function POST(request: NextRequest) {
 
     console.log(`Sending newsletter to ${subscribers.length} subscribers`)
 
-    // Send to all subscribers (in batches)
-    const batchSize = 50
+    // Use Resend Batch API to send all emails in one request (max 100 per batch)
+    const batchSize = 100
     let sentCount = 0
     const errors: string[] = []
 
     for (let i = 0; i < subscribers.length; i += batchSize) {
       const batch = subscribers.slice(i, i + batchSize)
-      
-      const emailPromises = batch.map(async (subscriber: any) => {
+
+      const emailPayloads = batch.map((subscriber: any) => {
         const unsubscribeUrl = `https://pikk-up.com/unsubscribe?email=${encodeURIComponent(subscriber.email)}&token=${Buffer.from(subscriber.id).toString('base64')}`
         const html = generateNewsletterHtml(
           subscriber.first_name,
@@ -400,50 +400,46 @@ export async function POST(request: NextRequest) {
           intro_message,
           unsubscribeUrl
         )
-
-        try {
-          const response = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${RESEND_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              from: 'Pick Up Yoga <bookings@pikk-up.com>',
-              to: [subscriber.email],
-              subject,
-              html,
-              headers: {
-                'List-Unsubscribe': `<${unsubscribeUrl}>`,
-                'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
-              }
-            }),
-          })
-
-          if (response.ok) {
-            sentCount++
-            // Update subscriber record
-            await supabaseAdmin
-              .from('newsletter_subscribers')
-              .update({
-                last_email_sent_at: new Date().toISOString(),
-                emails_sent_count: (subscriber.emails_sent_count || 0) + 1
-              })
-              .eq('id', subscriber.id)
-          } else {
-            const errorData = await response.json()
-            errors.push(`${subscriber.email}: ${errorData.message}`)
+        return {
+          from: 'Pick Up Yoga <bookings@pikk-up.com>',
+          to: [subscriber.email],
+          subject,
+          html,
+          headers: {
+            'List-Unsubscribe': `<${unsubscribeUrl}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
           }
-        } catch (error: any) {
-          errors.push(`${subscriber.email}: ${error.message}`)
         }
       })
 
-      await Promise.all(emailPromises)
-      
-      // Small delay between batches to avoid rate limits
-      if (i + batchSize < subscribers.length) {
-        await new Promise(resolve => setTimeout(resolve, 1000))
+      try {
+        const response = await fetch('https://api.resend.com/emails/batch', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(emailPayloads),
+        })
+
+        if (response.ok) {
+          const result = await response.json()
+          sentCount += result.data?.length || batch.length
+          
+          // Update subscriber records
+          const subscriberIds = batch.map((s: any) => s.id)
+          await supabaseAdmin
+            .from('newsletter_subscribers')
+            .update({
+              last_email_sent_at: new Date().toISOString(),
+            })
+            .in('id', subscriberIds)
+        } else {
+          const errorData = await response.json()
+          errors.push(`Batch error: ${errorData.message || JSON.stringify(errorData)}`)
+        }
+      } catch (error: any) {
+        errors.push(`Batch error: ${error.message}`)
       }
     }
 
