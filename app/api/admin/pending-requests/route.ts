@@ -1,46 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
-import { createClient } from '@supabase/supabase-js'
-
-// Helper to verify admin status
-async function verifyAdmin(request: NextRequest) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return { isAdmin: false, error: 'Missing configuration' }
-  }
-
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader) {
-    return { isAdmin: false, error: 'No authorization header' }
-  }
-
-  const token = authHeader.replace('Bearer ', '')
-  
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: `Bearer ${token}` } }
-  })
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  
-  if (authError || !user) {
-    return { isAdmin: false, error: 'Invalid token' }
-  }
-
-  const serverClient = createServerClient()
-  const { data: profile } = await serverClient
-    .from('profiles')
-    .select('is_admin')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.is_admin) {
-    return { isAdmin: false, error: 'Not an admin' }
-  }
-
-  return { isAdmin: true, error: null }
-}
+import { verifyAdmin } from '@/lib/verify-admin'
 
 // GET /api/admin/pending-requests - Get pending instructor requests
 export async function GET(request: NextRequest) {

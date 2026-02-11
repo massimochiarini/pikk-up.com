@@ -5,7 +5,7 @@ import { verifyAdmin } from '@/lib/verify-admin'
 export async function GET(request: NextRequest) {
   try {
     // 1. Verify admin
-    const isAdmin = await verifyAdmin()
+    const { isAdmin } = await verifyAdmin(request)
     if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -13,7 +13,8 @@ export async function GET(request: NextRequest) {
     const supabase = createServerClient()
     const now = new Date()
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-    const todayStart = new Date(now.setHours(0, 0, 0, 0))
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
 
     // 2. Fetch leads
     const { data: leads } = await supabase

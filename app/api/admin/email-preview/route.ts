@@ -1,29 +1,29 @@
-import { NextRequest, NextResponse } from 'next/servlet'
-import { createServerClient } from '@/lib/supabase'
+import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdmin } from '@/lib/verify-admin'
-import { getEmailTemplate } from '@/lib/emails/automations/templates' // Wait, I need to make sure this path is correct
+import { getEmailTemplate } from '@/lib/emails/automations/templates'
 
 /**
- * GET /api/admin/email-preview
- * Params: type, email?, payload? (JSON)
+ * POST /api/admin/email-preview
+ * Body: { type, email?, payload? }
  * Returns the HTML for previewing an automation email.
  */
 export async function POST(request: NextRequest) {
   try {
-    const isAdmin = await verifyAdmin()
+    const { isAdmin } = await verifyAdmin(request)
     if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { type, email = 'test@example.com', payload = {} } = await request.json()
+    const body = await request.json()
+    const { type, email = 'test@example.com', payload = {} } = body
     
-    // We'll use the Next.js templates version for preview
-    // Note: I'll need to make sure the templates are exported correctly
-    const { subject, html } = (global as any).templates?.[type]?.(email, payload) || { 
-      subject: 'Template not found', 
-      html: '<h1>Template not found</h1>' 
+    if (!type) {
+      return NextResponse.json({ error: 'Missing type' }, { status: 400 })
     }
+
+    const { subject, html } = getEmailTemplate(type, email, payload)
 
     return NextResponse.json({ subject, html })
   } catch (err) {
+    console.error('Email preview error:', err)
     return NextResponse.json({ error: 'Failed to generate preview' }, { status: 500 })
   }
 }

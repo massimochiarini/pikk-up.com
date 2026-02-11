@@ -1,27 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase'
+import { verifyAdmin } from '@/lib/verify-admin'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
-
-async function verifyAdmin(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader?.startsWith('Bearer ')) return { isAdmin: false }
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  if (!supabaseUrl || !supabaseAnonKey) return { isAdmin: false }
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: authHeader } },
-  })
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return { isAdmin: false }
-  const serverClient = createServerClient()
-  const { data: profile } = await serverClient.from('profiles').select('is_admin').eq('id', user.id).single()
-  return { isAdmin: !!profile?.is_admin }
-}
 
 /**
  * GET: Funnel KPIs for admin dashboard. Requires admin auth.
