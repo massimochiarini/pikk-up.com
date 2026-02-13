@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { format, parseISO } from 'date-fns'
+import { BOOKING_CUTOFF_DATE } from '@/lib/constants'
 import { trackEmailEvent, enqueueEmailJob, cancelEmailJobs } from '@/lib/email-automation'
 
 let supabaseAdmin: SupabaseClient | null = null
@@ -52,6 +53,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Class not found' },
         { status: 404 }
+      )
+    }
+
+    if (yogaClass.time_slot.date >= BOOKING_CUTOFF_DATE) {
+      return NextResponse.json(
+        { error: 'Booking is closed. No classes can be booked after March 1st.' },
+        { status: 400 }
       )
     }
 

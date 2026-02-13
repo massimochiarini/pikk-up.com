@@ -5,11 +5,12 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
 import { format, parseISO, isToday, isTomorrow } from 'date-fns'
+import { BOOKING_CUTOFF_DATE } from '@/lib/constants'
 import { RevealSection, RevealItem } from '@/components/ui'
 import { EmailGate } from '@/components/EmailGate'
 
 /** Set to true to show the email gate first on the landing (e.g. for Instagram bio link). */
-const ENABLE_EMAIL_GATE = false
+const ENABLE_EMAIL_GATE = true
 
 const GATE_PASSED_COOKIE = 'pikkup_gate_passed'
 
@@ -58,7 +59,7 @@ export default function HomePage() {
 
         if (data) {
           const filteredData = data
-            .filter((c) => c.time_slot && c.time_slot.date >= today)
+            .filter((c) => c.time_slot && c.time_slot.date >= today && c.time_slot.date < BOOKING_CUTOFF_DATE)
             .sort((a, b) => {
               const dateA = a.time_slot?.date + 'T' + a.time_slot?.start_time
               const dateB = b.time_slot?.date + 'T' + b.time_slot?.start_time

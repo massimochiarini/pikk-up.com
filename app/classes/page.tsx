@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { ParticipantsModal } from '@/components/ParticipantsModal'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
 import { format, parseISO, isToday, isTomorrow } from 'date-fns'
+import { BOOKING_CUTOFF_DATE } from '@/lib/constants'
 import Link from 'next/link'
 import { RevealSection } from '@/components/ui'
 
@@ -55,7 +56,7 @@ export default function ClassesPage() {
         const today = format(new Date(), 'yyyy-MM-dd')
         
         const filteredData = data
-          .filter((c) => c.time_slot && c.time_slot.date >= today)
+          .filter((c) => c.time_slot && c.time_slot.date >= today && c.time_slot.date < BOOKING_CUTOFF_DATE)
           .sort((a, b) => {
             const dateA = a.time_slot?.date + 'T' + a.time_slot?.start_time
             const dateB = b.time_slot?.date + 'T' + b.time_slot?.start_time

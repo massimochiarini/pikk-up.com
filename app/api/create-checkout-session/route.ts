@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { createClient } from '@supabase/supabase-js'
+import { BOOKING_CUTOFF_DATE } from '@/lib/constants'
 
 // Lazy initialization
 let stripe: Stripe | null = null
+
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 function getStripe() {
   if (!stripe) {
@@ -33,6 +42,28 @@ export async function POST(request: NextRequest) {
         { error: 'Missing required fields' },
         { status: 400 }
       )
+    }
+
+    // Check if class is within bookable window (before March 2nd)
+    const supabase = getSupabase()
+    const { data: yogaClass, error: classError } = await supabase
+      .from('classes')
+      .select('id, time_slot_id')
+      .eq('id', classId)
+      .single()
+
+    if (!classError && yogaClass) {
+      const { data: timeSlot } = await supabase
+        .from('time_slots')
+        .select('date')
+        .eq('id', yogaClass.time_slot_id)
+        .single()
+      if (timeSlot && timeSlot.date >= BOOKING_CUTOFF_DATE) {
+        return NextResponse.json(
+          { error: 'Booking is closed. No classes can be booked after March 1st.' },
+          { status: 400 }
+        )
+      }
     }
 
     // For non-donation classes, price is required and must be positive

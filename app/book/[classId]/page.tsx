@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/components/AuthProvider'
 import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/supabase'
 import { format, parseISO } from 'date-fns'
+import { BOOKING_CUTOFF_DATE } from '@/lib/constants'
 import Link from 'next/link'
 import Image from 'next/image'
 import { CalendarDaysIcon, ClockIcon, MapPinIcon, UsersIcon, CheckIcon, LinkIcon, ChevronDownIcon, ChevronUpIcon, TicketIcon } from '@heroicons/react/24/outline'
@@ -495,6 +496,11 @@ function PublicBookingContent() {
     
     if (!yogaClass || !firstName || !lastName || !email) {
       setErrorMessage('Please fill in all required fields')
+      return
+    }
+
+    if (yogaClass.time_slot.date >= BOOKING_CUTOFF_DATE) {
+      setErrorMessage('Booking is closed. No classes can be booked after March 1st.')
       return
     }
 
@@ -1012,6 +1018,40 @@ function PublicBookingContent() {
 
   const spotsLeft = yogaClass.max_capacity - bookingCount
   const isFull = spotsLeft <= 0
+  const isBookingClosed = yogaClass.time_slot.date >= BOOKING_CUTOFF_DATE
+
+  if (isBookingClosed) {
+    return (
+      <motion.div 
+        className="min-h-screen bg-white flex items-center justify-center p-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="max-w-md w-full text-center">
+          <motion.h1 
+            className="text-2xl font-normal text-stone-800 mb-2 tracking-tight"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+          >
+            booking closed
+          </motion.h1>
+          <motion.p 
+            className="text-stone-500 mb-8 tracking-wide"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
+            no classes can be booked after March 1st.
+          </motion.p>
+          <Link href="/classes" className="btn-primary">
+            browse classes
+          </Link>
+        </div>
+      </motion.div>
+    )
+  }
 
   return (
     <motion.div 
@@ -1341,6 +1381,13 @@ function PublicBookingContent() {
                         </div>
                       )}
 
+                      {/* Refund disclaimer (before checkout) */}
+                      {!useCredit && !(firstClassFreeValid && yogaClass.price_cents > 0) && (yogaClass.price_cents > 0 || (yogaClass.is_donation && parseFloat(donationAmount || '0') > 0)) && (
+                        <p className="text-neutral-500 text-sm text-center font-light mb-4">
+                          Refunds are not possible under any circumstances.
+                        </p>
+                      )}
+
                       {/* Submit Button */}
                       {useCredit ? (
                         <button
@@ -1489,6 +1536,13 @@ function PublicBookingContent() {
                             This class is donation-based. Enter any amount you&apos;d like to contribute, or leave empty to attend for free.
                           </p>
                         </div>
+                      )}
+
+                      {/* Refund disclaimer (before checkout) */}
+                      {!useCredit && !(firstClassFreeValid && yogaClass.price_cents > 0) && (yogaClass.price_cents > 0 || (yogaClass.is_donation && parseFloat(donationAmount || '0') > 0)) && (
+                        <p className="text-neutral-500 text-sm text-center font-light mb-4">
+                          Refunds are not possible under any circumstances.
+                        </p>
                       )}
 
                       {/* Submit Button */}

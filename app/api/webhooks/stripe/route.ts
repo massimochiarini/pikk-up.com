@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { BOOKING_CUTOFF_DATE } from '@/lib/constants'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { format, parseISO } from 'date-fns'
 import { trackEmailEvent, enqueueEmailJob, cancelEmailJobs } from '@/lib/email-automation'
@@ -128,6 +129,12 @@ async function handleCheckoutSessionCompleted(
 
     if (classError) {
       console.error('Error fetching class:', classError)
+      return
+    }
+
+    if (yogaClass.time_slot.date >= BOOKING_CUTOFF_DATE) {
+      console.error('Booking closed: class date is after March 1st')
+      await recordPayment(session, classId, null, 'failed', 'Booking closed. No classes can be booked after March 1st.')
       return
     }
 
