@@ -18,6 +18,10 @@ export interface EmailGateProps {
   showRoleChoice?: boolean
   /** Optional class name for the wrapper */
   className?: string
+  /** Optional link to skip email capture (e.g. "View classes without signing in") */
+  skipLinkText?: string
+  /** Href for skip link (default /classes) */
+  skipLinkHref?: string
 }
 
 const DEFAULT_INTRO = 'PickUp is drop-in yoga at a studio in Miami. Book a class, show up, and flow.'
@@ -31,6 +35,8 @@ export function EmailGate({
   redirectTo = '/classes?free=1',
   showRoleChoice = true,
   className = '',
+  skipLinkText,
+  skipLinkHref = '/classes',
 }: EmailGateProps) {
   const [email, setEmail] = useState('')
   const [rolePreference, setRolePreference] = useState<RolePreference>(null)
@@ -192,6 +198,17 @@ export function EmailGate({
         >
           {loading ? 'Claiming...' : ctaText}
         </button>
+
+        {skipLinkText && (
+          <div className="pt-2">
+            <Link
+              href={skipLinkHref}
+              className="text-stone-500 text-sm font-light hover:text-stone-700 underline underline-offset-2 transition-colors"
+            >
+              {skipLinkText}
+            </Link>
+          </div>
+        )}
       </form>
 
       <p className="mt-4 text-stone-400 text-xs font-light max-w-sm">

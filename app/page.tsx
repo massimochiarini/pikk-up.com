@@ -7,12 +7,6 @@ import { supabase, type YogaClass, type TimeSlot, type Profile } from '@/lib/sup
 import { format, parseISO, isToday, isTomorrow } from 'date-fns'
 import { BOOKING_CUTOFF_DATE } from '@/lib/constants'
 import { RevealSection, RevealItem } from '@/components/ui'
-import { EmailGate } from '@/components/EmailGate'
-
-/** Set to true to show the email gate first on the landing (e.g. for Instagram bio link). */
-const ENABLE_EMAIL_GATE = true
-
-const GATE_PASSED_COOKIE = 'pikkup_gate_passed'
 
 type ClassWithDetails = YogaClass & {
   time_slot: TimeSlot
@@ -25,17 +19,6 @@ export default function HomePage() {
   const [loadingClasses, setLoadingClasses] = useState(true)
   const [activeFlow, setActiveFlow] = useState<'student' | 'teacher'>('student')
   const [hoveredCard, setHoveredCard] = useState<'student' | 'teacher' | null>(null)
-
-  const [showEmailGate, setShowEmailGate] = useState<boolean | null>(ENABLE_EMAIL_GATE ? null : false)
-
-  useEffect(() => {
-    if (!ENABLE_EMAIL_GATE) {
-      setShowEmailGate(false)
-      return
-    }
-    const passed = typeof document !== 'undefined' && document.cookie.includes(`${GATE_PASSED_COOKIE}=`)
-    setShowEmailGate(!passed)
-  }, [])
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -115,32 +98,6 @@ export default function HomePage() {
   const flowSteps = {
     student: ['browse', 'book', 'flow'],
     teacher: ['create', 'publish', 'get paid'],
-  }
-
-  if (ENABLE_EMAIL_GATE && (showEmailGate === true || showEmailGate === null)) {
-    return (
-      <div className="min-h-screen bg-white flex flex-col">
-        <header className="border-b border-stone-100">
-          <div className="max-w-2xl mx-auto px-6 py-5">
-            <Link href="/" className="text-stone-500 tracking-wide text-lg hover:text-stone-700 transition-colors">
-              PickUp
-            </Link>
-          </div>
-        </header>
-        <main className="flex-1 flex items-center px-6 py-12">
-          <div className="max-w-2xl mx-auto w-full">
-            <h1 className="text-2xl font-light text-stone-800 tracking-tight mb-2">Welcome</h1>
-            <EmailGate
-              intro="PickUp is drop-in yoga at a studio in Miami. Book a class, show up, and flow."
-              ctaText="Enter your email to claim your first class free"
-              successMessage="Free class unlocked—book now"
-              redirectTo="/classes?free=1"
-              showRoleChoice={true}
-            />
-          </div>
-        </main>
-      </div>
-    )
   }
 
   return (
