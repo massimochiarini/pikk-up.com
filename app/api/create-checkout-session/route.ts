@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if class is within bookable window (before March 2nd)
+    // Only February classes can be booked
     const supabase = getSupabase()
     const { data: yogaClass, error: classError } = await supabase
       .from('classes')
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         .single()
       if (timeSlot && timeSlot.date >= BOOKING_CUTOFF_DATE) {
         return NextResponse.json(
-          { error: 'Booking is closed. No classes can be booked after March 1st.' },
+          { error: 'Booking is closed. Only February classes can be booked.' },
           { status: 400 }
         )
       }

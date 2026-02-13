@@ -133,8 +133,8 @@ async function handleCheckoutSessionCompleted(
     }
 
     if (yogaClass.time_slot.date >= BOOKING_CUTOFF_DATE) {
-      console.error('Booking closed: class date is after March 1st')
-      await recordPayment(session, classId, null, 'failed', 'Booking closed. No classes can be booked after March 1st.')
+      console.error('Booking closed: only February classes can be booked')
+      await recordPayment(session, classId, null, 'failed', 'Booking closed. Only February classes can be booked.')
       return
     }
 

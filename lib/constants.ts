@@ -1,5 +1,5 @@
 /**
- * No classes can be booked after this date (exclusive).
- * Classes on this date are still bookable; classes on the next day and beyond are not.
+ * No classes can be booked on or after this date.
+ * Only February classes (before March 1st) are bookable.
  */
-export const BOOKING_CUTOFF_DATE = '2025-03-02'
+export const BOOKING_CUTOFF_DATE = '2025-03-01'

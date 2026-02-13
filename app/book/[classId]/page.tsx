@@ -500,7 +500,7 @@ function PublicBookingContent() {
     }
 
     if (yogaClass.time_slot.date >= BOOKING_CUTOFF_DATE) {
-      setErrorMessage('Booking is closed. No classes can be booked after March 1st.')
+      setErrorMessage('Booking is closed. Only February classes can be booked.')
       return
     }
 
@@ -1043,7 +1043,7 @@ function PublicBookingContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
           >
-            no classes can be booked after March 1st.
+            only February classes can be booked.
           </motion.p>
           <Link href="/classes" className="btn-primary">
             browse classes

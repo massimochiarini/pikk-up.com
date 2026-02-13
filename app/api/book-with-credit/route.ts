@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     if (yogaClass.time_slot.date >= BOOKING_CUTOFF_DATE) {
       return NextResponse.json(
-        { error: 'Booking is closed. No classes can be booked after March 1st.' },
+        { error: 'Booking is closed. Only February classes can be booked.' },
         { status: 400 }
       )
     }
