@@ -61,7 +61,12 @@ export default function HomePage() {
               }
             })
           )
-          setFeaturedClasses(classesWithCounts as ClassWithDetails[])
+          // Remove classes with 15 available spots and 0 clients
+          const nonEmptyClasses = classesWithCounts.filter((c) => {
+            const spotsLeft = c.max_capacity - c.booking_count
+            return !(spotsLeft === 15 && c.booking_count === 0)
+          })
+          setFeaturedClasses(nonEmptyClasses as ClassWithDetails[])
         }
       } catch (err) {
         console.error('Error fetching classes:', err)
@@ -97,7 +102,7 @@ export default function HomePage() {
   // Flow steps data
   const flowSteps = {
     student: ['browse', 'book', 'flow'],
-    teacher: ['create', 'publish', 'get paid'],
+    teacher: ['apply', 'teach', 'get paid'],
   }
 
   return (

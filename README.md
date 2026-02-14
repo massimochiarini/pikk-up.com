@@ -122,8 +122,7 @@ Open [http://localhost:3000](http://localhost:3000)
 | Route | Description |
 |-------|-------------|
 | `/instructor` | Instructor dashboard |
-| `/instructor/schedule` | View/claim time slots |
-| `/instructor/create/[slotId]` | Create class form |
+| `/instructor/schedule` | View schedule |
 | `/instructor/my-classes` | Manage classes |
 | `/instructor/class/[classId]` | Class details & bookings |
 

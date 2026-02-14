@@ -7,7 +7,7 @@ import { Navbar } from '@/components/Navbar'
 import { supabase } from '@/lib/supabase'
 import { format, parseISO, isPast } from 'date-fns'
 import Link from 'next/link'
-import { PlusIcon, CalendarDaysIcon, ClockIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, ClockIcon, UsersIcon } from '@heroicons/react/24/outline'
 
 type ClassWithDetails = {
   id: string
@@ -142,23 +142,9 @@ export default function InstructorSchedulePage() {
         <div className="text-center mb-12">
           <h1 className="text-3xl font-light text-charcoal mb-2">Schedule</h1>
           <p className="text-neutral-500 font-light">
-            Create and manage your yoga classes
+            View your upcoming yoga classes
           </p>
         </div>
-
-        {/* Create Class Button */}
-        <Link
-          href="/instructor/create"
-          className="block border-2 border-dashed border-neutral-300 hover:border-charcoal p-8 text-center transition-colors group mb-12"
-        >
-          <div className="w-16 h-16 border border-neutral-300 group-hover:border-charcoal flex items-center justify-center mx-auto mb-4 transition-colors">
-            <PlusIcon className="w-8 h-8 text-neutral-400 group-hover:text-charcoal transition-colors" />
-          </div>
-          <h2 className="text-xl font-medium text-charcoal mb-2">Create a Class</h2>
-          <p className="text-neutral-500 font-light text-sm">
-            Set up a new class with your preferred date, time, and duration
-          </p>
-        </Link>
 
         {/* Upcoming Classes Preview */}
         {upcomingClasses.length > 0 && (
@@ -211,7 +197,7 @@ export default function InstructorSchedulePage() {
             <CalendarDaysIcon className="w-8 h-8 text-neutral-300 mx-auto mb-3" />
             <p className="text-neutral-500 font-light">No upcoming classes</p>
             <p className="text-neutral-400 text-sm font-light mt-1">
-              Create your first class to get started
+              You don&apos;t have any scheduled classes yet
             </p>
           </div>
         )}

@@ -150,9 +150,6 @@ export default function MyClassesPage() {
               View and manage your scheduled classes
             </p>
           </div>
-          <Link href="/instructor/schedule" className="btn-primary">
-            Schedule New Class
-          </Link>
         </div>
 
         {classes.length === 0 ? (
@@ -161,12 +158,9 @@ export default function MyClassesPage() {
               <CalendarDaysIcon className="w-6 h-6 text-neutral-400" />
             </div>
             <h3 className="text-lg font-light text-charcoal mb-2">No classes yet</h3>
-            <p className="text-neutral-500 font-light mb-6">
-              Start by claiming a time slot and creating your first class.
+            <p className="text-neutral-500 font-light">
+              You don&apos;t have any scheduled classes.
             </p>
-            <Link href="/instructor/schedule" className="btn-primary">
-              View Available Slots
-            </Link>
           </div>
         ) : (
           <div className="space-y-12">

@@ -116,13 +116,13 @@ export default function InstructorDashboardPage() {
             
             <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16">
               <div className="text-center">
-                <span className="text-2xl md:text-4xl font-normal text-stone-800 tracking-tight">create</span>
-                <p className="text-stone-400 mt-2 tracking-wide">claim a time slot</p>
+                <span className="text-2xl md:text-4xl font-normal text-stone-800 tracking-tight">apply</span>
+                <p className="text-stone-400 mt-2 tracking-wide">become an instructor</p>
               </div>
               <span className="hidden md:block text-stone-300 text-2xl">→</span>
               <div className="text-center">
-                <span className="text-2xl md:text-4xl font-normal text-stone-800 tracking-tight">publish</span>
-                <p className="text-stone-400 mt-2 tracking-wide">set your price</p>
+                <span className="text-2xl md:text-4xl font-normal text-stone-800 tracking-tight">teach</span>
+                <p className="text-stone-400 mt-2 tracking-wide">lead your classes</p>
               </div>
               <span className="hidden md:block text-stone-300 text-2xl">→</span>
               <div className="text-center">
@@ -350,9 +350,9 @@ export default function InstructorDashboardPage() {
           </RevealItem>
           <div className="grid md:grid-cols-3 gap-12">
             {[
-              { num: '1', title: 'claim a time slot', desc: 'browse the schedule and pick an available slot.' },
-              { num: '2', title: 'create your class', desc: 'add your class details: title, price, and capacity.' },
-              { num: '3', title: 'share & teach', desc: 'get a booking link to share. we handle the rest.' },
+              { num: '1', title: 'view your schedule', desc: 'check your upcoming classes and time slots.' },
+              { num: '2', title: 'manage your classes', desc: 'review bookings and class details.' },
+              { num: '3', title: 'share & teach', desc: 'share your booking link. we handle the rest.' },
             ].map((step) => (
               <RevealItem key={step.num} className="text-center">
                 <div className="w-10 h-10 bg-stone-800 text-white flex items-center justify-center mx-auto mb-4 tracking-wide text-sm">
