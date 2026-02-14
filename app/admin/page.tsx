@@ -13,7 +13,8 @@ import {
   ShieldCheckIcon,
   ArrowPathIcon,
   MagnifyingGlassIcon,
-  EnvelopeIcon
+  EnvelopeIcon,
+  PlusIcon,
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 
@@ -183,6 +184,29 @@ function AdminPageContent() {
             <div className="text-sm text-neutral-500 font-light">Pending Requests</div>
           </div>
         </div>
+
+        {/* Create Class */}
+        <Link 
+          href="/admin/create-class"
+          className="block border border-neutral-200 p-6 mb-6 hover:border-charcoal transition-colors group"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-medium text-charcoal mb-1 flex items-center gap-2">
+                <PlusIcon className="w-5 h-5" />
+                Create Class
+              </h2>
+              <p className="text-neutral-500 font-light text-sm">
+                Create a new class and assign it to an instructor with an available time slot.
+              </p>
+            </div>
+            <div className="text-neutral-400 group-hover:text-charcoal transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        </Link>
 
         {/* Funnel & Email KPIs */}
         <Link 

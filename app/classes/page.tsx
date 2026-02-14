@@ -200,6 +200,9 @@ export default function ClassesPage() {
     if (!c.time_slot) return false
     if (filter === 'my-classes' && !myClassIds.has(c.id)) return false
     if (skillFilter !== 'all' && c.skill_level !== skillFilter) return false
+    // Hide classes with 15 available spots and 0 clients
+    const spotsLeft = c.max_capacity - c.booking_count
+    if (spotsLeft === 15 && c.booking_count === 0) return false
     return true
   })
 
